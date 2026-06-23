@@ -22,17 +22,45 @@ Then move to the next task.
 
 ## Required Reading
 
-- Read `references/workflow.md` before acting.
+- Always read `references/workflow.md` before acting.
+- Read `references/gates.md` before task selection, after task intake, and
+  before advancing to another task.
+- Read `references/review-and-delegation.md` only when review triggers apply,
+  subagent review is useful, or broad evidence/tracker changes are touched.
 - Read `references/evidence-contract.md` before completing or updating a task.
 - Use `assets/templates/task-template.md` when creating a missing task or
   splitting an overbroad task.
+- Use bundled `scripts/continue-check.ts` before selecting a task or advancing
+  through a queue. Reconcile its decision before continuing.
+- Use bundled `scripts/execution-check.ts` for deterministic task, contract,
+  and gate signals. Treat script output as input to judgment, not authority.
 
 ## Operating Mode
 
-1. Select exactly one task from the user prompt or prepared task queue.
-2. Read task, sprint/milestone tracker, authority docs, and local agent
+1. Run the read-only state resolver when available:
+
+   ```sh
+   bun <skill-path>/scripts/continue-check.ts --cwd <project> --format markdown
+   ```
+
+2. Follow the resolver decision before selecting work:
+
+   - `ask-founder`: ask or report the founder-owned gate; do not continue.
+   - `wait-external`: report the external-state gate; do not continue.
+   - `create-blocker`: create or propose the smallest AI-owned blocker.
+   - `no-ready-task`: stop and report that no AI-owned task is ready.
+   - `invalid-state`: stop and reconcile contradictory tracker/gate state.
+   - `continue-active-task` or `execute-task`: select exactly that task.
+
+3. Run the read-only execution helper when available:
+
+   ```sh
+   bun <skill-path>/scripts/execution-check.ts --cwd <project> --mode next-task --format markdown
+   ```
+
+4. Read task, sprint/milestone tracker, authority docs, and local agent
    instructions.
-3. Print task intake:
+5. Print task intake:
 
    ```text
    Active task: <task id or path>
@@ -47,19 +75,23 @@ Then move to the next task.
    Evidence destination: <task file or evidence file>
    ```
 
-4. Inspect current workspace state before editing.
-5. Capture baseline evidence.
-6. Implement the smallest change that satisfies the task.
-7. Verify in layers.
-8. Run subagent review when a required review trigger applies and subagent tools
+6. Run the execution helper in `task-contract` or `all` mode when a task path
+   exists, then reconcile any missing fields before editing.
+7. Inspect current workspace state before editing.
+8. Capture baseline evidence.
+9. Implement the smallest change that satisfies the task.
+10. Verify in layers.
+11. Run subagent review when a required review trigger applies and subagent tools
    are available. If unavailable or forbidden, record the skipped review and
    substitute verification before closing.
-9. Record evidence before marking the task complete.
-10. Update only the relevant tracker/docs.
-11. Stop at any founder, external-state, failed-verification, stale-task, source
+12. Record evidence before marking the task complete.
+13. Update only the relevant tracker/docs.
+14. Run `continue-check.ts` and the execution helper in `stop-gates` mode before
+    selecting another task.
+15. Stop at any founder, external-state, failed-verification, stale-task, source
     mismatch, or release-claim gate. Do not advance to the next task until the
     gate is resolved or explicitly converted into a ready AI-owned task.
-12. Commit or hand off according to project workflow.
+16. Commit or hand off according to project workflow.
 
 ## Not-Ready Rule
 

@@ -35,9 +35,28 @@ blocker is AI-owned, bounded, and evidence-backed.
 
 Use subagent review when tooling is available and a selected task changes
 release gates, manual-trial evidence, verifier behavior, workflows, contracts,
-templates, or multiple trackers. If a trigger applies but subagent tooling is
-unavailable or forbidden, record the skipped review, substitute verification,
-and residual risk before closing.
+templates, helper scripts, diagrams, or multiple trackers. If a trigger applies
+but subagent tooling is unavailable or forbidden, record the skipped review,
+substitute verification, and residual risk before closing.
+
+## Deterministic Helper Scripts
+
+Use bundled helper scripts as read-only checks when available:
+
+- Continue state resolver: `bun <skill-path>/scripts/continue-check.ts --cwd . --format markdown`
+- Preflight inventory/readiness: `bun <skill-path>/scripts/preflight-check.ts --cwd . --mode all --format markdown`
+- Execution next task: `bun <skill-path>/scripts/execution-check.ts --cwd . --mode next-task --format markdown`
+- Execution task contract: `bun <skill-path>/scripts/execution-check.ts --cwd . --task <path> --mode task-contract --format markdown`
+- Execution stop gates: `bun <skill-path>/scripts/execution-check.ts --cwd . --task <path> --mode stop-gates --format markdown`
+
+Helper output is evidence input, not authority. The main agent still reconciles
+helper findings with founder input, repo evidence, web research, subagent
+findings, and the selected task boundary.
+
+Before continuing through a task queue, run the continue state resolver and
+follow its decision. Do not manually skim Markdown and skip a resolver-reported
+founder, external-state, invalid-state, stale, failed-verification, or
+source-mismatch gate.
 
 ## Evidence Destinations
 
@@ -53,4 +72,5 @@ and residual risk before closing.
 | docs/task update | Inspect changed Markdown and linked paths | task Evidence Log |
 | code behavior | Focused test plus relevant package/app check | task Evidence Log |
 | UI behavior | Browser proof or screenshot when useful | task Evidence Log |
+| helper script update | Script help and representative Bun smoke command | task Evidence Log |
 | release readiness | Gate report and explicit go/no-go | release evidence path |

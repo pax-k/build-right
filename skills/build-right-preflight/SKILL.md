@@ -19,10 +19,17 @@ Only then AI executes.
 
 ## Required Reading
 
-- Read `references/workflow.md` before acting.
+- Always read `references/workflow.md` before acting.
+- Read `references/founder-gates.md` before asking founder questions,
+  deciding readiness, or advancing past a stop/ask gate.
+- Read `references/research-and-delegation.md` only when web research,
+  public-evidence claims, existing-project inventory, conflict review, or
+  subagent delegation triggers apply.
 - Read `references/artifact-contract.md` before creating or updating docs or
   tasks.
 - Use files in `assets/templates/` as starting points when creating artifacts.
+- Use bundled `scripts/preflight-check.ts` for deterministic inventory and
+  readiness signals. Treat script output as input to judgment, not authority.
 
 ## Operating Mode
 
@@ -30,7 +37,13 @@ Only then AI executes.
 2. Classify it as blank/new or existing.
 3. Classify source mode as `founder-fed`, `web-assisted`, or
    `public-first-prototype`.
-4. Announce a concise file plan:
+4. Run the read-only preflight helper when available:
+
+   ```sh
+   bun <skill-path>/scripts/preflight-check.ts --cwd <project> --mode all --format markdown
+   ```
+
+5. Announce a concise file plan:
 
    ```text
    Create:
@@ -46,27 +59,29 @@ Only then AI executes.
    - <question or blocker>
    ```
 
-5. In interactive runs, ask a focused founder-question batch before treating
+6. In interactive runs, ask a focused founder-question batch before treating
    founder intent, customer, positioning, MVP, or product promise as captured.
    If those answers are already explicit in the prompt or repo docs, record the
    evidence path instead of asking again.
-6. Create or update docs and task files by default after the file plan.
-7. Stop before writing only when the user requested planning-only mode, a write
+7. Create or update docs and task files by default after the file plan.
+8. Stop before writing only when the user requested planning-only mode, a write
    would overwrite substantial ambiguous content, project state is too unclear
    for a safe edit, or the target belongs to an unrelated generated workflow.
-8. Ask founder questions in small batches. Do not ask for everything at once.
+9. Ask founder questions in small batches. Do not ask for everything at once.
    If the user does not answer, continue only with repo-evidence inventory and
    mark founder-owned claims as blocked or needing founder validation.
-9. If founder context is thin and fast prototyping is allowed, use bounded web
+10. If founder context is thin and fast prototyping is allowed, use bounded web
    research to fill gaps and mark those claims as `prototype-assumption` or
    `public-evidence-backed`.
-10. Use subagents when a required delegation trigger applies and subagent tools
+11. Use subagents when a required delegation trigger applies and subagent tools
     are available. If a trigger applies but subagents are unavailable or the
     user forbids them, record the skipped review and reduce confidence.
-11. Mark unsupported claims as assumptions. Do not invent product truth.
-12. Prepare the first executable task, but do not complete it unless the user
+12. Mark unsupported claims as assumptions. Do not invent product truth.
+13. Prepare the first executable task, but do not complete it unless the user
    explicitly asks to continue into execution.
-13. End with an explicit readiness result. If founder input, external evidence,
+14. Run the preflight helper again after artifact creation when available, then
+    reconcile its warnings against the readiness gate.
+15. End with an explicit readiness result. If founder input, external evidence,
     required research, or required review is missing, stop at the gate instead
     of advancing as if ready.
 

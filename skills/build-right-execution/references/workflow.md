@@ -2,9 +2,35 @@
 
 Use this workflow for one bounded task with evidence.
 
-## 1. Task Intake
+## Reference Routing
+
+- Read `gates.md` before selecting a task, after intake, and before advancing.
+- Read `review-and-delegation.md` when required review triggers apply or
+  independent review would improve confidence.
+- Read `evidence-contract.md` before completing or updating a task.
+- Use templates in `assets/templates/` when creating a missing or split task.
+- Run `scripts/continue-check.ts` before selecting a task or advancing through a
+  queue.
+
+## 1. Task Selection
 
 Start with one task, not a broad project area.
+
+Run the read-only state resolver before choosing work:
+
+```sh
+bun <skill-path>/scripts/continue-check.ts --cwd <project> --format markdown
+```
+
+If the resolver returns `ask-founder`, `wait-external`, `create-blocker`,
+`no-ready-task`, or `invalid-state`, stop or create the named blocker. Continue
+only when it returns `continue-active-task` or `execute-task`.
+
+Run the lower-level execution helper when available:
+
+```sh
+bun <skill-path>/scripts/execution-check.ts --cwd <project> --mode next-task --format markdown
+```
 
 Read:
 
@@ -25,6 +51,11 @@ If the task is not `ready`, stop or update the tracker with the reason. Do not
 implement, mark complete, or advance to the next task just because a queue
 exists.
 
+If no task exists, inspect whether the project has pre-execution artifacts. If
+it does not, route to `/build-right-preflight` or create a Sprint 0 blocker.
+
+## 2. Task Intake
+
 Print:
 
 ```text
@@ -40,42 +71,13 @@ Verification ladder: <focused -> broader checks>
 Evidence destination: <task file or evidence file>
 ```
 
-If no task exists, inspect whether the project has pre-execution artifacts. If
-it does not, route to `/build-right-preflight` or create a Sprint 0 blocker.
+When a task path exists, run:
 
-## 2. Readiness Check
+```sh
+bun <skill-path>/scripts/execution-check.ts --cwd <project> --task <task-path> --mode task-contract --format markdown
+```
 
-Execution is ready only when these exist or have clear local equivalents:
-
-- product truth or MVP scope
-- execution rules
-- release or validation gates
-- task tracker
-- selected task with acceptance criteria
-- known evidence destination
-
-Prototype execution may proceed from `prototype-assumption` when the task is
-reversible, the learning hook is explicit, and validation required before
-product truth is recorded. Do not treat prototype readiness as product-feature
-readiness.
-
-If missing, create the smallest blocker task instead of implementing product
-features.
-
-Stop/ask gates:
-
-- founder-owned product, positioning, buyer/user, or MVP decision required
-- external discovery, search indexing, publishing, secrets, paid services, or
-  production access required
-- verification failed or could not run
-- task evidence is stale, duplicated, ambiguous, or contradicted by current
-  files
-- installed skill source differs from repo-local source for a skill trial
-- required subagent review was skipped without an equivalent substitute
-
-When a stop/ask gate fires, do not continue to the next task. Record the gate,
-ask the user when a user answer is required, or create the smallest blocker
-task when the blocker is AI-owned and evidence-backed.
+Reconcile missing required fields before editing.
 
 ## 3. Preflight
 
@@ -86,28 +88,11 @@ Inspect current workspace before changing files:
 - generated or untracked artifacts
 - active branch or worktree
 - whether the task still matches current code and docs
-- for skill validation tasks, the exact skill source under test: repo-local
-  path, installed user-scope path, GitHub source, or release tag
-- active or recent mutations to the same tracker, same task file, release gates,
+- for skill validation tasks, the exact skill source under test
+- active or recent mutations to the same tracker, task file, release gates,
   checklist, or shared evidence files
 
-Rules:
-
-- do not revert unrelated user or agent work
-- do not mix unrelated dirty files into the task
-- work with existing changes that affect the task
-- stop and update the tracker when the task is stale
-- when validating a skill from this repo, compare the installed or invoked skill
-  source against the repo-local `skills/<name>/` source before treating the
-  trial as authoritative
-- if the installed skill is stale or the source under test is ambiguous, mark
-  the trial `partial-needs-rerun`, record the mismatch, and do not advance the
-  release gate to ready
-- if another run owns the same task or same tracker, wait, ask, or switch to
-  observation-only mode instead of editing
-- allow parallel work only when task ownership and touched files are disjoint
-- if a concurrent mutation changes the task boundary, update the tracker or
-  create a follow-up rather than overwriting another run's evidence
+Use `gates.md` for readiness, source-under-test, and concurrent-work gates.
 
 ## 4. Baseline Evidence
 
@@ -133,37 +118,15 @@ Which artifact proves it?
 For skill trials, which exact skill source produced the behavior?
 ```
 
-## 5. Gap Analysis
+## 5. Gap Analysis And Narrow Plan
 
-Classify the work:
-
-- product behavior gap
-- bug or regression
-- test coverage gap
-- type or build coverage gap
-- lint or formatting blocker
-- environment or configuration issue
-- schema or migration gap
-- docs drift
-- external provider limitation
-- release gate limitation
+Classify the gap, name the likely files/modules, identify checks that should
+prove the work, record the evidence destination, and define the stop condition.
 
 If unrelated work appears, create a follow-up issue. Do not silently expand the
 task.
 
-## 6. Narrow Plan
-
-Before editing, name:
-
-- files or modules likely to change
-- tests or checks that should fail or prove the gap
-- verification ladder
-- evidence destination
-- stop condition
-
-Keep this plan short. It is a working hypothesis, not a second PRD.
-
-## 7. Implementation
+## 6. Implementation
 
 Make the smallest change that satisfies acceptance criteria.
 
@@ -171,12 +134,9 @@ Rules:
 
 - prefer existing module boundaries and local patterns
 - preserve public contracts unless the task changes them
-- keep provider SDKs, credentials, framework objects, and persistence details
-  behind owning boundaries
 - avoid activating future-scope features while fixing scaffolding or validation
 - when assumption basis is `prototype-assumption`, prefer reversible UI, manual
-  workflows, mocks, fixtures, flags, or copy that can change without data
-  migration
+  workflows, mocks, fixtures, flags, or copy
 - avoid hard-to-reverse schema, pricing, onboarding, or positioning commitments
   unless the task explicitly requires them
 - add or update tests when behavior or shared contracts change
@@ -185,7 +145,7 @@ Rules:
 If the implementation exposes a deeper root cause, update the plan and continue
 inside the same task boundary.
 
-## 8. Verification Ladder
+## 7. Verification Ladder
 
 Verify from narrow to broad:
 
@@ -196,18 +156,6 @@ focused test or command
 -> domain-specific proof
 -> user or release proof when required
 ```
-
-Examples:
-
-- simple code change: focused test plus typecheck
-- shared contract change: package tests plus repo typecheck
-- validation baseline: check, typecheck, and build
-- UI behavior: browser proof, screenshots, or visual inspection
-- external provider fix: regression test plus mocked provider boundary; live
-  proof only when required
-- release readiness: report artifacts, gate summaries, explicit go/no-go
-- skill trial: installed/repo source comparison, scratch output inspection, and
-  current contract marker scan
 
 Do not overclaim. Passing general validation does not always prove release
 readiness, user-facing behavior, or live integration success.
@@ -221,55 +169,14 @@ For Build Right skill trials, check the current contract markers that apply:
 - release evidence: source under test, scratch path or target task, generated
   files, what was proved, what was only simulated
 
-## 9. Evidence Capture
+## 8. Review, Evidence, And State Update
+
+Run review when required by `review-and-delegation.md` or when useful for
+confidence. If a required trigger applies and review is unavailable, record the
+skipped review and substitute verification or stop at the gate.
 
 Record evidence inside the task tracker or evidence file before marking work
-done. Follow `references/evidence-contract.md`.
-
-## 10. Required And Optional Subagent Review
-
-Use subagents after implementation when independent review would improve
-confidence. Some reviews are required when the task touches high-risk evidence
-or broad tracker state. Subagents may gather, critique, and audit; the main
-agent decides, writes, updates trackers, and closes gates.
-
-Required review triggers, when subagent tools are available:
-
-- release gates, release checklist, manual-trial evidence, or verifier behavior
-  changed
-- skill workflows, artifact contracts, evidence contracts, or templates changed
-- more than three durable docs/task files changed in one task
-- a verification command failed and was fixed inside the same task
-- the task changes status across multiple trackers
-- findings imply a founder-owned, external-state, stale-task, or source-mismatch
-  gate
-
-If a required trigger applies but subagent tools are unavailable, disabled, or
-forbidden by the user, record the skipped review, the substitute verification,
-and the residual risk before closing. If no adequate substitute exists, stop at
-the gate instead of advancing.
-
-Useful review lanes:
-
-- evidence completeness review
-- scope creep review
-- focused risk review for high-blast-radius changes
-
-Do not use subagents for final tracker updates, commits, publishing, or
-authoritative task closeout unless the user explicitly asks.
-
-Every subagent review prompt must include:
-
-- objective
-- exact task file, changed files, or evidence to inspect
-- scope boundaries
-- output format
-- stop condition
-- instruction not to edit files
-
-Use prompt templates in `assets/templates/subagents/`.
-
-## 11. State Update
+done. Follow `evidence-contract.md`.
 
 After evidence exists, update only artifacts that changed:
 
@@ -284,15 +191,22 @@ After evidence exists, update only artifacts that changed:
 Do not mark a parent sprint, milestone, or release complete just because one
 task is complete.
 
-Before selecting another task, run the stop/ask gate again. A completed task may
-create a blocker, founder question, stale follow-up, or external-state wait. In
-that case, close out and stop instead of advancing.
+Before selecting another task, run the state resolver and stop/ask gate again.
 
-## 12. Commit Or Handoff
+```sh
+bun <skill-path>/scripts/continue-check.ts --cwd <project> --format markdown
+```
 
-Commit when the project workflow expects it and the task is coherent.
+```sh
+bun <skill-path>/scripts/execution-check.ts --cwd <project> --task <task-path> --mode stop-gates --format markdown
+```
 
-Commit rules:
+A completed task may create a blocker, founder question, stale follow-up, or
+external-state wait. In that case, close out and stop instead of advancing.
+
+## 9. Commit Or Handoff
+
+Commit when the project workflow expects it and the task is coherent:
 
 - stage only task-related files
 - use a message that names the task or slice
@@ -300,15 +214,10 @@ Commit rules:
 - do not combine unrelated task work
 - do not hide known blockers behind a green commit
 
-If not committing, hand off with:
+If not committing, hand off with changed files, verification summary, evidence
+paths, remaining blockers, and suggested next task.
 
-- changed file list
-- verification summary
-- evidence paths
-- remaining blockers
-- suggested next task
-
-## 13. Closeout
+## 10. Closeout
 
 Keep closeout short and operational:
 

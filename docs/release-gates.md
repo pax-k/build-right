@@ -11,7 +11,7 @@ Last updated: 2026-06-23
 | Manifest parses | `skills.sh.json` is valid JSON and grouping points at existing skills. | `bun -e 'JSON.parse(await Bun.file("skills.sh.json").text())'` | ready |
 | Skill frontmatter | Each `SKILL.md` has YAML frontmatter with `name` and `description`. | Bun frontmatter check in `tasks/issues/001-establish-execution-baseline.md` | ready |
 | Manifest paths | Manifest skill names match `skills/<name>/SKILL.md`. | Bun manifest path check in `tasks/issues/001-establish-execution-baseline.md` | ready |
-| Deterministic skill-trial verifier | Core release evidence hygiene checks run as one Bun verifier. | `bun scripts/verify-skill-trials.ts` | ready |
+| Deterministic skill-trial verifier | Core release evidence hygiene, split-reference routing, continue-state resolver, and helper-script smoke checks run as one Bun verifier. | `bun scripts/verify-skill-trials.ts` | ready |
 | No empty skill directories | All skill directories contain required files. | `find skills -type d -empty` | ready |
 | No unresolved markers | No `TODO`, `FIXME`, `PLACEHOLDER`, or `TBD` markers remain outside checklist/gate text. | `rg 'TODO|FIXME|PLACEHOLDER|TBD' -g '!RELEASE_CHECKLIST.md' -g '!docs/release-gates.md' -g '!tasks/issues/001-establish-execution-baseline.md'` | ready |
 | Installed skill sync | User-scope installed skills match the repo-local skill source before manual trials. | `rsync -a --delete skills/build-right-preflight/ /Users/pax/.codex/skills/build-right-preflight/`; `rsync -a --delete skills/build-right-execution/ /Users/pax/.codex/skills/build-right-execution/`; `diff -qr ...` returned no differences | ready |

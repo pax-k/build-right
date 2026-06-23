@@ -11,12 +11,19 @@
 | RELEASE_CHECKLIST.md | Manual and automated release validation checklist. | validated | high | founder + AI | 2026-06-23 |
 | skills.sh.json | Skills grouping metadata for skills.sh discovery. | repo-evidence-backed | high | AI | 2026-06-23 |
 | skills/build-right-preflight/SKILL.md | Skill entrypoint for pre-execution setup. | repo-evidence-backed | high | founder + AI | 2026-06-23 |
-| skills/build-right-preflight/references/workflow.md | Detailed preflight workflow used by the skill. | repo-evidence-backed | high | founder + AI | 2026-06-23 |
-| skills/build-right-preflight/references/artifact-contract.md | Artifact schemas and status vocabulary for preflight outputs. | repo-evidence-backed | high | founder + AI | 2026-06-23 |
+| skills/build-right-preflight/references/workflow.md | Core preflight route and reference routing used by the skill. | repo-evidence-backed | high | founder + AI | 2026-06-23 |
+| skills/build-right-preflight/references/founder-gates.md | Founder interaction, validation, readiness, and stop/ask gates. | repo-evidence-backed | high | founder + AI | 2026-06-23 |
+| skills/build-right-preflight/references/research-and-delegation.md | Public research and subagent delegation triggers for preflight. | repo-evidence-backed | high | founder + AI | 2026-06-23 |
+| skills/build-right-preflight/references/artifact-contract.md | Artifact contract, claim statuses, source modes, and template map for preflight outputs. | repo-evidence-backed | high | founder + AI | 2026-06-23 |
+| skills/build-right-preflight/scripts/preflight-check.ts | Read-only Bun helper for preflight inventory and readiness signals. | repo-evidence-backed | high | AI | 2026-06-23 |
 | skills/build-right-preflight/assets/templates/ | Reusable templates for preflight docs, tasks, and subagent prompts. | repo-evidence-backed | high | AI | 2026-06-23 |
 | skills/build-right-execution/SKILL.md | Skill entrypoint for bounded task execution. | repo-evidence-backed | high | founder + AI | 2026-06-23 |
-| skills/build-right-execution/references/workflow.md | Detailed execution workflow used by the skill. | repo-evidence-backed | high | founder + AI | 2026-06-23 |
+| skills/build-right-execution/references/workflow.md | Core one-task execution route and reference routing used by the skill. | repo-evidence-backed | high | founder + AI | 2026-06-23 |
+| skills/build-right-execution/references/gates.md | Execution readiness, stop/ask, source-under-test, and concurrent-work gates. | repo-evidence-backed | high | founder + AI | 2026-06-23 |
+| skills/build-right-execution/references/review-and-delegation.md | Required subagent review triggers and review prompt contract. | repo-evidence-backed | high | founder + AI | 2026-06-23 |
 | skills/build-right-execution/references/evidence-contract.md | Evidence and task-state contract for execution. | repo-evidence-backed | high | founder + AI | 2026-06-23 |
+| skills/build-right-execution/scripts/continue-check.ts | Read-only Bun state resolver for execution order, gates, and next action. | repo-evidence-backed | high | AI | 2026-06-23 |
+| skills/build-right-execution/scripts/execution-check.ts | Read-only Bun helper for next-task, task-contract, and stop-gate signals. | repo-evidence-backed | high | AI | 2026-06-23 |
 | docs/blueprint-status.md | Current preflight readiness state and resume point. | draft | medium | AI | 2026-06-23 |
 | docs/conflicts.md | Current conflicts and resolution state. | draft | medium | AI | 2026-06-23 |
 | docs/decision-log.md | Durable decisions and evidence paths. | draft | medium | AI | 2026-06-23 |

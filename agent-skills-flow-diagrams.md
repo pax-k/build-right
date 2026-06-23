@@ -13,9 +13,10 @@ where files are created or updated.
 
 ```mermaid
 flowchart TD
-  A["Invoke skill: /build-right-preflight or $build-right-preflight"] --> B["Read required references and templates"]
+  A["Invoke skill: /build-right-preflight or $build-right-preflight"] --> B["Read core workflow and routed references"]
   B --> C["Inspect project state"]
-  C --> D{"Project type?"}
+  C --> C0["Run preflight-check helper for inventory and readiness signals"]
+  C0 --> D{"Project type?"}
 
   D -->|"Blank or new"| E["Prepare starter scaffold plan"]
   D -->|"Existing project"| F["Inventory docs, tasks, code surfaces, validation, release gates"]
@@ -64,7 +65,8 @@ flowchart TD
   AA --> AB["Create operating rules, release gates, AI working rules"]
   AB --> AC["Create Sprint 0 and first executable task"]
   AC --> AC1["Add assumption basis, reversibility, learning objective, source under test, and learning notes"]
-  AC1 --> AD{"Stop/ask readiness gate"}
+  AC1 --> AC2["Run preflight-check helper after artifact creation"]
+  AC2 --> AD{"Stop/ask readiness gate"}
 
   AD -->|"Ready for foundation work"| AE["Go for Sprint 0"]
   AD -->|"Product features not ready"| AF["No-go for product features"]
@@ -159,8 +161,13 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-  A["Invoke skill: /build-right-execution or $build-right-execution"] --> B["Read workflow, evidence contract, task template"]
-  B --> C["Select exactly one task"]
+  A["Invoke skill: /build-right-execution or $build-right-execution"] --> B["Read workflow, gates, evidence contract, and routed references"]
+  B --> B0["Run continue-check state resolver"]
+  B0 --> B1{"Resolver decision?"}
+  B1 -->|"ask-founder, wait-external, invalid-state, no-ready-task"| B2["Ask, report blocker, or stop"]
+  B1 -->|"create-blocker"| B3["Create or propose smallest AI-owned blocker"]
+  B1 -->|"continue-active-task or execute-task"| B4["Run execution-check next-task helper"]
+  B4 --> C["Select exactly one task"]
   C --> D{"Task exists and is bounded?"}
 
   D -->|"No task or no execution surface"| E["Route to pre-execution or create smallest Sprint 0 blocker"]
@@ -169,7 +176,8 @@ flowchart TD
 
   G --> G1["Record assumption basis, reversibility, learning objective, source under test"]
   G1 --> H["Print task intake"]
-  H --> I["Inspect workspace and git state"]
+  H --> H1["Run execution-check task-contract helper"]
+  H1 --> I["Inspect workspace and git state"]
   I --> J{"Skill/manual trial?"}
   J -->|"Yes"| J1["Compare installed source with repo-local source"]
   J -->|"No"| J2["No source comparison needed"]
@@ -194,7 +202,9 @@ flowchart TD
 
   Q --> U["Record evidence, learning notes, files changed, blockers, follow-ups"]
   U --> V["Update only relevant tracker and docs"]
-  V --> V1{"Stop/ask gate before next task?"}
+  V --> V0["Run continue-check state resolver"]
+  V0 --> V00["Run execution-check stop-gates helper"]
+  V00 --> V1{"Stop/ask gate before next task?"}
   V1 -->|"Gate hit"| V2["Ask, record blocker, or stop"]
   V1 -->|"No gate"| W{"Project expects commit?"}
   W -->|"Yes"| X["Stage only task-related files and commit"]
@@ -255,6 +265,52 @@ flowchart TD
 
   J --> C
   K --> C
+```
+
+## Deterministic Helper Lane
+
+```mermaid
+flowchart TD
+  A["Main agent reaches an inventory, task, contract, or gate checkpoint"] --> B{"Which helper applies?"}
+
+  B -->|"Preflight inventory/readiness"| C["Run preflight-check.ts"]
+  B -->|"Execution continuation decision"| D["Run continue-check.ts"]
+  B -->|"Execution task contract or stop gates"| D1["Run execution-check.ts"]
+
+  C --> E["Helper returns read-only signals, missing artifacts, warnings, recommendation"]
+  D --> E
+  D1 --> E
+
+  E --> F["Main agent reconciles helper output with repo evidence, founder input, web research, and subagent findings"]
+  F --> G{"Gate or blocker remains?"}
+
+  G -->|"Yes"| H["Ask, record blocker, or stop"]
+  G -->|"No"| I["Continue workflow and write/update canonical artifacts when appropriate"]
+```
+
+## Continue State Resolver
+
+```mermaid
+flowchart TD
+  A["Run continue-check.ts"] --> B["Parse markdown status lines, task tables, gate tables, readiness table, next-action block, issue files"]
+  B --> C["Build execution state: active, ready, completed, blocking gates, external follow-ups"]
+  C --> D{"Highest-priority decision"}
+
+  D -->|"Invalid or contradictory state"| E["invalid-state"]
+  D -->|"Founder-owned gate"| F["ask-founder"]
+  D -->|"External-state gate"| G["wait-external"]
+  D -->|"Active task exists"| H["continue-active-task"]
+  D -->|"Ready task exists"| I["execute-task"]
+  D -->|"Execution surface missing"| J["create-blocker"]
+  D -->|"Nothing AI-owned ready"| K["no-ready-task"]
+
+  E --> L["Main agent stops and reconciles"]
+  F --> L
+  G --> L
+  H --> M["Main agent continues only selected task"]
+  I --> M
+  J --> L
+  K --> L
 ```
 
 ## Ownership Boundary

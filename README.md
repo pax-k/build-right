@@ -64,11 +64,24 @@ skills/
   build-right-preflight/
     SKILL.md
     references/
+      workflow.md
+      founder-gates.md
+      research-and-delegation.md
+      artifact-contract.md
+    scripts/
+      preflight-check.ts
     assets/templates/
 
   build-right-execution/
     SKILL.md
     references/
+      workflow.md
+      gates.md
+      review-and-delegation.md
+      evidence-contract.md
+    scripts/
+      continue-check.ts
+      execution-check.ts
     assets/templates/
 
 skills.sh.json
@@ -80,6 +93,14 @@ Check local discovery:
 
 ```sh
 bunx skills add . --list
+```
+
+Run deterministic helper smoke checks:
+
+```sh
+bun skills/build-right-execution/scripts/continue-check.ts --cwd . --format markdown
+bun skills/build-right-preflight/scripts/preflight-check.ts --cwd . --mode all --format markdown
+bun skills/build-right-execution/scripts/execution-check.ts --cwd . --mode next-task --format markdown
 ```
 
 Check GitHub discovery after pushing:
@@ -98,7 +119,22 @@ build-right-execution
 ## Notes
 
 The skills are instruction-first. They use `references/` for detailed workflow
-guidance and `assets/templates/` for reusable Markdown artifacts.
+guidance, `assets/templates/` for reusable Markdown artifacts, and bundled
+read-only Bun scripts for deterministic inventory, task-contract, and gate
+signals.
+
+The main skill files stay concise. Core workflows live in `workflow.md`; gates,
+research/delegation, and evidence contracts are separate one-hop references
+loaded only when relevant.
+
+To continue safely through prepared work, run the state resolver first:
+
+```sh
+bun skills/build-right-execution/scripts/continue-check.ts --cwd . --format markdown
+```
+
+It parses the markdown operating system and returns one decision, such as
+`execute-task`, `ask-founder`, `wait-external`, or `no-ready-task`.
 
 Founder-fed context is the default source for product truth. When founder input
 is thin and speed matters, bounded public web research can fill prototype-grade
@@ -108,3 +144,5 @@ Subagents may gather, draft, critique, and audit. The skills use them when
 defined triggers apply and tooling is available; the main agent still decides,
 writes, updates trackers, and closes gates. Founder-owned or external-state
 gates must stop execution instead of being silently converted into AI tasks.
+Helper scripts can surface missing artifacts or gate signals, but they do not
+replace founder judgment, web research, subagent review, or final synthesis.

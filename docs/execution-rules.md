@@ -46,12 +46,32 @@ blocker is AI-owned, bounded, and evidence-backed.
 
 Use subagent review when tooling is available and a selected task changes
 release gates, release checklist, manual-trial evidence, verifier behavior,
-skill workflows, contracts, templates, or multiple trackers. Also use it when
-verification failed and was fixed inside the same task, or when findings imply
-a founder-owned, external-state, stale-task, or source-mismatch gate.
+skill workflows, contracts, templates, helper scripts, diagrams, or multiple
+trackers. Also use it when verification failed and was fixed inside the same
+task, or when findings imply a founder-owned, external-state, stale-task, or
+source-mismatch gate.
 
 If a trigger applies but subagent tooling is unavailable or forbidden, record
 the skipped review, substitute verification, and residual risk before closing.
+
+## Deterministic Helper Scripts
+
+Use bundled helper scripts as read-only checks when available:
+
+- Continue state resolver: `bun skills/build-right-execution/scripts/continue-check.ts --cwd . --format markdown`
+- Preflight inventory/readiness: `bun skills/build-right-preflight/scripts/preflight-check.ts --cwd . --mode all --format markdown`
+- Execution next task: `bun skills/build-right-execution/scripts/execution-check.ts --cwd . --mode next-task --format markdown`
+- Execution task contract: `bun skills/build-right-execution/scripts/execution-check.ts --cwd . --task <path> --mode task-contract --format markdown`
+- Execution stop gates: `bun skills/build-right-execution/scripts/execution-check.ts --cwd . --task <path> --mode stop-gates --format markdown`
+
+Helper output is evidence input, not authority. The main agent still reconciles
+helper findings with founder input, repo evidence, web research, subagent
+findings, and the selected task boundary.
+
+Before continuing through a task queue, run the continue state resolver and
+follow its decision. Do not manually skim Markdown and skip a resolver-reported
+founder, external-state, invalid-state, stale, failed-verification, or
+source-mismatch gate.
 
 ## Concurrent Run Safety
 
@@ -88,5 +108,6 @@ Required behavior:
 | Skill manifest update | `bunx skills add . --list`; parse `skills.sh.json`. | Task Evidence Log and release gate |
 | Skill entrypoint update | Confirm each `SKILL.md` has `name` and `description` frontmatter. | Task Evidence Log |
 | Template update | Inspect template shape and run local discovery if skill packaging could be affected. | Task Evidence Log |
+| Helper script update | Run script help and a representative smoke command with Bun. | Task Evidence Log |
 | TypeScript/package update | `bun test` if tests exist; `bun run` script if package scripts exist; `bun <file>` for direct scripts. | Task Evidence Log |
 | Release readiness | Complete local validation, manual trial notes, and explicit go/no-go. | `docs/release-gates.md`; `RELEASE_CHECKLIST.md` |

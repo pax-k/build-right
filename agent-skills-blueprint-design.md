@@ -87,7 +87,11 @@ skills/
     SKILL.md
     references/
       workflow.md
+      founder-gates.md
+      research-and-delegation.md
       artifact-contract.md
+    scripts/
+      preflight-check.ts
     assets/
       templates/
         docs/
@@ -97,7 +101,12 @@ skills/
     SKILL.md
     references/
       workflow.md
+      gates.md
+      review-and-delegation.md
       evidence-contract.md
+    scripts/
+      continue-check.ts
+      execution-check.ts
     assets/
       templates/
         task-template.md
@@ -105,9 +114,10 @@ skills/
 skills.sh.json
 ```
 
-The main `SKILL.md` files should stay concise. Put longer process detail,
-artifact contracts, and templates in `references/` and `assets/` so agents load
-them only when needed.
+The main `SKILL.md` files should stay concise. Keep `workflow.md` as the core
+route and split gates, research/delegation, review, and evidence contracts into
+one-hop references so agents load them only when needed. Put deterministic
+read-only checks in `scripts/` when they catch repeated mechanical mistakes.
 
 ## Skill 1: Pre-Execution Blueprint
 
@@ -387,10 +397,17 @@ two workflows mostly require judgment, interaction, and careful file edits.
 The first implementation should be instruction-and-template driven:
 
 - Put concise activation and operating rules in each `SKILL.md`.
-- Move the detailed step-by-step workflow into `references/workflow.md`.
+- Keep the core step-by-step route in `references/workflow.md`.
+- Split founder gates, stop/ask gates, research/delegation, and review triggers
+  into separate one-hop references.
 - Put artifact shapes and required fields in `references/artifact-contract.md`
-  or `references/evidence-contract.md`.
+  or `references/evidence-contract.md`, backed by templates instead of long
+  duplicated shapes.
 - Put reusable Markdown templates in `assets/templates/`.
+- Put read-only deterministic helpers in `scripts/` when agents repeatedly miss
+  inventory, task-contract, or gate checks.
+- Add a continue state resolver that parses markdown docs/tasks and returns one
+  decision before agents advance through a queue.
 - Forward-test each skill in both a blank project and an existing project.
 
 Useful test prompts:

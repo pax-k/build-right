@@ -342,21 +342,38 @@ Return findings with paths and severity. Do not edit files.
 
 Update `skills/build-right-preflight`:
 
-- Add a `Research Lane` section to `references/workflow.md`.
-- Add a `Delegation Lane` section to `references/workflow.md`.
+- Keep the core route in `references/workflow.md`.
+- Add `references/founder-gates.md` for founder interaction and readiness
+  stop/ask rules.
+- Add `references/research-and-delegation.md` for research and subagent
+  triggers.
 - Update `references/artifact-contract.md` claim statuses:
   `founder-claimed`, `ai-inferred`, `prototype-assumption`,
   `repo-evidence-backed`, `public-evidence-backed`,
   `customer-evidence-backed`, `unknown`.
 - Update evidence templates to separate public evidence from customer evidence.
 - Add subagent prompt templates under `assets/templates/subagents/`.
+- Add `scripts/preflight-check.ts` as a read-only deterministic helper for
+  inventory and readiness signals.
 
 Update `skills/build-right-execution`:
 
-- Add trigger-based subagent review guidance to `references/workflow.md`.
+- Keep the core one-task loop in `references/workflow.md`.
+- Add `references/gates.md` for readiness, stop/ask, source-under-test, and
+  concurrent-work gates.
+- Add `references/review-and-delegation.md` for trigger-based subagent review
+  guidance.
 - Add evidence completeness and scope review prompt templates under
   `assets/templates/subagents/`.
+- Add `scripts/continue-check.ts` as the read-only state resolver for execution
+  order, gates, and next action before queue continuation.
+- Add `scripts/execution-check.ts` as a read-only deterministic helper for
+  next-task, task-contract, and stop-gate signals.
 - Keep the main agent responsible for final task updates and closeout.
+
+Helper scripts detect state, mechanical gaps, and gate signals. They do not
+perform web research, make founder-owned decisions, replace subagent critique,
+or close tasks by themselves.
 
 ## Guardrails
 

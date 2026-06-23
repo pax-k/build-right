@@ -16,7 +16,7 @@ Last updated: 2026-06-23
 | Evidence recorded | ready | README.md; RELEASE_CHECKLIST.md; docs/release-gates.md; tasks/issues/001-establish-execution-baseline.md | Repo evidence exists for package shape, validation, publication, and installation. Customer or external market evidence is not recorded. |
 | Canonical docs exist | draft | README.md; pre-execution-blueprint.md; execution-blueprint.md; agent-skills-blueprint-design.md; agent-skills-research-delegation-design.md | Canonical content currently lives in top-level source/design docs rather than a full product-doc set. |
 | Conflicts resolved | needs-validation | docs/conflicts.md | Release-readiness and terminology conflicts are resolved; primary user framing still needs founder decision. |
-| MVP extracted | ready | README.md; skills.sh.json; skills/ | Current released MVP is two installable skills plus bundled references/templates. |
+| MVP extracted | ready | README.md; skills.sh.json; skills/ | Current released MVP is two installable skills plus split references, templates, and read-only helper scripts. |
 | Manual ops understood | ready | RELEASE_CHECKLIST.md; docs/release-gates.md; docs/evidence/manual-trials.md; tasks/issues/002-define-manual-trial-evidence.md; tasks/issues/007-summarize-existing-project-preflight-evidence.md | Manual trial categories, durable evidence paths, validated status, and staleness rules are defined. |
 | Operating rules exist | ready | AGENTS.md; docs/execution-rules.md; docs/release-gates.md | Bun rules and execution/release gates are documented. |
 | First task is bounded and verifiable | complete | tasks/issues/001-establish-execution-baseline.md | Baseline validation task is complete. |

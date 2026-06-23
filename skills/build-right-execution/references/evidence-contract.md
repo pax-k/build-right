@@ -3,6 +3,10 @@
 Every completed task must record enough evidence that another person or agent
 can understand why the task is complete without reading the whole conversation.
 
+Use `workflow.md` for the execution loop, `gates.md` for stop/ask decisions,
+and `review-and-delegation.md` for subagent review triggers. This file only
+defines evidence and closeout shape.
+
 ## Task Intake Record
 
 Use this at the start:
