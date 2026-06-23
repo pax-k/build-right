@@ -1,22 +1,28 @@
 # Build Right
 
-Build Right is a small Agent Skills repository for turning early product work
+Build Right is a small, agent-agnostic skills repository for turning an app idea
 into evidence-backed execution.
 
-It contains three skills:
+## TL;DR: App Lifecycle
 
-- `build-right-preflight`: guides founder/product preflight before AI
-  implementation. It captures founder intent, separates assumptions from
-  evidence, supports targeted public research, creates operating docs, and
-  prepares Sprint 0 plus the first executable task.
-- `build-right-feature-planning`: maintains feature planning after preflight.
-  It explores new feature requests, runs bounded research or review when
-  needed, updates decision/evidence/conflict docs, grooms backlog and sprint
-  trackers, and creates execution-ready task files without implementing product
-  code.
-- `build-right-execution`: executes one bounded task at a time with baseline
-  evidence, narrow changes, layered verification, evidence capture, tracker
-  updates, stop/ask gates, and trigger-based subagent review.
+Build Right stops agents from guessing what to build:
+
+```text
+Research once. Plan continuously. Execute one proven task at a time.
+```
+
+1. `build-right-preflight` - research / preflight, once.
+   It captures what the founder wants, checks what already exists, separates
+   facts from assumptions, defines the MVP, writes the operating docs, and
+   creates the first sprint/task.
+2. `build-right-feature-planning` - plan, next and repeatedly.
+   It takes a new feature idea, asks only the questions that matter, does
+   bounded research/review when needed, updates backlog/sprint/docs, and turns
+   the idea into ready tasks.
+3. `build-right-execution` - execute, next and repeatedly.
+   It picks one ready task, proves the starting state, makes the smallest
+   useful change, verifies it, records evidence, updates the tracker, and stops
+   at the next decision point.
 
 ## Install
 
@@ -42,7 +48,7 @@ bunx skills add pax-k/build-right --skill build-right-execution
 
 ## Use
 
-In Codex, invoke skills explicitly with `$`:
+Invoke the skill for the phase you are in:
 
 ```text
 $build-right-preflight
@@ -133,9 +139,9 @@ bun run verify:skill-trials
 Run deterministic helper smoke checks:
 
 ```sh
-bun skills/build-right-execution/scripts/continue-check.ts --cwd . --format markdown --strict
-bun skills/build-right-feature-planning/scripts/feature-planning-check.ts --cwd . --feature "Example feature" --format markdown
 bun skills/build-right-preflight/scripts/preflight-check.ts --cwd . --mode all --format markdown
+bun skills/build-right-feature-planning/scripts/feature-planning-check.ts --cwd . --feature "Example feature" --format markdown
+bun skills/build-right-execution/scripts/continue-check.ts --cwd . --format markdown --strict
 bun skills/build-right-execution/scripts/execution-check.ts --cwd . --mode next-task --format markdown
 ```
 
@@ -155,53 +161,26 @@ build-right-execution
 
 ## Notes
 
-The skills are instruction-first. They use `references/` for detailed workflow
-guidance, `assets/templates/` for reusable Markdown artifacts, and bundled
-read-only Bun scripts for deterministic inventory, task-contract, and gate
+The skills are instruction-first. `SKILL.md` carries the phase workflow,
+`references/` carries deeper rules, `assets/templates/` carries reusable
+Markdown artifacts, and read-only Bun scripts surface deterministic gate
 signals.
 
-The stable safety model is documented in
-[`workflow-backbone.md`](workflow-backbone.md): observe state, classify it,
-choose one next action, run gates, act, verify, record, then stop or continue.
-Project-local customization should add policy around that loop without
-bypassing gates, ownership checks, evidence capture, or verification.
+The stable safety model is in [`workflow-backbone.md`](workflow-backbone.md):
+observe state, classify it, choose one next action, run gates, act, verify,
+record, then stop or continue.
 
-The preflight helper returns one decision: `delegate-inventory`, `ask-founder`,
-`run-research`, `write-artifacts`, `create-sprint0`, `ready-for-execution`, or
-`blocked`. Agents should report the decision, confidence, project type, next
-action, missing artifacts, readiness warnings, and founder input gaps before
-writing or claiming readiness.
+Helper decisions are intentionally small and explicit:
 
-The feature-planning helper returns one decision: `route-preflight`,
-`ask-founder`, `run-research`, `delegate-review`, `update-roadmap`,
-`update-sprint`, `create-ready-tasks`, or `blocked`. Agents should report the
-decision, confidence, feature request, recommended destination, blocking gates,
-founder questions, research triggers, ready task candidates, and next action
-before updating backlog, sprint, evidence, or task files.
+- preflight can return `delegate-inventory`, `ask-founder`, `run-research`,
+  `write-artifacts`, `create-sprint0`, `ready-for-execution`, or `blocked`.
+- feature planning can return `route-preflight`, `ask-founder`, `run-research`,
+  `delegate-review`, `update-roadmap`, `update-sprint`, `create-ready-tasks`,
+  or `blocked`.
+- execution can return `execute-task`, `continue-active-task`, `ask-founder`,
+  `wait-external`, `create-blocker`, `no-ready-task`, or `invalid-state`.
 
-The main skill files stay concise. Core workflows live in `workflow.md`; gates,
-research/delegation, and evidence contracts are separate one-hop references
-loaded only when relevant.
-
-To continue safely through prepared work, run the state resolver first:
-
-```sh
-bun skills/build-right-execution/scripts/continue-check.ts --cwd . --format markdown --strict
-```
-
-It parses the markdown operating system and returns one decision:
-`execute-task`, `continue-active-task`, `ask-founder`, `wait-external`,
-`create-blocker`, `no-ready-task`, or `invalid-state`. Agents should report the
-decision, confidence, next action, next task, blocking gates, and external
-follow-ups before acting.
-
-Founder-fed context is the default source for product truth. When founder input
-is thin and speed matters, bounded public web research can fill prototype-grade
-gaps, but those claims stay labeled as prototype assumptions or public evidence,
-not customer validation.
-Subagents may gather, draft, critique, and audit. The skills use them when
-defined triggers apply and tooling is available; the main agent still decides,
-writes, updates trackers, and closes gates. Founder-owned or external-state
-gates must stop execution instead of being silently converted into AI tasks.
-Helper scripts can surface missing artifacts or gate signals, but they do not
-replace founder judgment, web research, subagent review, or final synthesis.
+Founder input remains the source of product truth. Public research can support
+prototype assumptions or public evidence, but it does not become customer
+validation. Subagents may gather, draft, critique, and audit; the main agent
+still decides, writes, updates trackers, and closes gates.
