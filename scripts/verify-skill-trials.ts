@@ -83,6 +83,17 @@ async function markdownFilesUnder(prefix: string): Promise<string[]> {
   return files;
 }
 
+async function rootGeneratedMarkdownFiles(): Promise<string[]> {
+  const files: string[] = [];
+  for (const prefix of ["docs", "tasks"]) {
+    if (!(await exists(prefix))) {
+      continue;
+    }
+    files.push(...(await markdownFilesUnder(prefix)));
+  }
+  return files.sort();
+}
+
 async function filesUnder(prefix: string): Promise<string[]> {
   const glob = new Bun.Glob(`${prefix}/**/*`);
   const files: string[] = [];
@@ -345,16 +356,6 @@ const checks: Check[] = [
         "Learning objective",
         "Learning Notes",
       ]);
-      await assertIncludes("docs/evidence/manual-trials.md", [
-        "Agent-Agnostic Trial Evidence Packet",
-        "Run label",
-        "Agent/tool surface",
-        "Skill source",
-        "Proved",
-        "Simulated",
-        "Unproven",
-        "Follow-ups",
-      ]);
       await assertIncludes("skills/build-right-execution/references/workflow.md", [
         "Source under test: <repo-local path | installed path | GitHub source | release tag | n/a>",
         "scripts/continue-check.ts",
@@ -396,11 +397,6 @@ const checks: Check[] = [
         "scripts/execution-check.ts",
         "Founder-owned, external-state, failed-verification, stale-task, and",
       ]);
-      await assertIncludes("docs/execution-rules.md", [
-        "## Stop/Ask Gates",
-        "## Subagent Review Triggers",
-        "Continue state resolver",
-      ]);
       await assertIncludes("skills/build-right-preflight/assets/templates/docs/execution-rules.md", [
         "## Stop/Ask Gates",
         "## Subagent Review Triggers",
@@ -423,6 +419,7 @@ const checks: Check[] = [
         "continue-check.ts",
         "execution-check.ts",
         "read-only Bun scripts",
+        "does not commit generated `docs/` or `tasks/`",
       ]);
     },
   },
@@ -498,7 +495,7 @@ const checks: Check[] = [
         decision?: string;
         readyTasks?: unknown[];
       };
-      if (!["ask-founder", "wait-external", "no-ready-task"].includes(continueJson.decision ?? "")) {
+      if (!["ask-founder", "wait-external", "no-ready-task", "create-blocker"].includes(continueJson.decision ?? "")) {
         throw new Error(`continue helper current-repo decision was ${continueJson.decision}`);
       }
       if ((continueJson.readyTasks ?? []).length !== 0) {
@@ -571,60 +568,33 @@ const checks: Check[] = [
     },
   },
   {
-    name: "durable docs and tasks do not contain agent-specific evidence handles",
+    name: "source repo does not contain generated root docs or tasks",
     run: async () => {
-      const forbidden = [/codex:\/\/threads/i, /codex_app\.read_thread/i];
-      const files = [
-        ...(await markdownFilesUnder("docs")),
-        ...(await markdownFilesUnder("tasks")),
-      ];
-
-      for (const file of files) {
-        const text = await read(file);
-        for (const pattern of forbidden) {
-          if (pattern.test(text)) {
-            throw new Error(`${file} contains forbidden handle pattern ${pattern}`);
-          }
-        }
+      const generatedFiles = await rootGeneratedMarkdownFiles();
+      if (generatedFiles.length > 0) {
+        throw new Error(`generated root markdown should live in an external test repo: ${generatedFiles.join(", ")}`);
       }
     },
   },
   {
     name: "release evidence references the deterministic verifier",
     run: async () => {
-      await assertIncludes("docs/release-gates.md", ["scripts/verify-skill-trials.ts"]);
+      await assertIncludes("RELEASE_CHECKLIST.md", [
+        "scripts/verify-skill-trials.ts",
+        "external test/review repository",
+      ]);
     },
   },
   {
-    name: "task files are complete and indexed in trackers",
+    name: "generated markdown only exists in skill assets or verifier fixtures",
     run: async () => {
-      const issueFiles = (await markdownFilesUnder("tasks/issues")).sort();
-      if (issueFiles.length === 0) {
-        throw new Error("no task issue files found");
-      }
-
-      const sprint = await read("tasks/sprint-0.md");
-      const postRelease = await read("tasks/post-release-backlog.md");
-      await assertIncludes("tasks/sprint-0.md", ["Status: complete-direct-install-ready"]);
-      await assertIncludes("tasks/post-release-backlog.md", ["Status: complete-ai-executable"]);
-
-      const trackers = `${sprint}\n${postRelease}`;
-      for (const file of issueFiles) {
-        const id = file.match(/\/(\d{3})-[^/]+\.md$/)?.[1];
-        if (!id) {
-          throw new Error(`${file} does not use a three-digit task id`);
-        }
-
-        const text = await read(file);
-        const status = text.match(/^Status:\s*(.+)$/m)?.[1]?.trim();
-        if (status !== "complete") {
-          throw new Error(`${file} has status ${status ?? "missing"}, expected complete`);
-        }
-
-        if (!trackers.includes(`| ${id} |`) || !trackers.includes(file)) {
-          throw new Error(`${file} is not indexed in sprint or post-release tracker`);
-        }
-      }
+      await assertIncludes("skills/build-right-preflight/assets/templates/tasks/issue-template.md", [
+        "Status: ready",
+        "Assumption basis:",
+      ]);
+      await assertIncludes("skills/build-right-preflight/assets/templates/docs/blueprint-status.md", [
+        "## Readiness",
+      ]);
     },
   },
 ];

@@ -30,33 +30,28 @@ Use this checklist before announcing or submitting Build Right skills.
 - [ ] Generic `gh skill search build-right` finds both skills. Post-release
   discovery follow-up; not a direct GitHub install release blocker.
   Current live evidence: `gh skill search build-right --json
-  skillName,repo,path,description,stars` returns `[]`; see
-  `tasks/issues/009-monitor-skills-sh-directory-discovery.md`.
+  skillName,repo,path,description,stars` returned `[]` in the post-release
+  monitor run.
 - [ ] `bunx skills find build-right` finds both skills in the skills.sh directory.
   Post-release discovery follow-up; not a direct GitHub install release blocker.
   Current live evidence: `bunx skills find build-right` returns `No skills
-  found for "build-right"`; see
-  `tasks/issues/009-monitor-skills-sh-directory-discovery.md`.
+  found for "build-right"` in the post-release monitor run.
 - [x] GitHub repo description and topics describe Agent Skills / Codex skills.
 - [x] License is intentionally selected or intentionally omitted.
 
 ## Manual Trial
 
-- [x] Manual trial evidence status is validated and staleness rules are defined:
-  `docs/evidence/manual-trials.md#staleness-rules`
+- [ ] Manual trial evidence is recorded in an external test/review repository,
+  not in this source repository.
 - [x] Install `build-right-preflight` into Codex.
 - [x] Confirm installed Codex skills match the repo-local skill source before
   manual trials.
-- [x] Run it in a blank/scratch project using a synced current skill. Evidence:
-  `docs/evidence/manual-trials.md#blank-project-preflight`
-- [x] Run it in an existing project. Evidence:
-  `docs/evidence/manual-trials.md#existing-project-preflight`
+- [ ] Run it in a blank/scratch project using a synced current skill.
+- [ ] Run it in an existing project.
 - [x] Install `build-right-execution` into Codex.
-- [x] Run it against a ready task. Evidence:
-  `docs/evidence/manual-trials.md#ready-task-execution`
+- [ ] Run it against a ready task.
 - [x] Run it against a not-ready project and confirm it routes to preflight or
-  creates a small Sprint 0 blocker. Evidence:
-  `docs/evidence/manual-trials.md#not-ready-execution`
+  creates a small Sprint 0 blocker.
 
 ## Release Notes
 
@@ -77,3 +72,6 @@ Use this checklist before announcing or submitting Build Right skills.
   build-right` directory discovery are not yet proven after the post-release
   monitor run. Treat those as discovery limitations, not blockers for direct
   GitHub install.
+- Generated docs/tasks from skill trials are intentionally not committed to this
+  source repository. Use an external repository for manual skill trials and
+  generated artifact review.

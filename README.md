@@ -87,12 +87,22 @@ skills/
 skills.sh.json
 ```
 
+This repository intentionally does not commit generated `docs/` or `tasks/`
+output from its own skills. Use an external test repository to run manual trials
+and review generated artifacts.
+
 ## Validate
 
 Check local discovery:
 
 ```sh
 bunx skills add . --list
+```
+
+Run the repository verifier:
+
+```sh
+bun run verify:skill-trials
 ```
 
 Run deterministic helper smoke checks:
