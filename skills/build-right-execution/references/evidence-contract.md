@@ -11,6 +11,9 @@ Use this at the start:
 Active task: <task id or path>
 Done means: <observable completion criteria>
 Non-goals: <explicit exclusions>
+Assumption basis: <founder-claimed | ai-inferred | prototype-assumption | repo-evidence-backed | public-evidence-backed | customer-evidence-backed>
+Reversibility: <easy | moderate | hard>
+Learning hook: <how this task will produce evidence>
 Baseline evidence: <artifact or command>
 Verification ladder: <focused -> broader checks>
 Evidence destination: <task file or evidence file>
@@ -21,6 +24,11 @@ Evidence destination: <task file or evidence file>
 Capture:
 
 - baseline result
+- source under test for skill trials: repo-local path, installed path, GitHub
+  source, or release tag
+- source comparison result for skill trials
+- assumption basis
+- reversibility and learning hook for prototype work
 - files changed
 - commands run
 - exit codes or key output
@@ -28,8 +36,35 @@ Capture:
 - report paths
 - screenshots or URLs when relevant
 - generated artifacts kept or discarded
+- what was proved
+- what was only simulated
+- assumption to test next
 - known blockers
 - follow-up issues
+
+## Manual Trial Evidence Packet
+
+For skill release/manual trials, record an agent-agnostic packet either in
+`docs/evidence/manual-trials.md` or the selected task file. The packet must not
+depend on a chat transcript or agent-specific conversation handle.
+
+Required fields:
+
+- run label
+- agent/tool surface
+- skill source
+- target
+- commands
+- artifacts
+- result
+- proved
+- simulated
+- unproven
+- follow-ups
+
+Existing task evidence may hold command output and detailed notes; the manual
+trial evidence document should keep the durable summary and links to task
+artifacts.
 
 ## Task Evidence Section
 
@@ -49,6 +84,19 @@ Use this shape when updating task files:
 ## Verification Summary
 
 - `<command or proof>` - <result>
+
+## Learning Notes
+
+- Proved: <what evidence supports>
+- Simulated: <what remains unproven>
+- Test next: <assumption or follow-up>
+
+## Skill Trial Notes
+
+- Source under test: <repo-local path | installed path | GitHub source | release tag>
+- Source comparison: <pass | mismatch | not applicable>
+- Contract markers checked: <markers>
+- Trial status: <pass | partial-needs-rerun | fail>
 
 ## Blockers
 

@@ -28,7 +28,9 @@ Only then AI executes.
 
 1. Inspect the project first.
 2. Classify it as blank/new or existing.
-3. Announce a concise file plan:
+3. Classify source mode as `founder-fed`, `web-assisted`, or
+   `public-first-prototype`.
+4. Announce a concise file plan:
 
    ```text
    Create:
@@ -44,13 +46,19 @@ Only then AI executes.
    - <question or blocker>
    ```
 
-4. Create or update docs and task files by default after the file plan.
-5. Stop before writing only when the user requested planning-only mode, a write
+5. Create or update docs and task files by default after the file plan.
+6. Stop before writing only when the user requested planning-only mode, a write
    would overwrite substantial ambiguous content, project state is too unclear
    for a safe edit, or the target belongs to an unrelated generated workflow.
-6. Ask founder questions in small batches. Do not ask for everything at once.
-7. Mark unsupported claims as assumptions. Do not invent product truth.
-8. End with an explicit readiness result.
+7. Ask founder questions in small batches when founder context is available.
+   Do not ask for everything at once.
+8. If founder context is thin and fast prototyping is allowed, use bounded web
+   research to fill gaps and mark those claims as `prototype-assumption` or
+   `public-evidence-backed`.
+9. Mark unsupported claims as assumptions. Do not invent product truth.
+10. Prepare the first executable task, but do not complete it unless the user
+   explicitly asks to continue into execution.
+11. End with an explicit readiness result.
 
 ## Project Classification
 
@@ -67,8 +75,10 @@ structure and create a source index before filling gaps.
 Use one of these closeout states:
 
 ```text
+Go for prototype
 Go for Sprint 0
 No-go for product features
+Needs founder/customer validation before product commitment
 First blocker: <task path>
 First executable AI task: <task path>
 ```

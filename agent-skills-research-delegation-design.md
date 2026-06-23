@@ -12,36 +12,57 @@ implementation pass for:
 ## Core Principle
 
 Web research and subagents are optional support lanes, not replacements for the
-main workflow.
+main workflow. Founder-fed context is the default source of product truth, but
+bounded public research may fill gaps when speed matters and the output is
+labeled as prototype-grade.
 
 ```text
 Founder input defines the terrain.
-Web research challenges and contextualizes assumptions.
+Web research challenges assumptions and can unblock reversible prototypes.
 Subagents gather, draft, critique, and audit.
 The main agent decides, writes, updates trackers, and closes gates.
 ```
 
+## Source Modes
+
+Use one source mode for each preflight pass:
+
+- `founder-fed`: founder context is the primary source; web research only
+  supports or challenges it.
+- `web-assisted`: founder context exists but has gaps; bounded public research
+  may fill prototype-grade gaps.
+- `public-first-prototype`: founder context is missing, thin, or intentionally
+  deferred for speed; public research may create reversible prototype
+  assumptions.
+
+Public-first work can produce a demoable prototype, not product truth. Record
+validation required before a claim affects product promise, pricing, durable
+architecture, or release positioning.
+
 ## Research Lane
 
 Do not run web research blindly at every step. Run it when public evidence can
-materially improve confidence or expose contradictions.
+materially improve confidence, expose contradictions, or fill gaps for fast
+prototyping.
 
 ### Default Loop
 
 ```text
-Founder input
+Founder input when available
 -> AI extracts claims
--> AI identifies research-worthy claims
--> Web research pass when useful
+-> AI identifies missing or research-worthy claims
+-> Web research pass when useful or needed for fast prototyping
 -> Evidence notes with sources
 -> Contradictions and confidence updates
+-> Prototype assumptions labeled when evidence is public-only or inferred
 -> Founder clarification only for important unresolved points
 -> Canonical doc update
 ```
 
 ### Founder Input Comes First
 
-Ask the founder for the raw answer before researching:
+Ask the founder for the raw answer before researching when founder context is
+available:
 
 - product idea
 - target customer
@@ -53,6 +74,10 @@ Ask the founder for the raw answer before researching:
 - non-goals
 
 Then extract claims and decide which ones need outside evidence.
+
+If the user explicitly wants a fast prototype and founder context is thin, do a
+bounded public research pass. Keep resulting claims as `prototype-assumption` or
+`public-evidence-backed` until founder or customer evidence upgrades them.
 
 ### Research-Worthy Claims
 
@@ -90,10 +115,12 @@ Purpose:
 - challenge or support current assumptions
 - identify contradictions
 - improve vocabulary and positioning
+- fill prototype-grade gaps when founder context is unavailable
 
 Not purpose:
 - replace founder validation
 - claim customer willingness to pay
+- promote prototype assumptions into product truth
 ```
 
 Proceed by default unless the user asked for no web research or planning-only
@@ -118,13 +145,18 @@ evidence:
 ```text
 founder-claimed
 ai-inferred
+prototype-assumption
+repo-evidence-backed
 public-evidence-backed
 customer-evidence-backed
 unknown
 ```
 
-Public research can upgrade a claim to `public-evidence-backed`, not
-`customer-evidence-backed`.
+Repository evidence can upgrade a local project/release claim to
+`repo-evidence-backed`. Public research can upgrade a market or public-source
+claim to `public-evidence-backed`, not `customer-evidence-backed`. If research
+only makes a direction plausible enough to prototype, use
+`prototype-assumption`.
 
 ### When To Ask Follow-Up Questions
 
@@ -292,7 +324,8 @@ Update `skills/build-right-preflight`:
 - Add a `Research Lane` section to `references/workflow.md`.
 - Add a `Delegation Lane` section to `references/workflow.md`.
 - Update `references/artifact-contract.md` claim statuses:
-  `founder-claimed`, `ai-inferred`, `public-evidence-backed`,
+  `founder-claimed`, `ai-inferred`, `prototype-assumption`,
+  `repo-evidence-backed`, `public-evidence-backed`,
   `customer-evidence-backed`, `unknown`.
 - Update evidence templates to separate public evidence from customer evidence.
 - Add subagent prompt templates under `assets/templates/subagents/`.

@@ -20,6 +20,16 @@ Classify the project:
 - `blank/new`: little or no product truth, evidence, operating docs, or tasks
 - `existing`: meaningful docs, code, release process, or previous decisions
 
+Classify the source mode:
+
+- `founder-fed`: founder context is the primary source; web research only
+  supports or challenges it
+- `web-assisted`: founder context exists but has important gaps; bounded public
+  research may fill prototype-grade gaps
+- `public-first-prototype`: founder context is missing, thin, or intentionally
+  deferred for speed; public research may create reversible prototype
+  assumptions
+
 Create or update `docs/blueprint-status.md` early. It is the resume point for
 the skill.
 
@@ -98,6 +108,8 @@ Every major claim must use one status:
 
 - `founder-claimed`
 - `ai-inferred`
+- `prototype-assumption`
+- `repo-evidence-backed`
 - `public-evidence-backed`
 - `customer-evidence-backed`
 - `unknown`
@@ -131,7 +143,9 @@ Do we have evidence, or only an assumption?
 
 Evidence may come from customer calls, sales conversations, emails, competitor
 pages, pricing pages, reviews, forums, analytics, waitlists, preorders, or
-manual delivery results.
+manual delivery results. It may also come from local repository artifacts when
+the claim is about the project itself, such as manifests, skill folders,
+release files, task files, or command output.
 
 Outputs:
 
@@ -140,30 +154,36 @@ Outputs:
 - `docs/evidence/pricing-research.md`
 - `docs/evidence/market-notes.md`
 
-Evidence-backed claims may become product truth. Unsupported claims stay marked
-as assumptions.
+Evidence-backed claims may become product truth when the evidence type matches
+the claim. Use `repo-evidence-backed` for claims proven by local repository
+artifacts. Use `public-evidence-backed` for public web evidence. Use
+`customer-evidence-backed` for direct customer evidence. Unsupported claims stay
+marked as assumptions.
 
 ## 8. Research Lane
 
-Use web research when public evidence can materially improve confidence or
-expose contradictions. Do not run research blindly at every step.
+Use web research when public evidence can materially improve confidence, expose
+contradictions, or fill founder-context gaps for fast prototyping. Do not run
+research blindly at every step.
 
 Default loop:
 
 ```text
-Founder input
+Founder input when available
 -> AI extracts claims
--> AI identifies research-worthy claims
--> Web research pass when useful
+-> AI identifies missing or research-worthy claims
+-> Web research pass when useful or needed for fast prototyping
 -> Evidence notes with sources
 -> Contradictions and confidence updates
+-> Prototype assumptions labeled when evidence is public-only or inferred
 -> Founder clarification only for important unresolved points
 -> Canonical doc update
 ```
 
-Founder input comes first. Ask for raw founder answers about product idea,
-target customer, workflow, pain, alternatives, pricing instincts, constraints,
-and non-goals before researching.
+Founder input comes first when available. Ask for raw founder answers about
+product idea, target customer, workflow, pain, alternatives, pricing instincts,
+constraints, and non-goals before researching unless the user explicitly wants a
+fast prototype from thin context.
 
 Use web research for:
 
@@ -185,6 +205,11 @@ Do not treat web research as enough to prove:
 - feasibility inside a private workflow
 - claims that require private customer conversations or internal data
 
+When founder context is missing or intentionally thin, public research may
+unblock a prototype. Mark the resulting claims as `prototype-assumption` or
+`public-evidence-backed`, record validation required before product truth, and
+prefer reversible scope.
+
 Before web research, announce:
 
 ```text
@@ -197,10 +222,12 @@ Purpose:
 - challenge or support current assumptions
 - identify contradictions
 - improve vocabulary and positioning
+- fill prototype-grade gaps when founder context is unavailable
 
 Not purpose:
 - replace founder validation
 - claim customer willingness to pay
+- promote prototype assumptions into product truth
 ```
 
 Proceed by default unless the user asked for no web research or planning-only
@@ -216,7 +243,8 @@ Use `docs/evidence/customer-notes.md` only for real customer conversations,
 messages, sales calls, interviews, support requests, or direct user feedback.
 
 Public research can upgrade a claim to `public-evidence-backed`, not
-`customer-evidence-backed`.
+`customer-evidence-backed`. If research only makes a direction plausible enough
+to prototype, use `prototype-assumption`.
 
 Ask follow-up questions only when research reveals important conflicts,
 ambiguity, or unsupported critical claims:
@@ -345,6 +373,14 @@ Gate:
 The MVP must be clear enough to sell, demo, or manually deliver before it is automated.
 ```
 
+For `public-first-prototype`, extract the smallest reversible prototype instead:
+
+- one plausible primary customer
+- one plausible workflow
+- one demoable value moment
+- explicit assumptions and validation required
+- no hard-to-reverse architecture, schema, pricing, or positioning commitments
+
 ## 14. Manual Ops Before Product
 
 Document how the founder or team can deliver value manually:
@@ -409,23 +445,39 @@ Outputs:
 
 Before the first execution task, answer:
 
+- What source mode is active?
 - Are product truth and MVP scope documented?
 - Are assumptions separated from evidence?
+- Are prototype assumptions clearly labeled?
 - Are major conflicts resolved?
 - Is manual delivery understood?
 - Are authority docs and working rules in place?
 - Is there a task tracker?
 - Is the first task small, ordered, and verifiable?
 - Is feature work allowed, or should Sprint 0 cleanup happen first?
+- Is the first task only prepared, or did the user explicitly ask to continue
+  into execution?
 
 Close with:
 
 ```text
+Go for prototype
 Go for Sprint 0
 No-go for product features
+Needs founder/customer validation before product commitment
 First blocker: <task path>
 First executable AI task: <task path>
 ```
+
+## Preflight And Execution Boundary
+
+By default, this skill prepares the first executable task but does not complete
+it. Stop after creating a bounded task and tell the user to run
+`/build-right-execution` or `$build-right-execution`.
+
+Continue into execution only when the user explicitly asks for end-to-end
+preflight plus execution in the same run. If you continue, record that boundary
+crossing in the task evidence log and closeout.
 
 ## Blank Project Handling
 

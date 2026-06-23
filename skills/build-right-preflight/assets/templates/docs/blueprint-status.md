@@ -2,6 +2,8 @@
 
 Status: collecting-context
 Project state: blank/new
+Source mode: founder-fed
+Prototype confidence: n/a
 Last updated: YYYY-MM-DD
 
 ## Readiness
@@ -10,6 +12,7 @@ Last updated: YYYY-MM-DD
 | --- | --- | --- | --- |
 | Founder intent captured | missing |  |  |
 | Claims tagged | missing |  |  |
+| Prototype assumptions labeled | missing |  |  |
 | Evidence recorded | missing |  |  |
 | Canonical docs exist | missing |  |  |
 | Conflicts resolved | missing |  |  |

@@ -38,6 +38,10 @@ Then move to the next task.
    Active task: <task id or path>
    Done means: <observable completion criteria>
    Non-goals: <explicit exclusions>
+   Assumption basis: <founder-claimed | ai-inferred | prototype-assumption | repo-evidence-backed | public-evidence-backed | customer-evidence-backed>
+   Reversibility: <easy | moderate | hard>
+   Learning hook: <how this task will produce evidence>
+   Source under test: <repo-local path | installed path | GitHub source | release tag | n/a>
    Baseline evidence: <artifact or command>
    Verification ladder: <focused -> broader checks>
    Evidence destination: <task file or evidence file>
@@ -57,6 +61,13 @@ If authority docs, MVP scope, execution rules, or task files are missing, do not
 pretend execution is ready. Route the user to `/build-right-preflight` or
 create the smallest Sprint 0 blocker needed to establish the missing execution
 surface.
+
+Prototype tasks may run from `prototype-assumption` only when reversibility,
+learning hook, and validation required before product truth are explicit.
+
+For skill release/manual trials, record the exact source under test. If the
+installed or invoked skill is stale versus the repo-local skill source, mark the
+trial `partial-needs-rerun` and do not advance release gates to ready.
 
 ## Scope Rule
 

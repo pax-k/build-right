@@ -3,6 +3,8 @@
 Status: draft
 Owner: founder
 Confidence: low
+Source mode: founder-fed | web-assisted | public-first-prototype
+Prototype confidence: low | medium | high | n/a
 Last updated: YYYY-MM-DD
 
 ## Primary Customer
@@ -34,3 +36,11 @@ Last updated: YYYY-MM-DD
 ## Readiness Notes
 
 <what must be true before product feature work starts>
+
+## Validation Required Before Product Truth
+
+- <founder/customer evidence or manual delivery proof required>
+
+## Learning Objective
+
+<what this MVP/prototype is meant to learn>

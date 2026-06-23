@@ -4,6 +4,11 @@ Status: ready
 Type: validation
 Owner: AI
 
+Assumption basis: founder-claimed | ai-inferred | prototype-assumption | repo-evidence-backed | public-evidence-backed | customer-evidence-backed
+Reversibility: easy | moderate | hard
+Learning objective: <what this task should prove or reveal>
+Source under test: <repo-local path | installed path | GitHub source | release tag | n/a>
+
 ## Goal
 
 <one goal>
@@ -32,6 +37,18 @@ Owner: AI
 
 | Date | Evidence | Result | Notes |
 | --- | --- | --- | --- |
+
+## Learning Notes
+
+- Proved: <what evidence supports>
+- Simulated: <what remains unproven>
+- Test next: <assumption or follow-up>
+
+## Skill Trial Notes
+
+- Source comparison: <pass | mismatch | not applicable>
+- Contract markers checked: <markers or n/a>
+- Trial status: <pass | partial-needs-rerun | fail | n/a>
 
 ## Blockers
 

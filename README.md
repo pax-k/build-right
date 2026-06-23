@@ -100,6 +100,9 @@ build-right-execution
 The skills are instruction-first. They use `references/` for detailed workflow
 guidance and `assets/templates/` for reusable Markdown artifacts.
 
-Public web research is modeled as public evidence, not customer validation.
+Founder-fed context is the default source for product truth. When founder input
+is thin and speed matters, bounded public web research can fill prototype-grade
+gaps, but those claims stay labeled as prototype assumptions or public evidence,
+not customer validation.
 Subagents may gather, draft, critique, and audit; the main agent decides,
 writes, updates trackers, and closes gates.

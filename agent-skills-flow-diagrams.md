@@ -26,17 +26,20 @@ flowchart TD
   G --> H{"Safe to write by default?"}
   H -->|"No: risky overwrite or planning-only mode"| I["Stop for user decision"]
   H -->|"Yes"| J["Create or update blueprint status and starter artifacts"]
+  J --> J1["Set source mode and prototype confidence"]
 
-  J --> K["Gather founder context dump"]
+  J1 --> K["Gather founder context dump"]
   K --> L["Interview founder in small batches"]
   L --> M["Create draft source material"]
   M --> N["Tag claims"]
 
   N --> N1["founder-claimed"]
   N --> N2["ai-inferred"]
-  N --> N3["public-evidence-backed"]
-  N --> N4["customer-evidence-backed"]
-  N --> N5["unknown"]
+  N --> N3["prototype-assumption"]
+  N --> N4["repo-evidence-backed"]
+  N --> N5["public-evidence-backed"]
+  N --> N6["customer-evidence-backed"]
+  N --> N7["unknown"]
 
   N --> O["Founder validates important claims"]
   O --> P["Record decisions and open questions"]
@@ -57,7 +60,8 @@ flowchart TD
   Z --> AA["Define manual ops before automation"]
   AA --> AB["Create operating rules, release gates, AI working rules"]
   AB --> AC["Create Sprint 0 and first executable task"]
-  AC --> AD{"Readiness gate"}
+  AC --> AC1["Add assumption basis, reversibility, learning objective, source under test, and learning notes"]
+  AC1 --> AD{"Readiness gate"}
 
   AD -->|"Ready for foundation work"| AE["Go for Sprint 0"]
   AD -->|"Product features not ready"| AF["No-go for product features"]
@@ -76,14 +80,14 @@ flowchart TD
   C -->|"Pricing assumptions"| E["Research public pricing benchmarks"]
   C -->|"Pain or vocabulary"| F["Research public pain language"]
   C -->|"Regulatory, platform, channel"| G["Research public constraints"]
-  C -->|"No useful public evidence"| H["Keep claim as founder-claimed, ai-inferred, or unknown"]
+  C -->|"No useful public evidence"| H["Keep claim as founder-claimed, ai-inferred, prototype-assumption, or unknown"]
 
   D --> I["Record source links and confidence"]
   E --> I
   F --> I
   G --> I
 
-  I --> J["Upgrade only to public-evidence-backed"]
+  I --> J["Upgrade public claims only to public-evidence-backed"]
   J --> K{"Does research conflict with founder claims?"}
 
   K -->|"Yes, material conflict"| L["Ask focused founder clarification"]
@@ -94,6 +98,29 @@ flowchart TD
 
   H --> O["Capture evidence gap"]
   O --> N
+```
+
+## Evidence Status Contract
+
+```mermaid
+flowchart TD
+  A["Claim or task assumption"] --> B{"Evidence source?"}
+
+  B -->|"Founder stated it"| C["founder-claimed"]
+  B -->|"AI inferred it"| D["ai-inferred"]
+  B -->|"Useful for reversible prototype only"| E["prototype-assumption"]
+  B -->|"Local files, manifests, commands, releases"| F["repo-evidence-backed"]
+  B -->|"Public web sources"| G["public-evidence-backed"]
+  B -->|"Direct customer or sales evidence"| H["customer-evidence-backed"]
+  B -->|"No basis yet"| I["unknown"]
+
+  C --> J["Needs founder validation before product truth"]
+  D --> J
+  E --> K["Must record reversibility and learning objective"]
+  F --> L["Can support repository/package/release claims"]
+  G --> M["Can support market or public-source claims only"]
+  H --> N["Can support customer truth when direct evidence is strong enough"]
+  I --> O["Keep blocked or ask focused question"]
 ```
 
 ## Pre-Execution Delegation Lane
@@ -137,13 +164,20 @@ flowchart TD
   D -->|"Too broad"| F["Split or create follow-up task"]
   D -->|"Ready"| G["Read task, tracker, authority docs, local instructions"]
 
-  G --> H["Print task intake"]
+  G --> G1["Record assumption basis, reversibility, learning objective, source under test"]
+  G1 --> H["Print task intake"]
   H --> I["Inspect workspace and git state"]
-  I --> J["Capture baseline evidence"]
-  J --> K["Diagnose gap"]
-  K --> L["Create narrow implementation plan"]
-  L --> M["Implement smallest change"]
-  M --> N["Verify in layers"]
+  I --> J{"Skill/manual trial?"}
+  J -->|"Yes"| J1["Compare installed source with repo-local source"]
+  J -->|"No"| J2["No source comparison needed"]
+  J1 --> J3{"Source matches?"}
+  J3 -->|"No"| J4["Record mismatch, mark partial-needs-rerun, do not advance gate"]
+  J3 -->|"Yes"| J2
+  J2 --> K["Capture baseline evidence"]
+  K --> L["Diagnose gap"]
+  L --> M["Create narrow implementation plan"]
+  M --> N0["Implement smallest change"]
+  N0 --> N["Verify in layers"]
 
   N --> O{"Optional subagent review useful?"}
   O -->|"Yes"| P["Run evidence completeness or scope creep review"]
@@ -155,13 +189,36 @@ flowchart TD
   T --> N
   S -->|"No"| Q
 
-  Q --> U["Record evidence in task or evidence file"]
+  Q --> U["Record evidence, learning notes, files changed, blockers, follow-ups"]
   U --> V["Update only relevant tracker and docs"]
   V --> W{"Project expects commit?"}
   W -->|"Yes"| X["Stage only task-related files and commit"]
   W -->|"No"| Y["Hand off changed files, verification, evidence, blockers"]
   X --> Z["Closeout with what was proved and next task"]
   Y --> Z
+```
+
+## Manual Trial Release Gate
+
+```mermaid
+flowchart TD
+  A["Manual trial task selected"] --> B["Sync installed Codex skill from repo-local source"]
+  B --> C["Diff installed skill against repo-local skill"]
+  C --> D{"Diff clean?"}
+
+  D -->|"No"| E["Record mismatch and block release gate"]
+  D -->|"Yes"| F["Run trial against installed skill path"]
+
+  F --> G["Capture scratch target or selected task"]
+  G --> H["Check required contract markers"]
+  H --> I{"Trial passed?"}
+
+  I -->|"No"| J["Mark task partial-needs-rerun or fail"]
+  I -->|"Yes"| K["Update manual-trials evidence"]
+
+  K --> L["Update release gates"]
+  L --> M["Update release checklist"]
+  M --> N["Advance first blocker to next manual trial"]
 ```
 
 ## Execution Subagent Review Lane

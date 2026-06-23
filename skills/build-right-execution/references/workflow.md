@@ -27,6 +27,9 @@ Print:
 Active task: <task id or path>
 Done means: <observable completion criteria>
 Non-goals: <explicit exclusions>
+Assumption basis: <founder-claimed | ai-inferred | prototype-assumption | repo-evidence-backed | public-evidence-backed | customer-evidence-backed>
+Reversibility: <easy | moderate | hard>
+Learning hook: <how this task will produce evidence>
 Baseline evidence: <artifact or command>
 Verification ladder: <focused -> broader checks>
 Evidence destination: <task file or evidence file>
@@ -46,6 +49,11 @@ Execution is ready only when these exist or have clear local equivalents:
 - selected task with acceptance criteria
 - known evidence destination
 
+Prototype execution may proceed from `prototype-assumption` when the task is
+reversible, the learning hook is explicit, and validation required before
+product truth is recorded. Do not treat prototype readiness as product-feature
+readiness.
+
 If missing, create the smallest blocker task instead of implementing product
 features.
 
@@ -58,6 +66,10 @@ Inspect current workspace before changing files:
 - generated or untracked artifacts
 - active branch or worktree
 - whether the task still matches current code and docs
+- for skill validation tasks, the exact skill source under test: repo-local
+  path, installed user-scope path, GitHub source, or release tag
+- active or recent mutations to the same tracker, same task file, release gates,
+  checklist, or shared evidence files
 
 Rules:
 
@@ -65,6 +77,17 @@ Rules:
 - do not mix unrelated dirty files into the task
 - work with existing changes that affect the task
 - stop and update the tracker when the task is stale
+- when validating a skill from this repo, compare the installed or invoked skill
+  source against the repo-local `skills/<name>/` source before treating the
+  trial as authoritative
+- if the installed skill is stale or the source under test is ambiguous, mark
+  the trial `partial-needs-rerun`, record the mismatch, and do not advance the
+  release gate to ready
+- if another run owns the same task or same tracker, wait, ask, or switch to
+  observation-only mode instead of editing
+- allow parallel work only when task ownership and touched files are disjoint
+- if a concurrent mutation changes the task boundary, update the tracker or
+  create a follow-up rather than overwriting another run's evidence
 
 ## 4. Baseline Evidence
 
@@ -78,6 +101,8 @@ Choose baseline by task type:
 - UI task: inspect current screen and capture browser evidence when useful
 - release task: inspect release reports and gate artifacts
 - integration task: identify whether proof is mocked, local, sandboxed, or live
+- skill manual trial: record source under test and verify expected contract
+  markers before marking the trial pass
 
 Baseline must answer:
 
@@ -85,6 +110,7 @@ Baseline must answer:
 What is broken or missing right now?
 How do we know?
 Which artifact proves it?
+For skill trials, which exact skill source produced the behavior?
 ```
 
 ## 5. Gap Analysis
@@ -128,6 +154,11 @@ Rules:
 - keep provider SDKs, credentials, framework objects, and persistence details
   behind owning boundaries
 - avoid activating future-scope features while fixing scaffolding or validation
+- when assumption basis is `prototype-assumption`, prefer reversible UI, manual
+  workflows, mocks, fixtures, flags, or copy that can change without data
+  migration
+- avoid hard-to-reverse schema, pricing, onboarding, or positioning commitments
+  unless the task explicitly requires them
 - add or update tests when behavior or shared contracts change
 - verify whether generated files are intended deliverables before keeping them
 
@@ -155,9 +186,20 @@ Examples:
 - external provider fix: regression test plus mocked provider boundary; live
   proof only when required
 - release readiness: report artifacts, gate summaries, explicit go/no-go
+- skill trial: installed/repo source comparison, scratch output inspection, and
+  current contract marker scan
 
 Do not overclaim. Passing general validation does not always prove release
 readiness, user-facing behavior, or live integration success.
+
+For Build Right skill trials, check the current contract markers that apply:
+
+- preflight output: `Source mode`, `Prototype confidence`, `Prototype
+  assumptions labeled`
+- task output: `Assumption basis`, `Reversibility`, `Learning objective`,
+  `Learning Notes`
+- release evidence: source under test, scratch path or target task, generated
+  files, what was proved, what was only simulated
 
 ## 9. Evidence Capture
 
@@ -232,6 +274,9 @@ Keep closeout short and operational:
 - completed, blocked, or partial status
 - task id or path
 - what changed
+- what the task proved
+- what the task only simulated
+- which assumption should be tested next
 - verification run
 - evidence location
 - commit or PR reference when present
