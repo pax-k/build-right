@@ -249,6 +249,8 @@ Status: ready
     "docs/evidence/manual-trials.md": "# Manual Trials\n",
     "docs/evidence/preflight-transcript.md": `# Preflight Transcript
 
+## Helper Report
+
 Preflight decision: ready-for-execution
 Confidence: high
 Project type: blank/new
@@ -265,6 +267,8 @@ First-time skill user.
 ## File Plan
 
 Create docs and tasks.
+
+## Closeout
 
 First executable AI task: tasks/issues/001-build-bun-react-todo-app.md
 `,
@@ -283,9 +287,68 @@ async function executionEvidenceFixture(browserProof: string): Promise<string> {
     "frontend.tsx": "import React from 'react';\nlocalStorage.getItem('todos');\nconst input = 'data-testid=\"todo-input\"';\nconst filter = 'data-testid={`filter-${option}`}';\nconsole.log(React, input, filter);\n",
     "index.css": "body { font-family: sans-serif; }\n",
     "todo.test.ts": "import { test } from 'bun:test';\ntest('filters active and completed todos', () => {});\ntest('restores only valid stored todos', () => {});\n",
-    "docs/evidence/execution-transcript.md": "Resolver decision: execute-task\n\n## Task Intake\n\nBaseline evidence: none\nVerification ladder: focused\n`bun install`\n`bun test`\nBrowser proof\nStop gates\n",
+    "docs/evidence/execution-transcript.md": `# Execution Transcript
+
+## Resolver Report
+
+Resolver decision: execute-task
+Confidence: high
+Next action: Execute ready task 001
+
+## Task Intake
+
+Active task: tasks/issues/001-build-bun-react-todo-app.md
+Baseline evidence: no app files existed.
+Verification ladder: focused
+
+## Implementation
+
+Created Todo app files.
+
+## Verification
+
+\`bun install\`
+\`bun test\`
+Browser proof
+
+## Stop-Gate Notes
+
+Stop gates before next-task selection.
+`,
     "docs/evidence/browser-proof.md": browserProof,
     "docs/evidence/browser-proof.png": "not-a-real-png-for-marker-tests",
+    "docs/evidence/manual-trials.md": `# Manual Trials
+
+Run label: fixture-execution
+Agent/tool surface: fixture
+Skill source: skills/build-right-execution
+Target: fixture
+Commands:
+
+- \`bun test\`
+
+Artifacts:
+
+- docs/evidence/execution-transcript.md
+
+Result: pass
+
+Proved:
+
+- Ordering markers exist.
+
+Simulated:
+
+- Browser proof is fixture text.
+
+Unproven:
+
+- Live browser.
+
+Follow-ups:
+
+- None.
+`,
     "tasks/issues/001-build-bun-react-todo-app.md": `${taskFile("001", "complete")}
 
 ## Files Changed
@@ -781,6 +844,13 @@ const checks: Check[] = [
         "negative-gates",
         "failure-summary",
         "failure-log-smoke",
+        "verify-e2e-oracle",
+        "verify-transcripts",
+        "failure-injection",
+        "concurrency",
+        "e2e-replay",
+        "e2e-report",
+        "verify-e2e-report",
       ]) {
         if (!help.includes(marker)) {
           throw new Error(`todo trial helper help output missing ${marker}`);
@@ -801,6 +871,219 @@ const checks: Check[] = [
         "Status: complete",
         "Failure Logging Rule",
       ]);
+    },
+  },
+  {
+    name: "sprint 004 e2e oracle covers shared, preflight, execution, and negative controls",
+    run: async () => {
+      await runCommand(["bun", "scripts/todo-trial.ts", "verify-e2e-oracle"]);
+      await assertIncludes("planning/e2e-workflow-oracle.md", [
+        "## Shared Gates",
+        "Source parity",
+        "Failure logging",
+        "Bun compliance",
+        "Scratch isolation",
+        "## Preflight Oracle",
+        "## Execution Oracle",
+        "## Negative Controls",
+        "`partial-needs-rerun`",
+        "`expected-control`",
+        "`expected-logged`",
+        "## Report Oracle",
+      ]);
+    },
+  },
+  {
+    name: "transcript verifier enforces preflight and execution workflow order",
+    run: async () => {
+      const preflight = await positivePreflightFixture();
+      const execution = await executionEvidenceFixture(`| Check | Result |
+| --- | --- |
+| Add todo | pass |
+| Complete todo | pass |
+| Completed filter | pass |
+| Active filter | pass |
+| Delete todo | pass |
+| localStorage restore | pass |
+`);
+      await runCommand([
+        "bun",
+        "scripts/todo-trial.ts",
+        "verify-transcripts",
+        "--target",
+        execution,
+        "--preflight-target",
+        preflight,
+      ]);
+
+      await Bun.write(
+        `${preflight}/docs/evidence/preflight-transcript.md`,
+        `# Preflight Transcript
+
+## Helper Report
+
+Preflight decision: ready-for-execution
+
+## File Plan
+
+Create docs.
+
+## Focused Founder Questions
+
+Question.
+
+## Founder Reply
+
+Answer.
+
+## Closeout
+
+First executable AI task: tasks/issues/001-build-bun-react-todo-app.md
+`,
+      );
+      const failureLog = `${preflight}/failed-tests.md`;
+      await Bun.write(failureLog, failureLogFixture(""));
+      const result = await runCommandResult([
+        "bun",
+        "scripts/todo-trial.ts",
+        "verify-transcripts",
+        "--target",
+        execution,
+        "--preflight-target",
+        preflight,
+        "--failure-log",
+        failureLog,
+      ]);
+      if (result.exitCode === 0 || !result.output.includes("missing ordered marker")) {
+        throw new Error(`transcript ordering failure was not rejected: ${result.output}`);
+      }
+      const logText = await read(failureLog);
+      if (!logText.includes("| 035 | verify-transcripts |")) {
+        throw new Error(`transcript failure was not logged to task 035: ${logText}`);
+      }
+    },
+  },
+  {
+    name: "e2e report generation writes required review sections",
+    run: async () => {
+      const preflight = await positivePreflightFixture();
+      const execution = await executionEvidenceFixture(`| Check | Result |
+| --- | --- |
+| Add todo | pass |
+| Complete todo | pass |
+| Completed filter | pass |
+| Active filter | pass |
+| Delete todo | pass |
+| localStorage restore | pass |
+`);
+      const root = await createFixture("e2e-report", {
+        "failed-tests.md": failureLogFixture(
+          "| 2026-06-24 | 037 | injected | cmd | expected | actual | generated-artifact | artifact | follow-up.md | expected-control |\n",
+        ),
+      });
+      const report = `${root}/report.md`;
+      await runCommand([
+        "bun",
+        "scripts/todo-trial.ts",
+        "e2e-report",
+        "--target",
+        execution,
+        "--preflight-target",
+        preflight,
+        "--failure-log",
+        `${root}/failed-tests.md`,
+        "--summary-output",
+        `${root}/summary.md`,
+        "--report",
+        report,
+      ]);
+      const text = await read(report);
+      for (const marker of [
+        "Run label:",
+        "Timestamp:",
+        "Source under test:",
+        "Preflight target:",
+        "Execution target:",
+        "## Command List",
+        "## Shared Gates",
+        "## Preflight",
+        "## Execution",
+        "## Negative Controls",
+        "Expected/control rows: 1",
+        "## Agentic Replay",
+        "## Artifacts",
+        "## Failure Summary",
+        "## Proved",
+        "## Simulated",
+        "## Unproven",
+        "## Follow-Ups",
+      ]) {
+        if (!text.includes(marker)) {
+          throw new Error(`e2e report missing marker ${marker}: ${text}`);
+        }
+      }
+      await runCommand(["bun", "scripts/todo-trial.ts", "verify-e2e-report", "--report", report]);
+    },
+  },
+  {
+    name: "failure injection and concurrency commands log expected controls without open failures",
+    run: async () => {
+      const preflight = await positivePreflightFixture();
+      const execution = await executionEvidenceFixture(`| Check | Result |
+| --- | --- |
+| Add todo | pass |
+| Complete todo | pass |
+| Completed filter | pass |
+| Active filter | pass |
+| Delete todo | pass |
+| localStorage restore | pass |
+`);
+      const root = await createFixture("failure-injection", {
+        "failed-tests.md": failureLogFixture(""),
+      });
+      await runCommand([
+        "bun",
+        "scripts/todo-trial.ts",
+        "failure-injection",
+        "--source",
+        preflight,
+        "--target",
+        execution,
+        "--failure-log",
+        `${root}/failed-tests.md`,
+        "--summary-output",
+        `${root}/summary.md`,
+      ]);
+      const logText = await read(`${root}/failed-tests.md`);
+      for (const phase of [
+        "failure-injection-preflight-missing",
+        "failure-injection-preflight-app",
+        "failure-injection-browser-proof",
+        "failure-injection-runtime",
+        "failure-injection-malformed-conflict",
+        "failure-injection-source-parity",
+      ]) {
+        if (!logText.includes(`| 037 | ${phase} |`)) {
+          throw new Error(`failure injection did not log ${phase}: ${logText}`);
+        }
+      }
+      const summary = await read(`${root}/summary.md`);
+      if (!summary.includes("Actionable open rows: 0") || !summary.includes("Expected/control rows: 6")) {
+        throw new Error(`failure injection summary was not classified as controls: ${summary}`);
+      }
+
+      const concurrency = await runCommand([
+        "bun",
+        "scripts/todo-trial.ts",
+        "concurrency",
+        "--source",
+        preflight,
+        "--target",
+        execution,
+      ]);
+      if (!concurrency.includes("/tmp/build-right-todo-trial-concurrency-")) {
+        throw new Error(`concurrency output did not include isolated scratch root: ${concurrency}`);
+      }
     },
   },
   {
@@ -1019,7 +1302,19 @@ Status: complete
 `;
       }
       const auditRoot = await createFixture("status-audit", auditFiles);
-      await runCommand(["bun", "scripts/todo-trial.ts", "status-audit", "--audit-root", auditRoot]);
+      await runCommand([
+        "bun",
+        "scripts/todo-trial.ts",
+        "status-audit",
+        "--audit-root",
+        auditRoot,
+        "--sprint",
+        "planning/sprints/003-failed-test-remediation.md",
+        "--task-start",
+        "015",
+        "--task-end",
+        "026",
+      ]);
 
       await Bun.write(`${auditRoot}/planning/tasks/020-fixture.md`, "# 020: Fixture\n\nStatus: ready\n\n- [ ] not done\n");
       const auditLog = `${auditRoot}/failed-tests.md`;
@@ -1029,6 +1324,12 @@ Status: complete
         "status-audit",
         "--audit-root",
         auditRoot,
+        "--sprint",
+        "planning/sprints/003-failed-test-remediation.md",
+        "--task-start",
+        "015",
+        "--task-end",
+        "026",
         "--failure-log",
         auditLog,
       ]);

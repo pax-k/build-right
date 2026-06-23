@@ -54,11 +54,15 @@ type FailureStatusKind =
 
 const repoRoot = join(import.meta.dir, "..");
 const defaultTarget = "/tmp/build-right-todo-trial";
+const defaultPreflightTarget = "/tmp/build-right-todo-trial-preflight";
 const defaultFailureLogPath = join(repoRoot, "planning", "failed-tests.md");
 const defaultFailureSummaryPath = join(repoRoot, "planning", "failed-test-summary.md");
+const defaultE2eReportPath = join(repoRoot, "planning", "e2e-workflow-report.md");
+const e2eOraclePath = join(repoRoot, "planning", "e2e-workflow-oracle.md");
 const failureLogPath = argValue("--failure-log", defaultFailureLogPath) ?? defaultFailureLogPath;
 const failureSummaryPath =
   argValue("--summary-output", defaultFailureSummaryPath) ?? defaultFailureSummaryPath;
+const e2eReportPath = argValue("--report", defaultE2eReportPath) ?? defaultE2eReportPath;
 const skillNames = ["build-right-preflight", "build-right-execution"];
 
 function trialTempRoot(label: string): string {
@@ -189,6 +193,28 @@ async function requireMatches(path: string, marker: string, pattern: RegExp, pro
   }
   if (!pattern.test(text)) {
     problems.push(`${path} missing semantic marker: ${marker}`);
+  }
+}
+
+async function requireOrderedIncludes(
+  path: string,
+  markers: string[],
+  problems: string[],
+): Promise<void> {
+  const text = await readText(path);
+  if (!text) {
+    problems.push(`missing readable file: ${path}`);
+    return;
+  }
+
+  let cursor = -1;
+  for (const marker of markers) {
+    const index = text.indexOf(marker, cursor + 1);
+    if (index === -1) {
+      problems.push(`${path} missing ordered marker after ${cursor}: ${marker}`);
+      return;
+    }
+    cursor = index;
   }
 }
 
@@ -1293,10 +1319,10 @@ async function statusAudit(): Promise<void> {
   const auditRoot = argValue("--audit-root", repoRoot) ?? repoRoot;
   const sprintPath = argValue(
     "--sprint",
-    "planning/sprints/003-failed-test-remediation.md",
-  ) ?? "planning/sprints/003-failed-test-remediation.md";
-  const start = Number(argValue("--task-start", "015") ?? "015");
-  const end = Number(argValue("--task-end", "026") ?? "026");
+    "planning/sprints/004-end-to-end-workflow-test-matrix.md",
+  ) ?? "planning/sprints/004-end-to-end-workflow-test-matrix.md";
+  const start = Number(argValue("--task-start", "027") ?? "027");
+  const end = Number(argValue("--task-end", "040") ?? "040");
   const problems: string[] = [];
 
   const sprintText = await readText(join(auditRoot, sprintPath));
@@ -1325,14 +1351,16 @@ async function statusAudit(): Promise<void> {
 
   if (problems.length > 0) {
     await appendFailure({
-      task: "023",
+      task: sprintPath.includes("004-end-to-end") ? "040" : "023",
       phase: "status-audit",
       command: "bun scripts/todo-trial.ts status-audit",
       expected: "sprint and tasks complete without unchecked acceptance criteria",
       actual: problems.slice(0, 6).join("; "),
       failureClass: "environment",
       artifact: auditRoot,
-      followUp: "planning/tasks/023-fix-baseline-and-status-audit-noise.md",
+      followUp: sprintPath.includes("004-end-to-end")
+        ? "planning/tasks/040-run-full-e2e-workflow-verification.md"
+        : "planning/tasks/023-fix-baseline-and-status-audit-noise.md",
       status: "open",
     });
     throw new Error(problems.join("\n"));
@@ -1433,6 +1461,520 @@ async function parityNegative(): Promise<void> {
   console.log(remediation);
 }
 
+async function verifyE2eOracle(): Promise<void> {
+  const problems: string[] = [];
+  await requireIncludes(e2eOraclePath, [
+    "# E2E Workflow Oracle",
+    "## Shared Gates",
+    "Source parity",
+    "Failure logging",
+    "Failure summary",
+    "Bun compliance",
+    "Scratch isolation",
+    "Concurrency",
+    "## Preflight Oracle",
+    "### Happy Path",
+    "### State Matrix",
+    "### Artifact Contract",
+    "### Transcript Oracle",
+    "## Execution Oracle",
+    "### Happy Path",
+    "### Resolver Matrix",
+    "### Todo Behavior",
+    "## Negative Controls",
+    "## Report Oracle",
+    "`partial-needs-rerun`",
+    "`expected-control`",
+    "`expected-logged`",
+  ], problems);
+  await failWithProblems({
+    task: "027",
+    phase: "verify-e2e-oracle",
+    command: "bun scripts/todo-trial.ts verify-e2e-oracle",
+    expected: "E2E oracle covers shared, preflight, execution, negative, and report expectations",
+    actual: "",
+    failureClass: "verifier-gap",
+    artifact: e2eOraclePath,
+    followUp: "planning/tasks/027-define-e2e-workflow-oracle.md",
+    status: "open",
+  }, problems);
+}
+
+async function verifyTranscripts(
+  executionTarget: string,
+  preflightTarget: string,
+  failureOverrides: Partial<FailureRow> = {},
+): Promise<void> {
+  const problems: string[] = [];
+  const preflightTranscript = join(preflightTarget, "docs/evidence/preflight-transcript.md");
+  const executionTranscript = join(executionTarget, "docs/evidence/execution-transcript.md");
+  const manualTrials = join(executionTarget, "docs/evidence/manual-trials.md");
+
+  await requireOrderedIncludes(preflightTranscript, [
+    "## Helper Report",
+    "Preflight decision:",
+    "## Focused Founder Questions",
+    "## Founder Reply",
+    "## File Plan",
+    "## Closeout",
+    "First executable AI task:",
+  ], problems);
+  await requireOrderedIncludes(executionTranscript, [
+    "## Resolver Report",
+    "Resolver decision: execute-task",
+    "## Task Intake",
+    "Baseline evidence:",
+    "## Implementation",
+    "## Verification",
+    "## Stop-Gate Notes",
+  ], problems);
+  await requireIncludes(manualTrials, [
+    "Run label:",
+    "Agent/tool surface:",
+    "Skill source:",
+    "Target:",
+    "Commands:",
+    "Artifacts:",
+    "Result:",
+    "Proved:",
+    "Simulated:",
+    "Unproven:",
+    "Follow-ups:",
+  ], problems);
+
+  for (const appFile of ["package.json", "index.ts", "index.html", "frontend.tsx", "todo.ts", "todo.test.ts"]) {
+    if (await exists(join(preflightTarget, appFile))) {
+      problems.push(`preflight transcript target contains app file: ${appFile}`);
+    }
+  }
+
+  await failWithProblems({
+    task: "035",
+    phase: "verify-transcripts",
+    command: `bun scripts/todo-trial.ts verify-transcripts --target ${executionTarget} --preflight-target ${preflightTarget}`,
+    expected: "preflight and execution transcripts prove workflow order and evidence packet fields",
+    actual: "",
+    failureClass: "agent-instruction",
+    artifact: `${preflightTranscript}; ${executionTranscript}; ${manualTrials}`,
+    followUp: "planning/tasks/035-automate-agentic-transcript-evidence-checks.md",
+    status: "open",
+    ...failureOverrides,
+  }, problems);
+}
+
+async function verifyE2eReport(reportPath: string): Promise<void> {
+  const problems: string[] = [];
+  await requireIncludes(reportPath, [
+    "# E2E Workflow Report",
+    "Run label:",
+    "Timestamp:",
+    "Source under test:",
+    "Preflight target:",
+    "Execution target:",
+    "## Command List",
+    "## Shared Gates",
+    "## Preflight",
+    "## Execution",
+    "## Negative Controls",
+    "## Agentic Replay",
+    "## Artifacts",
+    "## Failure Summary",
+    "## Proved",
+    "## Simulated",
+    "## Unproven",
+    "## Follow-Ups",
+  ], problems);
+  await failWithProblems({
+    task: "039",
+    phase: "verify-e2e-report",
+    command: `bun scripts/todo-trial.ts verify-e2e-report --report ${reportPath}`,
+    expected: "E2E report contains required review sections",
+    actual: "",
+    failureClass: "verifier-gap",
+    artifact: reportPath,
+    followUp: "planning/tasks/039-add-e2e-report-artifact.md",
+    status: "open",
+  }, problems);
+}
+
+async function e2eReport(executionTarget: string, preflightTarget: string): Promise<void> {
+  await writeFailureSummary();
+  const records = await failureRecords();
+  const actionable = records.filter((record) => recordDisposition(record, records) === "actionable-open");
+  const expected = records.filter((record) => {
+    const kind = recordDisposition(record, records);
+    return kind === "expected-control" || kind === "forced-control";
+  });
+  const resolved = records.filter((record) => recordDisposition(record, records) === "resolved");
+  const runLabel = argValue("--run-label", `sprint-004-e2e-${today()}`) ?? `sprint-004-e2e-${today()}`;
+  const replayMode = argValue("--replay-mode", "direct-or-replayed-fixture") ?? "direct-or-replayed-fixture";
+  const timestamp = new Date().toISOString();
+  const lines = [
+    "# E2E Workflow Report",
+    "",
+    `Run label: ${runLabel}`,
+    `Timestamp: ${timestamp}`,
+    "Source under test: repo-local `skills/build-right-preflight` and `skills/build-right-execution`",
+    `Preflight target: ${preflightTarget}`,
+    `Execution target: ${executionTarget}`,
+    `Replay mode: ${replayMode}`,
+    "",
+    "## Command List",
+    "",
+    "- `bun test`",
+    "- `bun run verify:skill-trials`",
+    "- `bun scripts/todo-trial.ts verify-e2e-oracle`",
+    `- \`bun scripts/todo-trial.ts verify-preflight --target ${preflightTarget}\``,
+    `- \`bun scripts/todo-trial.ts verify-execution --target ${executionTarget}\``,
+    `- \`bun scripts/todo-trial.ts verify-transcripts --target ${executionTarget} --preflight-target ${preflightTarget}\``,
+    "- `bun scripts/todo-trial.ts negative-gates`",
+    "- `bun scripts/todo-trial.ts negative-gates-malformed-conflict`",
+    "- `bun scripts/todo-trial.ts parity`",
+    "- `bun scripts/todo-trial.ts parity-negative`",
+    "- `bun scripts/todo-trial.ts failure-summary`",
+    "- `bun scripts/todo-trial.ts status-audit`",
+    "- `git diff --check`",
+    "",
+    "## Shared Gates",
+    "",
+    "- Source parity: `bun scripts/todo-trial.ts parity`.",
+    "- Failure log grouping: `planning/failed-test-summary.md`.",
+    "- Bun runtime compliance: `scan-runtime` and execution verifier.",
+    "- Scratch isolation: generated Todo files remain under `/tmp/build-right-todo-trial*`.",
+    "- Concurrency: negative controls use collision-resistant scratch paths.",
+    "",
+    "## Preflight",
+    "",
+    `- Target: ${preflightTarget}`,
+    "- Evidence: `docs/evidence/preflight-transcript.md`, `docs/evidence/manual-trials.md`, `tasks/sprint-0.md`.",
+    "- Expected result: docs/tasks/evidence only, no app files.",
+    "",
+    "## Execution",
+    "",
+    `- Target: ${executionTarget}`,
+    "- Evidence: `docs/evidence/execution-transcript.md`, `docs/evidence/browser-proof.md`, `tasks/issues/001-build-bun-react-todo-app.md`.",
+    "- Expected result: Bun-served React + TypeScript Todo app with tests and browser proof.",
+    "",
+    "## Negative Controls",
+    "",
+    `- Expected/control rows: ${expected.length}`,
+    "- Missing preflight artifact, preflight app file, corrupted browser proof, malformed conflict, forbidden runtime source, and source parity mismatch are expected controls.",
+    "",
+    "## Agentic Replay",
+    "",
+    `- Replay mode: ${replayMode}`,
+    "- Transcript checks prove helper reports, founder questions, file plans, task intake, baseline evidence, implementation, verification, and stop-gate ordering.",
+    "- Provider-native conversation export remains simulated unless an external agent transcript is attached.",
+    "",
+    "## Artifacts",
+    "",
+    "- `planning/e2e-workflow-oracle.md`",
+    "- `planning/e2e-workflow-report.md`",
+    `- \`${preflightTarget}/docs/evidence/preflight-transcript.md\``,
+    `- \`${executionTarget}/docs/evidence/execution-transcript.md\``,
+    `- \`${executionTarget}/docs/evidence/browser-proof.md\``,
+    `- \`${executionTarget}/docs/evidence/browser-proof.png\``,
+    `- \`${executionTarget}/tasks/issues/001-build-bun-react-todo-app.md\``,
+    "",
+    "## Failure Summary",
+    "",
+    `- Total rows: ${records.length}`,
+    `- Actionable open rows: ${actionable.length}`,
+    `- Expected/control rows: ${expected.length}`,
+    `- Resolved rows: ${resolved.length}`,
+    `- Summary: planning/failed-test-summary.md`,
+    "",
+    "## Proved",
+    "",
+    "- Oracle, helper commands, transcript markers, artifact contracts, negative controls, failure grouping, and status audit are machine-checkable.",
+    "- The canonical scratch execution target contains Bun app files, tests, browser proof, and task evidence.",
+    "",
+    "## Simulated",
+    "",
+    "- Provider-native chat export is represented by durable transcript artifacts.",
+    "- Fresh replay can copy and reverify canonical scratch artifacts without invoking another autonomous agent.",
+    "",
+    "## Unproven",
+    "",
+    "- No deployment or external user validation is attempted.",
+    "- Live agent behavior beyond the captured transcripts needs a separate provider transcript export if required.",
+    "",
+    "## Follow-Ups",
+    "",
+    actionable.length === 0
+      ? "- None. No actionable failure groups remain."
+      : `- Resolve actionable failures: ${actionable.map((record) => `${record.task}/${record.phase}`).join(", ")}.`,
+    "",
+  ];
+  await Bun.write(e2eReportPath, lines.join("\n"));
+  await verifyE2eReport(e2eReportPath);
+}
+
+async function e2eReplay(executionTarget: string, preflightTarget: string): Promise<void> {
+  const root = argValue("--replay-root", trialTempRoot("e2e-replay")) ?? trialTempRoot("e2e-replay");
+  assertScratchTarget(root);
+  await mustRun(["rm", "-rf", root], repoRoot, {
+    task: "036",
+    phase: "e2e-replay-reset",
+    followUp: "planning/tasks/036-build-fresh-scratch-replay-harness.md",
+  });
+  await mustRun(["mkdir", "-p", join(root, "prompts")], repoRoot, {
+    task: "036",
+    phase: "e2e-replay-seed",
+    followUp: "planning/tasks/036-build-fresh-scratch-replay-harness.md",
+  });
+  await Bun.write(join(root, "prompts", "preflight-prompt.txt"), `$build-right-preflight
+
+Bootstrap this blank repo for a demo React + TypeScript Todo app.
+Use Bun only. Do not implement the app yet; prepare the project truth, Sprint 0,
+and the first executable AI task.
+`);
+  await Bun.write(join(root, "prompts", "execution-prompt.txt"), `$build-right-execution
+
+Use the repo-local Build Right execution skill source under test.
+Take the next ready AI-owned task only. Use Bun only. Record baseline evidence,
+verification, files changed, and stop-gate results.
+`);
+
+  const preflightCopy = join(root, "preflight");
+  const executionCopy = join(root, "execution");
+  await copyPreflightSnapshot(preflightTarget, preflightCopy);
+  await copyExecutionFixture(executionTarget, executionCopy);
+  if (await directoryExists(join(executionTarget, "node_modules"))) {
+    await mustRun(["cp", "-R", join(executionTarget, "node_modules"), join(executionCopy, "node_modules")], repoRoot, {
+      task: "036",
+      phase: "e2e-replay-node-modules",
+      followUp: "planning/tasks/036-build-fresh-scratch-replay-harness.md",
+    });
+  }
+  await verifyPreflight(preflightCopy, {
+    task: "036",
+    phase: "e2e-replay-preflight",
+    artifact: preflightCopy,
+    followUp: "planning/tasks/036-build-fresh-scratch-replay-harness.md",
+  });
+  await verifyExecution(executionCopy, {
+    task: "036",
+    phase: "e2e-replay-execution",
+    artifact: executionCopy,
+    followUp: "planning/tasks/036-build-fresh-scratch-replay-harness.md",
+  });
+  await verifyTranscripts(executionCopy, preflightCopy, {
+    task: "036",
+    phase: "e2e-replay-transcripts",
+    artifact: root,
+    followUp: "planning/tasks/036-build-fresh-scratch-replay-harness.md",
+  });
+  await e2eReport(executionCopy, preflightCopy);
+  console.log(`e2e replay: ${root}`);
+}
+
+async function appendExpectedFailure(row: FailureRow, actual: string): Promise<void> {
+  await appendFailure({
+    ...row,
+    actual,
+    status: row.status || "expected-control",
+  });
+}
+
+async function failureInjection(): Promise<void> {
+  const phases: string[] = [];
+
+  const preflightMissing = trialTempRoot("failure-injection-preflight-missing");
+  await copyPreflightSnapshot(argValue("--source", defaultPreflightTarget) ?? defaultPreflightTarget, preflightMissing);
+  await mustRun(["rm", "-f", join(preflightMissing, "docs/source-index.md")], repoRoot, {
+    task: "037",
+    phase: "failure-injection-preflight-missing",
+    followUp: "planning/tasks/037-add-failure-injection-log-cases.md",
+  });
+  try {
+    await verifyPreflight(preflightMissing, {
+      task: "037",
+      phase: "failure-injection-preflight-missing",
+      expected: "missing preflight artifact fails and logs expected control",
+      artifact: preflightMissing,
+      followUp: "planning/tasks/037-add-failure-injection-log-cases.md",
+      status: "expected-control",
+    });
+  } catch {
+    phases.push("failure-injection-preflight-missing");
+  }
+
+  const preflightApp = trialTempRoot("failure-injection-preflight-app");
+  await copyPreflightSnapshot(argValue("--source", defaultPreflightTarget) ?? defaultPreflightTarget, preflightApp);
+  await Bun.write(join(preflightApp, "package.json"), "{\"name\":\"bad-preflight\"}\n");
+  try {
+    await verifyPreflight(preflightApp, {
+      task: "037",
+      phase: "failure-injection-preflight-app",
+      expected: "preflight app file fails and logs expected control",
+      artifact: preflightApp,
+      followUp: "planning/tasks/037-add-failure-injection-log-cases.md",
+      status: "expected-control",
+    });
+  } catch {
+    phases.push("failure-injection-preflight-app");
+  }
+
+  const executionBrowser = trialTempRoot("failure-injection-browser");
+  await copyExecutionFixture(argValue("--target", defaultTarget) ?? defaultTarget, executionBrowser);
+  await Bun.write(
+    join(executionBrowser, "docs/evidence/browser-proof.md"),
+    (await readText(join(executionBrowser, "docs/evidence/browser-proof.md"))).replace(
+      "| localStorage restore | pass |",
+      "| localStorage restore | fail |",
+    ),
+  );
+  try {
+    await verifyExecution(executionBrowser, {
+      task: "037",
+      phase: "failure-injection-browser-proof",
+      expected: "corrupted browser proof fails and logs expected control",
+      artifact: executionBrowser,
+      followUp: "planning/tasks/037-add-failure-injection-log-cases.md",
+      status: "expected-control",
+    });
+  } catch {
+    phases.push("failure-injection-browser-proof");
+  }
+
+  const runtime = trialTempRoot("failure-injection-runtime");
+  await copyExecutionFixture(argValue("--target", defaultTarget) ?? defaultTarget, runtime);
+  await Bun.write(join(runtime, "frontend.tsx"), "import 'vite';\n");
+  const runtimeProblems: string[] = [];
+  await verifyNoForbiddenRuntime(runtime, runtimeProblems);
+  if (runtimeProblems.length > 0) {
+    await appendExpectedFailure({
+      task: "037",
+      phase: "failure-injection-runtime",
+      command: "bun scripts/todo-trial.ts failure-injection",
+      expected: "forbidden runtime source fails",
+      actual: "",
+      failureClass: "verifier-gap",
+      artifact: runtime,
+      followUp: "planning/tasks/037-add-failure-injection-log-cases.md",
+      status: "expected-control",
+    }, runtimeProblems.join("; "));
+    phases.push("failure-injection-runtime");
+  }
+
+  const malformed = await createGateFixture("failure-injection-malformed-conflict", {
+    "docs/conflicts.md": "# Conflicts\n\n| Conflict | Sources |\n| --- |\n| bad\n",
+  });
+  const malformedError = await conflictFixtureError(malformed);
+  if (malformedError) {
+    await appendExpectedFailure({
+      task: "037",
+      phase: "failure-injection-malformed-conflict",
+      command: "bun scripts/todo-trial.ts failure-injection",
+      expected: "malformed conflict fixture fails distinctly",
+      actual: "",
+      failureClass: "helper-script",
+      artifact: malformed,
+      followUp: "planning/tasks/037-add-failure-injection-log-cases.md",
+      status: "expected-control",
+    }, malformedError);
+    phases.push("failure-injection-malformed-conflict");
+  }
+
+  const parityRoot = trialTempRoot("failure-injection-parity");
+  await copySkillSource(parityRoot);
+  await Bun.write(
+    join(parityRoot, "build-right-preflight", "SKILL.md"),
+    `${await readText(join(parityRoot, "build-right-preflight", "SKILL.md"))}\n<!-- forced mismatch -->\n`,
+  );
+  const mismatches = await parity(parityRoot);
+  if (mismatches.length > 0) {
+    await appendExpectedFailure({
+      task: "037",
+      phase: "failure-injection-source-parity",
+      command: "bun scripts/todo-trial.ts failure-injection",
+      expected: "source parity mismatch logs partial-needs-rerun",
+      actual: "",
+      failureClass: "source-under-test",
+      artifact: parityRoot,
+      followUp: "planning/tasks/037-add-failure-injection-log-cases.md",
+      status: "expected-logged",
+    }, `${mismatches.slice(0, 3).join("; ")}; ${parityRemediation(mismatches)}`);
+    phases.push("failure-injection-source-parity");
+  }
+
+  const records = await failureRecords();
+  for (const phase of phases) {
+    const match = records.find((record) => record.task === "037" && record.phase === phase);
+    if (!match) {
+      throw new Error(`failure injection did not append row for ${phase}`);
+    }
+    for (const [key, value] of Object.entries(match)) {
+      if (key !== "index" && !String(value).trim()) {
+        throw new Error(`failure injection row ${phase} has empty ${key}`);
+      }
+    }
+  }
+  await writeFailureSummary();
+  console.log(`failure injection: ${phases.length} expected rows`);
+}
+
+function failureLogTemplate(): string {
+  return `# Failed Tests Log
+
+Status: active
+
+## Failures
+
+| Date | Task | Phase | Command or Test | Expected | Actual | Class | Artifact | Follow-up | Status |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+`;
+}
+
+async function concurrencyCheck(): Promise<void> {
+  const root = trialTempRoot("concurrency");
+  const preflightSource = argValue("--source", defaultPreflightTarget) ?? defaultPreflightTarget;
+  const executionSource = argValue("--target", defaultTarget) ?? defaultTarget;
+  await mustRun(["mkdir", "-p", root], repoRoot, {
+    task: "038",
+    phase: "concurrency-seed",
+    followUp: "planning/tasks/038-add-concurrency-scratch-isolation-cases.md",
+  });
+  const commands: string[][] = [
+    ["bun", "scripts/todo-trial.ts", "parity-negative", "--failure-log", join(root, "parity.md")],
+    ["bun", "scripts/todo-trial.ts", "verify-preflight-negative", "--kind", "missing", "--source", preflightSource, "--failure-log", join(root, "preflight-missing.md")],
+    ["bun", "scripts/todo-trial.ts", "verify-preflight-negative", "--kind", "app-file", "--source", preflightSource, "--failure-log", join(root, "preflight-app.md")],
+    ["bun", "scripts/todo-trial.ts", "verify-execution-negative", "--source", executionSource, "--failure-log", join(root, "execution.md")],
+  ];
+  for (const command of commands) {
+    const logPath = command[command.length - 1];
+    await Bun.write(logPath, failureLogTemplate());
+  }
+
+  const results = await Promise.all(commands.map((command) => run(command)));
+  const failures = results
+    .map((result, index) => ({ result, command: commands[index].join(" ") }))
+    .filter(({ result }) => result.exitCode !== 0);
+  if (failures.length > 0) {
+    await appendFailure({
+      task: "038",
+      phase: "concurrency",
+      command: "bun scripts/todo-trial.ts concurrency",
+      expected: "parallel negative controls pass without temp collisions",
+      actual: failures.map(({ command, result }) => `${command}: ${result.stderr || result.stdout}`).join("; "),
+      failureClass: "environment",
+      artifact: root,
+      followUp: "planning/tasks/038-add-concurrency-scratch-isolation-cases.md",
+      status: "open",
+    });
+    throw new Error(`concurrency failed: ${failures.map(({ command }) => command).join(", ")}`);
+  }
+
+  for (const path of ["docs", "tasks"]) {
+    const generated = await filesUnder(join(repoRoot, path)).catch(() => []);
+    if (generated.some((file) => file.endsWith(".md"))) {
+      throw new Error(`generated root ${path} markdown should not exist in source repo`);
+    }
+  }
+  console.log(`concurrency: ${root}`);
+}
+
 function printHelp(): void {
   console.log(`Build Right Todo trial helper
 
@@ -1444,26 +1986,37 @@ Commands:
   snapshot-preflight   Copy docs/tasks into a preflight-only snapshot.
   parity               Compare repo-local skills with a compare root.
   parity-negative      Force a source mismatch and append it to planning/failed-tests.md.
+  verify-e2e-oracle    Verify the Sprint 004 E2E workflow oracle artifact.
   verify-preflight     Verify preflight artifacts in a scratch target.
   verify-preflight-negative
                        Force a preflight verifier failure and log it.
   verify-execution     Verify execution artifacts, Bun tests, server, and browser proof.
   verify-execution-negative
                        Corrupt browser proof and confirm verifier failure logging.
+  verify-transcripts   Verify preflight/execution transcript ordering and evidence packet fields.
   negative-gates       Verify unsafe resolver states stop with expected decisions.
   negative-gates-malformed-conflict
                        Confirm malformed conflict fixtures fail as fixture errors.
+  failure-injection    Run Sprint 004 expected-control failure-injection cases.
+  concurrency          Run parallel negative controls to prove scratch isolation.
+  e2e-replay           Copy canonical scratch artifacts into a fresh replay root and verify them.
+  e2e-report           Write planning/e2e-workflow-report.md.
+  verify-e2e-report    Verify the E2E report artifact shape.
   scan-runtime         Verify Bun-only runtime source scan scope.
   baseline-check       Classify baseline or final bun test results.
-  status-audit         Audit Sprint 003 task completion without shell globs.
+  status-audit         Audit Sprint 004 task completion without shell globs.
   failure-summary      Group failed-tests log rows into follow-up candidates.
   failure-log-smoke    Append a forced failure and resolution row, then summarize.
 
 Options:
   --target <path>       Scratch target. Defaults to ${defaultTarget}
+  --preflight-target <path>
+                       Preflight scratch target. Defaults to ${defaultPreflightTarget}
   --source <path>       Source scratch repo for snapshot/negative commands.
   --compare-root <path> Skill root to compare. Defaults to repo-local skills root.
   --kind <missing|app-file>
+  --report <path>       E2E report path. Defaults to ${defaultE2eReportPath}
+  --replay-root <path>  Fresh replay root under /tmp/build-right-todo-trial-*.
   --failure-log <path>  Failure log path for fixtures.
   --summary-output <path>
                        Failure summary output path for fixtures.
@@ -1475,6 +2028,7 @@ Options:
 async function main(): Promise<void> {
   const command = Bun.argv[2] ?? "help";
   const target = argValue("--target", defaultTarget) ?? defaultTarget;
+  const preflightTarget = argValue("--preflight-target", defaultPreflightTarget) ?? defaultPreflightTarget;
   const source = argValue("--source", defaultTarget) ?? defaultTarget;
   const compareRoot = argValue("--compare-root", join(repoRoot, "skills")) ?? join(repoRoot, "skills");
 
@@ -1517,6 +2071,12 @@ async function main(): Promise<void> {
     return;
   }
 
+  if (command === "verify-e2e-oracle") {
+    await verifyE2eOracle();
+    console.log("e2e oracle: pass");
+    return;
+  }
+
   if (command === "verify-preflight") {
     await verifyPreflight(target);
     console.log("preflight verification: pass");
@@ -1543,6 +2103,12 @@ async function main(): Promise<void> {
     return;
   }
 
+  if (command === "verify-transcripts") {
+    await verifyTranscripts(target, preflightTarget);
+    console.log("transcript verification: pass");
+    return;
+  }
+
   if (command === "negative-gates") {
     await negativeGates();
     console.log("negative gates: pass");
@@ -1551,6 +2117,33 @@ async function main(): Promise<void> {
 
   if (command === "negative-gates-malformed-conflict") {
     await negativeGatesMalformedConflict();
+    return;
+  }
+
+  if (command === "failure-injection") {
+    await failureInjection();
+    return;
+  }
+
+  if (command === "concurrency") {
+    await concurrencyCheck();
+    return;
+  }
+
+  if (command === "e2e-replay") {
+    await e2eReplay(target, preflightTarget);
+    return;
+  }
+
+  if (command === "e2e-report") {
+    await e2eReport(target, preflightTarget);
+    console.log(`e2e report: ${e2eReportPath}`);
+    return;
+  }
+
+  if (command === "verify-e2e-report") {
+    await verifyE2eReport(e2eReportPath);
+    console.log("e2e report verification: pass");
     return;
   }
 
