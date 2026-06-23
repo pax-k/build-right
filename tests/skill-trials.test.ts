@@ -278,6 +278,9 @@ async function preflightDecisionForFixture(files: Record<string, string>): Promi
   nextAction?: string;
   confidence?: string;
   projectTypeSignal?: string;
+  missingArtifacts?: string[];
+  readinessWarnings?: string[];
+  founderInputGaps?: string[];
 }> {
   const root = await createFixture("preflight", files);
   const output = await runCommand([
@@ -289,6 +292,29 @@ async function preflightDecisionForFixture(files: Record<string, string>): Promi
     "all",
     "--format",
     "json",
+  ]);
+  return JSON.parse(output);
+}
+
+async function executionCheckForFixture(
+  files: Record<string, string>,
+  args: string[],
+): Promise<{
+  selectedTask?: { path?: string; status?: string; owner?: string } | null;
+  readyTaskCandidates?: Array<{ path?: string; status?: string; owner?: string }>;
+  contractMissing?: string[];
+  gateReasons?: string[];
+  recommendation?: string;
+}> {
+  const root = await createFixture("execution", files);
+  const output = await runCommand([
+    "bun",
+    "skills/build-right-execution/scripts/execution-check.ts",
+    "--cwd",
+    root,
+    "--format",
+    "json",
+    ...args,
   ]);
   return JSON.parse(output);
 }
@@ -630,6 +656,85 @@ Primary workflow: Evidence-driven execution
     },
   },
   {
+    name: "preflight helper covers artifact and source-mode matrix",
+    run: async () => {
+      const baseReadyPreflight = {
+        "docs/raw/founder-dump.md": "# Founder Dump\n",
+        "docs/raw/founder-interview.md": "# Founder Interview\n",
+        "docs/blueprint-status.md": readyBlueprint(),
+        "docs/source-index.md": "# Source Index\n",
+        "docs/mvp-scope.md": `# MVP Scope
+
+Status: ready
+Source mode: founder-fed
+Prototype confidence: n/a
+
+Primary customer: Operators
+Primary workflow: Evidence-driven execution
+`,
+        "docs/execution-rules.md": "# Execution Rules\n",
+        "docs/release-gates.md": releaseGates(),
+        "tasks/sprint-0.md": tracker("| 001 | Ready task | ready | tasks/issues/001-task.md |"),
+        "tasks/issues/001-task.md": taskFile("001", "ready"),
+      };
+
+      const missingCoreDocs = await preflightDecisionForFixture({
+        "docs/raw/founder-dump.md": "# Founder Dump\n",
+        "docs/raw/founder-interview.md": "# Founder Interview\n",
+        "docs/blueprint-status.md": readyBlueprint(),
+        "docs/mvp-scope.md": `# MVP Scope
+
+Primary customer: Operators
+Primary workflow: Evidence-driven execution
+`,
+      });
+      if (missingCoreDocs.decision !== "write-artifacts") {
+        throw new Error(`missing-core-docs fixture returned ${missingCoreDocs.decision}`);
+      }
+
+      const missingTaskSurface = await preflightDecisionForFixture({
+        "docs/raw/founder-dump.md": "# Founder Dump\n",
+        "docs/raw/founder-interview.md": "# Founder Interview\n",
+        "docs/blueprint-status.md": readyBlueprint(),
+        "docs/source-index.md": "# Source Index\n",
+        "docs/mvp-scope.md": `# MVP Scope
+
+Primary customer: Operators
+Primary workflow: Evidence-driven execution
+`,
+        "docs/execution-rules.md": "# Execution Rules\n",
+        "docs/release-gates.md": releaseGates(),
+      });
+      if (missingTaskSurface.decision !== "create-sprint0") {
+        throw new Error(`missing-task-surface fixture returned ${missingTaskSurface.decision}`);
+      }
+
+      const founderFed = await preflightDecisionForFixture(baseReadyPreflight);
+      if (founderFed.decision !== "ready-for-execution") {
+        throw new Error(`founder-fed fixture returned ${founderFed.decision}`);
+      }
+
+      for (const mode of ["web-assisted", "public-first-prototype"]) {
+        const result = await preflightDecisionForFixture({
+          ...baseReadyPreflight,
+          "docs/blueprint-status.md": readyBlueprint().replace("Status: ready", `Status: ready\nSource mode: ${mode}`),
+        });
+        if (result.decision !== "run-research") {
+          throw new Error(`${mode} fixture returned ${result.decision}`);
+        }
+
+        const withEvidence = await preflightDecisionForFixture({
+          ...baseReadyPreflight,
+          "docs/blueprint-status.md": readyBlueprint().replace("Status: ready", `Status: ready\nSource mode: ${mode}`),
+          "docs/evidence/evidence-notes.md": "# Evidence Notes\n",
+        });
+        if (withEvidence.decision !== "ready-for-execution") {
+          throw new Error(`${mode} with public evidence returned ${withEvidence.decision}`);
+        }
+      }
+    },
+  },
+  {
     name: "continue resolver fixture decisions are stable",
     run: async () => {
       const baseDocs = {
@@ -802,6 +907,177 @@ Primary workflow: Evidence-driven execution
           throw new Error(`release blocker ${expectedType} returned ${blocked.decision}`);
         }
       }
+
+      const externalConflict = await continueDecisionForFixture({
+        ...baseDocs,
+        "docs/conflicts.md": `# Conflicts
+
+## Conflicts
+
+| Conflict | Sources | Severity | Owner | Status | Resolution |
+| --- | --- | --- | --- | --- | --- |
+| Search indexing proof missing | docs/release-gates.md | medium | external provider | open |  |
+`,
+        "tasks/sprint-0.md": tracker("| 001 | Ready task | ready | tasks/issues/001-task.md |"),
+        "tasks/issues/001-task.md": taskFile("001", "ready"),
+      });
+      if (externalConflict.decision !== "wait-external") {
+        throw new Error(`external conflict fixture returned ${externalConflict.decision}`);
+      }
+    },
+  },
+  {
+    name: "execution helper reports task contracts and stop gates",
+    run: async () => {
+      const incompleteTask = `# 001: Incomplete Task
+
+Status: ready
+Owner: AI
+
+## Goal
+
+Exercise task contract reporting.
+`;
+      const contract = await executionCheckForFixture({
+        "tasks/issues/001-task.md": incompleteTask,
+      }, ["--mode", "task-contract", "--task", "tasks/issues/001-task.md"]);
+      for (const expected of ["Type:", "Assumption basis:", "## Non-Goals", "## Verification", "## Evidence Log"]) {
+        if (!(contract.contractMissing ?? []).includes(expected)) {
+          throw new Error(`task-contract output missing expected missing field ${expected}`);
+        }
+      }
+
+      const stopped = await executionCheckForFixture({
+        "docs/blueprint-status.md": readyBlueprint(),
+        "docs/execution-rules.md": "# Execution Rules\n",
+        "docs/release-gates.md": "unproven external release proof\n",
+        "tasks/issues/001-task.md": taskFile("001", "ready", "Founder"),
+      }, ["--mode", "stop-gates", "--task", "tasks/issues/001-task.md"]);
+      for (const expected of [
+        "selected task is owned by Founder, not AI",
+        "release gates contain unproven or external-state language",
+      ]) {
+        if (!(stopped.gateReasons ?? []).some((reason) => reason.includes(expected))) {
+          throw new Error(`stop-gates output missing expected reason ${expected}`);
+        }
+      }
+    },
+  },
+  {
+    name: "malformed markdown tables do not crash helper scripts",
+    run: async () => {
+      const malformedSprint = `# Sprint 0
+
+Status: active
+
+## Tasks
+
+| ID | Title | Status | Evidence |
+| --- | --- |
+| 001 | Broken row
+plain text without table pipes
+`;
+      const continued = await continueDecisionForFixture({
+        "docs/blueprint-status.md": readyBlueprint(),
+        "docs/open-questions.md": openQuestions(),
+        "docs/release-gates.md": releaseGates(),
+        "docs/execution-rules.md": "# Execution Rules\n",
+        "docs/conflicts.md": `# Conflicts
+
+## Conflicts
+
+| Conflict | Sources | Severity |
+| --- |
+| Partial row
+`,
+        "tasks/sprint-0.md": malformedSprint,
+      });
+      if (!continued.decision) {
+        throw new Error("continue-check returned no decision for malformed markdown");
+      }
+
+      const preflight = await preflightDecisionForFixture({
+        "docs/raw/founder-dump.md": "# Founder Dump\n",
+        "docs/raw/founder-interview.md": "# Founder Interview\n",
+        "docs/blueprint-status.md": `# Blueprint Status
+
+Status: draft
+
+## Readiness
+
+| Gate | Status |
+| --- |
+| MVP extracted
+`,
+      });
+      if (!preflight.decision) {
+        throw new Error("preflight-check returned no decision for malformed markdown");
+      }
+    },
+  },
+  {
+    name: "templates expose required matrix markers",
+    run: async () => {
+      await assertIncludes("skills/build-right-preflight/assets/templates/docs/decision-log.md", [
+        "Decision",
+        "Owner",
+        "Evidence",
+        "Consequence",
+      ]);
+      await assertIncludes("skills/build-right-preflight/assets/templates/docs/release-gates.md", [
+        "Validation baseline",
+        "Product scope",
+        "Task evidence",
+        "Go/No-Go Format",
+      ]);
+      await assertIncludes("skills/build-right-preflight/assets/templates/docs/mvp-scope.md", [
+        "Source mode",
+        "Manual Before Automated",
+        "Validation Required Before Product Truth",
+        "Learning Objective",
+      ]);
+      await assertIncludes("skills/build-right-preflight/assets/templates/docs/execution-rules.md", [
+        "## Authority Order",
+        "## AI May Decide",
+        "## AI Must Ask",
+        "## Stop/Ask Gates",
+      ]);
+      await assertIncludes("skills/build-right-preflight/assets/templates/docs/blueprint-status.md", [
+        "Project state",
+        "Source mode",
+        "Prototype confidence",
+        "## Next Action",
+      ]);
+      await assertIncludes("skills/build-right-preflight/assets/templates/tasks/issue-template.md", [
+        "## Acceptance Criteria",
+        "## Baseline Evidence",
+        "## Learning Notes",
+      ]);
+      await assertIncludes("skills/build-right-execution/assets/templates/not-ready-blocker.md", [
+        "## Acceptance Criteria",
+        "## Verification Summary",
+        "## Blockers",
+      ]);
+    },
+  },
+  {
+    name: "workflow customization markers are additive and preserve gates",
+    run: async () => {
+      await assertIncludes("workflow-backbone.md", [
+        "Customization is additive",
+        "commit after each completed task",
+        "require screenshot evidence for UI changes",
+        "disable web research for a project or phase",
+        "skip the resolver",
+        "skip founder gates",
+        "ignore external-state gates",
+        "mark complete without evidence",
+      ]);
+      await assertIncludes("planning/sprints/001-workflow-backbone-foundation.md", [
+        "Customization should add policy hooks around that loop.",
+        "It should not bypass",
+        "Do not implement workflow customization before task 002 and task 003 are green.",
+      ]);
     },
   },
   {

@@ -1,6 +1,6 @@
 # 003: Expand the Script and Markdown Testing Matrix
 
-Status: ready
+Status: complete
 Type: testing
 Owner: AI
 
@@ -35,20 +35,20 @@ execution, templates, Markdown parsing, and customization safety.
 
 ## Acceptance Criteria
 
-- [ ] Tests cover preflight states: blank/new, existing, existing without source
+- [x] Tests cover preflight states: blank/new, existing, existing without source
   index, missing core docs, missing task surface, ready for execution.
-- [ ] Tests cover source modes: `founder-fed`, `web-assisted`, and
+- [x] Tests cover source modes: `founder-fed`, `web-assisted`, and
   `public-first-prototype`.
-- [ ] Tests cover founder, external, AI-owned, source-mismatch, stale,
+- [x] Tests cover founder, external, AI-owned, source-mismatch, stale,
   failed-verification, release-claim, and open-conflict gates.
-- [ ] Tests cover execution states: active task, ready task, no ready task,
+- [x] Tests cover execution states: active task, ready task, no ready task,
   missing tracker, missing task evidence path, and non-AI-owned tasks.
-- [ ] Tests cover required task contract fields and required Markdown sections.
-- [ ] Tests cover template markers for blueprint status, decision log,
+- [x] Tests cover required task contract fields and required Markdown sections.
+- [x] Tests cover template markers for blueprint status, decision log,
   execution rules, release gates, MVP scope, issue templates, and not-ready
   blocker templates.
-- [ ] Tests cover malformed or partial Markdown tables without crashing.
-- [ ] Tests define the expected behavior for additive workflow customization
+- [x] Tests cover malformed or partial Markdown tables without crashing.
+- [x] Tests define the expected behavior for additive workflow customization
   markers without allowing gate bypass.
 
 ## Baseline Evidence
@@ -66,16 +66,31 @@ Use the current testing matrix in:
 
 | Date | Evidence | Result | Notes |
 | --- | --- | --- | --- |
+| 2026-06-23 | `bun test` before matrix expansion | pass | 9 tests passed from task 002 baseline. |
+| 2026-06-23 | `bun test` after matrix expansion | pass | 14 tests passed, including preflight matrix, execution contract, malformed Markdown, template markers, and customization safety markers. |
+| 2026-06-23 | `bun run verify:skill-trials` | pass | Wrapper ran the same 14-test suite successfully. |
+| 2026-06-23 | Required review trigger check | skipped | Verifier behavior changed; subagent review tooling requires explicit user-requested delegation, so substituted focused test review plus both verification commands. |
+
+## Files Changed
+
+- `tests/skill-trials.test.ts` - expands the Bun test matrix for preflight states, source modes, gates, task contracts, malformed Markdown, template markers, and workflow customization safety.
+- `planning/sprints/001-workflow-backbone-foundation.md` - marks task 003 complete.
+- `planning/tasks/003-expand-testing-matrix.md` - records evidence and completion state.
+
+## Verification Summary
+
+- `bun test` - pass, 14 tests.
+- `bun run verify:skill-trials` - pass, 14 tests through compatibility wrapper.
 
 ## Learning Notes
 
-- Proved: pending
-- Simulated: pending
-- Test next: whether importable helper modules are needed for readable coverage
+- Proved: the current CLI-level fixture harness can cover the requested state, gate, template, Markdown, and customization-safety matrix.
+- Simulated: direct unit imports of helper decision functions remain future work; current coverage exercises script behavior through Bun subprocess fixtures.
+- Test next: whether importable helper modules are needed for more readable coverage.
 
 ## Blockers
 
-- planning/tasks/002-convert-verifier-to-bun-tests.md should land first.
+- None.
 
 ## Follow-Ups
 
