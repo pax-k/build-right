@@ -9,8 +9,15 @@ Use one of:
 
 - `founder-claimed`: founder stated it, not independently validated
 - `ai-inferred`: AI inferred it from available material
-- `evidence-backed`: linked to specific evidence
+- `public-evidence-backed`: linked to public web evidence, such as competitor
+  pages, pricing pages, reviews, forums, public docs, or market notes
+- `customer-evidence-backed`: linked to direct customer conversations, sales
+  calls, user messages, support requests, interviews, or manual delivery results
 - `unknown`: known gap
+
+Do not present public web research as customer validation. Public evidence can
+challenge, contextualize, and strengthen assumptions; it cannot prove private
+buyer urgency or willingness to pay.
 
 ## Validation Marks
 
@@ -30,7 +37,7 @@ Use this shape for raw and canonical product docs that benefit from flexibility:
 ```md
 # <Document Title>
 
-Status: draft | founder-validated | evidence-backed
+Status: draft | founder-validated | public-evidence-backed | customer-evidence-backed
 Owner: founder | AI | founder + AI
 Confidence: low | medium | high
 Last updated: YYYY-MM-DD
@@ -113,7 +120,7 @@ Use for `docs/source-index.md`:
 ```
 
 Document statuses: `raw`, `draft`, `needs-validation`, `validated`,
-`evidence-backed`, `stale`.
+`public-evidence-backed`, `customer-evidence-backed`, `stale`.
 
 ## Decision Log Shape
 
@@ -149,7 +156,7 @@ Use for `docs/mvp-scope.md`:
 ```md
 # MVP Scope
 
-Status: draft | founder-validated | evidence-backed
+Status: draft | founder-validated | public-evidence-backed | customer-evidence-backed
 Owner: founder
 Confidence: low | medium | high
 Last updated: YYYY-MM-DD
@@ -216,6 +223,42 @@ Use for `docs/execution-rules.md`:
 | --- | --- | --- |
 | <type> | <commands/proof> | <where recorded> |
 ```
+
+## Evidence Notes Shape
+
+Use separate public and customer evidence sections:
+
+```md
+# Evidence Notes
+
+Status: draft
+Owner: founder + AI
+Confidence: low
+Last updated: YYYY-MM-DD
+
+## Public Evidence
+
+| Date | Source Type | Source | Claim Supported Or Challenged | Strength | Link/Path | Notes |
+| --- | --- | --- | --- | --- | --- | --- |
+| YYYY-MM-DD | competitor page | <name> | <claim> | weak | <url/path> | <notes> |
+
+## Customer Evidence
+
+| Date | Source Type | Source | Claim Supported Or Challenged | Strength | Link/Path | Notes |
+| --- | --- | --- | --- | --- | --- | --- |
+| YYYY-MM-DD | customer call | <name/account> | <claim> | medium | <path> | <notes> |
+
+## Unsupported Important Claims
+
+- <claim>
+
+## Evidence To Gather Next
+
+- <evidence target>
+```
+
+Use `docs/evidence/customer-notes.md` only for direct customer evidence. Store
+public research in competitor, pricing, or market evidence docs.
 
 ## Sprint 0 Shape
 

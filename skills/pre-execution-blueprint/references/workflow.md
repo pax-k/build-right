@@ -98,7 +98,8 @@ Every major claim must use one status:
 
 - `founder-claimed`
 - `ai-inferred`
-- `evidence-backed`
+- `public-evidence-backed`
+- `customer-evidence-backed`
 - `unknown`
 
 ## 6. Founder Validation
@@ -142,7 +143,142 @@ Outputs:
 Evidence-backed claims may become product truth. Unsupported claims stay marked
 as assumptions.
 
-## 8. Canonical Product Docs
+## 8. Research Lane
+
+Use web research when public evidence can materially improve confidence or
+expose contradictions. Do not run research blindly at every step.
+
+Default loop:
+
+```text
+Founder input
+-> AI extracts claims
+-> AI identifies research-worthy claims
+-> Web research pass when useful
+-> Evidence notes with sources
+-> Contradictions and confidence updates
+-> Founder clarification only for important unresolved points
+-> Canonical doc update
+```
+
+Founder input comes first. Ask for raw founder answers about product idea,
+target customer, workflow, pain, alternatives, pricing instincts, constraints,
+and non-goals before researching.
+
+Use web research for:
+
+- competitors and alternatives
+- pricing benchmarks
+- market/category language
+- public customer pain signals
+- regulatory or platform constraints
+- distribution/channel assumptions
+- public reviews, forums, docs, and buying guides
+- buyer vocabulary
+
+Do not treat web research as enough to prove:
+
+- whether this founder can sell the product
+- whether a specific customer will buy
+- true urgency of a pain
+- willingness to pay
+- feasibility inside a private workflow
+- claims that require private customer conversations or internal data
+
+Before web research, announce:
+
+```text
+Research pass:
+- competitor alternatives for <category>
+- pricing signals for <buyer/use case>
+- public pain language from <source types>
+
+Purpose:
+- challenge or support current assumptions
+- identify contradictions
+- improve vocabulary and positioning
+
+Not purpose:
+- replace founder validation
+- claim customer willingness to pay
+```
+
+Proceed by default unless the user asked for no web research or planning-only
+mode.
+
+Record public research in:
+
+- `docs/evidence/competitor-research.md`
+- `docs/evidence/pricing-research.md`
+- `docs/evidence/market-notes.md`
+
+Use `docs/evidence/customer-notes.md` only for real customer conversations,
+messages, sales calls, interviews, support requests, or direct user feedback.
+
+Public research can upgrade a claim to `public-evidence-backed`, not
+`customer-evidence-backed`.
+
+Ask follow-up questions only when research reveals important conflicts,
+ambiguity, or unsupported critical claims:
+
+- founder claims conflict with public evidence
+- multiple plausible ICPs compete for priority
+- competitor framing suggests a different product category
+- pricing evidence contradicts founder instinct
+- market language implies a narrower or broader product
+- the claim remains important but unsupported
+
+## 9. Delegation Lane
+
+Use subagents selectively for independent parallel judgment and bounded
+delegation. Do not use them as the default for every step.
+
+Rule:
+
+```text
+Subagents may gather, draft, critique, and audit.
+The main agent decides, writes, updates trackers, and closes gates.
+```
+
+Use subagents for:
+
+- web research lanes
+- existing project inventory
+- competitor research
+- pricing research
+- market language research
+- public pain signal research
+- conflict detection
+- readiness review
+- evidence completeness review
+- execution review after implementation
+- large draft generation where the main agent will merge and edit
+
+Do not use subagents for:
+
+- founder interview flow
+- final product promise decisions
+- MVP boundary decisions
+- authoritative final-state writes without main-agent review
+- tracker updates without main-agent review
+- committing, publishing, or external irreversible actions
+- work requiring private context that the main agent has not explicitly passed
+  to the subagent
+
+Every subagent prompt must include:
+
+- objective
+- exact files or context to read
+- scope boundaries
+- allowed sources
+- output format
+- stop condition
+- instruction not to edit files unless explicitly delegated
+
+Use prompt templates in `assets/templates/subagents/` for common research,
+inventory, conflict, and readiness lanes.
+
+## 10. Canonical Product Docs
 
 After validation and evidence tagging, produce canonical docs:
 
@@ -160,7 +296,7 @@ After validation and evidence tagging, produce canonical docs:
 
 These become source material that planning and execution agents may rely on.
 
-## 9. Source Index
+## 11. Source Index
 
 Create `docs/source-index.md` to say what each source is for and how much
 confidence it deserves.
@@ -171,7 +307,7 @@ Use columns:
 Document | Purpose | Status | Confidence | Owner | Last Reviewed
 ```
 
-## 10. Conflict Resolution
+## 12. Conflict Resolution
 
 Scan for contradictions:
 
@@ -191,7 +327,7 @@ Outputs:
 Founder resolves major conflicts. Do not start automated execution while core
 product, customer, or MVP boundaries are unresolved.
 
-## 11. MVP Extraction
+## 13. MVP Extraction
 
 Extract the smallest sellable and learnable product:
 
@@ -209,7 +345,7 @@ Gate:
 The MVP must be clear enough to sell, demo, or manually deliver before it is automated.
 ```
 
-## 12. Manual Ops Before Product
+## 14. Manual Ops Before Product
 
 Document how the founder or team can deliver value manually:
 
@@ -222,7 +358,7 @@ Document how the founder or team can deliver value manually:
 
 Output: `docs/manual-ops-playbook.md`
 
-## 13. Project Operating System
+## 15. Project Operating System
 
 Create or update:
 
@@ -248,7 +384,7 @@ The operating system must answer:
 - what checks prove work complete
 - where evidence gets recorded
 
-## 14. Sprint 0 Planning
+## 16. Sprint 0 Planning
 
 Sprint 0 is foundation work, not product feature work.
 
@@ -269,7 +405,7 @@ Outputs:
 - `tasks/issues/001-*.md`
 - `tasks/issues/002-*.md`
 
-## 15. Readiness Gate
+## 17. Readiness Gate
 
 Before the first execution task, answer:
 

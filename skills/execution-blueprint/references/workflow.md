@@ -164,7 +164,33 @@ readiness, user-facing behavior, or live integration success.
 Record evidence inside the task tracker or evidence file before marking work
 done. Follow `references/evidence-contract.md`.
 
-## 10. State Update
+## 10. Optional Subagent Review
+
+Use subagents selectively after implementation when independent review would
+improve confidence. Subagents may gather, critique, and audit; the main agent
+decides, writes, updates trackers, and closes gates.
+
+Useful review lanes:
+
+- evidence completeness review
+- scope creep review
+- focused risk review for high-blast-radius changes
+
+Do not use subagents for final tracker updates, commits, publishing, or
+authoritative task closeout unless the user explicitly asks.
+
+Every subagent review prompt must include:
+
+- objective
+- exact task file, changed files, or evidence to inspect
+- scope boundaries
+- output format
+- stop condition
+- instruction not to edit files
+
+Use prompt templates in `assets/templates/subagents/`.
+
+## 11. State Update
 
 After evidence exists, update only artifacts that changed:
 
@@ -179,7 +205,7 @@ After evidence exists, update only artifacts that changed:
 Do not mark a parent sprint, milestone, or release complete just because one
 task is complete.
 
-## 11. Commit Or Handoff
+## 12. Commit Or Handoff
 
 Commit when the project workflow expects it and the task is coherent.
 
@@ -199,7 +225,7 @@ If not committing, hand off with:
 - remaining blockers
 - suggested next task
 
-## 12. Closeout
+## 13. Closeout
 
 Keep closeout short and operational:
 
