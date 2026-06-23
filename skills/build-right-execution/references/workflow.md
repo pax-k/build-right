@@ -94,8 +94,10 @@ Inspect current workspace before changing files:
 - for skill validation tasks, the exact skill source under test
 - active or recent mutations to the same tracker, task file, release gates,
   checklist, or shared evidence files
+- open conflicts in `docs/conflicts.md`
 
-Use `gates.md` for readiness, source-under-test, and concurrent-work gates.
+Use `gates.md` for readiness, task ownership, open-conflict,
+source-under-test, and concurrent-work gates.
 
 ## 4. Baseline Evidence
 

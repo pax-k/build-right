@@ -16,7 +16,15 @@ flowchart TD
   A["Invoke skill: /build-right-preflight or $build-right-preflight"] --> B["Read core workflow and routed references"]
   B --> C["Inspect project state"]
   C --> C0["Run preflight-check helper for inventory and readiness signals"]
-  C0 --> D{"Project type?"}
+  C0 --> C1["Report decision, confidence, project type, next action, missing artifacts, warnings, founder gaps"]
+  C1 --> C2{"Preflight decision?"}
+  C2 -->|"delegate-inventory"| F
+  C2 -->|"ask-founder"| J0
+  C2 -->|"run-research"| S
+  C2 -->|"write-artifacts or create-sprint0"| G
+  C2 -->|"ready-for-execution"| AH
+  C2 -->|"blocked"| I
+  C2 -->|"continue inventory/classification"| D{"Project type?"}
 
   D -->|"Blank or new"| E["Prepare starter scaffold plan"]
   D -->|"Existing project"| F["Inventory docs, tasks, code surfaces, validation, release gates"]
@@ -279,7 +287,7 @@ flowchart TD
   B -->|"Execution continuation decision"| D["Run continue-check.ts --strict"]
   B -->|"Execution task contract or stop gates"| D1["Run execution-check.ts"]
 
-  C --> E["Helper returns read-only signals, missing artifacts, warnings, recommendation"]
+  C --> E["Helper returns read-only decision, next action, signals, missing artifacts, warnings, recommendation"]
   D --> E
   D1 --> E
 
@@ -294,14 +302,14 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-  A["Run continue-check.ts --strict"] --> B["Parse markdown status lines, task tables, gate tables, readiness table, next-action block, issue files"]
-  B --> C["Build execution state: active, ready, completed, blocking gates, external follow-ups"]
+  A["Run continue-check.ts --strict"] --> B["Parse markdown status lines, task tables, gate tables, readiness table, conflicts, next-action block, issue files"]
+  B --> C["Build execution state: AI-owned active/ready, completed, blocking gates, external follow-ups"]
   C --> D{"Highest-priority decision"}
 
   D -->|"Invalid or contradictory state"| E["invalid-state"]
   D -->|"Founder-owned gate"| F["ask-founder"]
   D -->|"External-state gate"| G["wait-external"]
-  D -->|"Source mismatch, stale, failed verification, release claim"| J["create-blocker"]
+  D -->|"Source mismatch, stale, failed verification, release claim, AI-owned open conflict"| J["create-blocker"]
   D -->|"Active task exists"| H["continue-active-task"]
   D -->|"Ready task exists"| I["execute-task"]
   D -->|"Execution surface missing"| J

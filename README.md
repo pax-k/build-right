@@ -133,6 +133,12 @@ guidance, `assets/templates/` for reusable Markdown artifacts, and bundled
 read-only Bun scripts for deterministic inventory, task-contract, and gate
 signals.
 
+The preflight helper returns one decision: `delegate-inventory`, `ask-founder`,
+`run-research`, `write-artifacts`, `create-sprint0`, `ready-for-execution`, or
+`blocked`. Agents should report the decision, confidence, project type, next
+action, missing artifacts, readiness warnings, and founder input gaps before
+writing or claiming readiness.
+
 The main skill files stay concise. Core workflows live in `workflow.md`; gates,
 research/delegation, and evidence contracts are separate one-hop references
 loaded only when relevant.

@@ -297,9 +297,9 @@ When activated, the skill should:
 14. Run trigger-based subagent review when release evidence, workflows,
     templates, verifier behavior, broad tracker state, or failed-then-fixed
     verification makes independent review valuable and tooling is available.
-15. Stop at founder-owned, external-state, failed-verification, stale-task,
-    source-mismatch, or release-claim gates instead of advancing to the next
-    task.
+15. Stop at founder-owned, external-state, non-AI-owner, open-conflict,
+    failed-verification, stale-task, source-mismatch, or release-claim gates
+    instead of advancing to the next task.
 16. Commit or hand off, depending on project workflow.
 17. Name the next logical task without silently widening scope.
 
@@ -414,6 +414,9 @@ The first implementation should be instruction-and-template driven:
 - Put reusable Markdown templates in `assets/templates/`.
 - Put read-only deterministic helpers in `scripts/` when agents repeatedly miss
   inventory, task-contract, or gate checks.
+- Add a preflight helper decision that returns the next pre-execution action:
+  delegate inventory, ask founder, run research, write artifacts, create Sprint
+  0, declare ready for execution, or stop blocked.
 - Add a continue state resolver that parses markdown docs/tasks and returns one
   decision before agents advance through a queue.
 - Forward-test each skill in both a blank project and an existing project.

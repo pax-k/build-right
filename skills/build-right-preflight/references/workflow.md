@@ -31,7 +31,9 @@ Run the read-only helper when available:
 bun <skill-path>/scripts/preflight-check.ts --cwd <project> --mode all --format markdown
 ```
 
-Use its output as deterministic input, not as final judgment.
+Report its decision, confidence, project type, next action, missing artifacts,
+readiness warnings, and founder input gaps. Use its output as deterministic
+input, not as final judgment.
 
 Classify the project:
 
@@ -191,6 +193,8 @@ Before handoff, rerun the read-only helper when available:
 ```sh
 bun <skill-path>/scripts/preflight-check.ts --cwd <project> --mode readiness --format markdown
 ```
+
+Report and reconcile the helper decision before claiming readiness.
 
 Then answer:
 

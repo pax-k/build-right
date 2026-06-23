@@ -4,6 +4,11 @@ Status: ready
 Type: validation
 Owner: AI
 
+Assumption basis: repo-evidence-backed
+Reversibility: easy
+Learning objective: establish the smallest evidence-backed execution surface
+Source under test: repo-local path
+
 ## Goal
 
 Create the minimum authority docs, task tracker, and verification surface needed

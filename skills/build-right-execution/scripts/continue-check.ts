@@ -13,6 +13,7 @@ type GateType =
   | "invalid-state"
   | "founder-owned"
   | "external-state"
+  | "open-conflict"
   | "source-mismatch"
   | "stale"
   | "failed-verification"
@@ -231,6 +232,18 @@ function normalizeStatus(status: string): string {
   return status.trim().toLowerCase();
 }
 
+function normalizeOwner(owner?: string): string {
+  return (owner ?? "").trim().toLowerCase();
+}
+
+function isAiOwned(owner?: string): boolean {
+  return ["ai", "agent", "codex"].includes(normalizeOwner(owner));
+}
+
+function isExternalOwner(owner?: string): boolean {
+  return /external|vendor|provider|platform|service|third[- ]party|directory|search/i.test(owner ?? "");
+}
+
 function evidencePath(evidence: string): string {
   return evidence.match(/tasks\/issues\/[A-Za-z0-9._/-]+\.md/)?.[0] ?? "";
 }
@@ -435,6 +448,63 @@ function backlogNextActionGate(text: string): Gate | null {
   return null;
 }
 
+function taskOwnerGates(tasks: TaskSummary[]): { founder: Gate[]; external: Gate[] } {
+  const founder: Gate[] = [];
+  const external: Gate[] = [];
+
+  for (const task of tasks.filter((item) => item.status === "ready" || item.status === "active")) {
+    if (!task.owner || isAiOwned(task.owner)) {
+      continue;
+    }
+
+    const gate: Gate = {
+      type: isExternalOwner(task.owner) ? "external-state" : "founder-owned",
+      status: task.status,
+      source: task.path || task.tracker,
+      reason: `task ${task.id} is owned by ${task.owner}, not AI`,
+    };
+    if (gate.type === "external-state") {
+      external.push(gate);
+    } else {
+      founder.push(gate);
+    }
+  }
+
+  return { founder, external };
+}
+
+function conflictGates(text: string): { founder: Gate[]; external: Gate[]; blocking: Gate[] } {
+  const founder: Gate[] = [];
+  const external: Gate[] = [];
+  const blocking: Gate[] = [];
+  const rows = parseTable(section(text, "Conflicts"));
+
+  for (const row of rows) {
+    const conflict = row.Conflict ?? "";
+    const status = normalizeStatus(row.Status ?? "");
+    const owner = row.Owner ?? "";
+    if (!conflict || conflict.includes("<") || ["resolved", "closed", "complete", "done", "none"].includes(status)) {
+      continue;
+    }
+
+    const gate: Gate = {
+      type: isExternalOwner(owner) ? "external-state" : isAiOwned(owner) ? "open-conflict" : "founder-owned",
+      status: row.Status ?? "open",
+      source: "docs/conflicts.md",
+      reason: conflict,
+    };
+    if (gate.type === "external-state") {
+      external.push(gate);
+    } else if (gate.type === "founder-owned") {
+      founder.push(gate);
+    } else {
+      blocking.push(gate);
+    }
+  }
+
+  return { founder, external, blocking };
+}
+
 async function invalidStateGates(cwd: string, tasks: TaskSummary[], strict: boolean): Promise<Gate[]> {
   if (!strict) {
     return [];
@@ -477,6 +547,7 @@ async function resolveState(args: Args): Promise<ContinueResult> {
   const blueprint = await readIfExists(args.cwd, "docs/blueprint-status.md");
   const openQuestions = await readIfExists(args.cwd, "docs/open-questions.md");
   const releaseGates = await readIfExists(args.cwd, "docs/release-gates.md");
+  const conflicts = await readIfExists(args.cwd, "docs/conflicts.md");
   const postRelease = await readIfExists(args.cwd, "tasks/post-release-backlog.md");
   const sprint = await readIfExists(args.cwd, "tasks/sprint-0.md");
   const issues = await loadIssueTasks(args.cwd);
@@ -491,6 +562,9 @@ async function resolveState(args: Args): Promise<ContinueResult> {
   if (releaseGates) {
     evidence.push({ source: "docs/release-gates.md", summary: `status ${statusLine(releaseGates)}` });
   }
+  if (conflicts) {
+    evidence.push({ source: "docs/conflicts.md", summary: `status ${statusLine(conflicts)}` });
+  }
   if (sprint) {
     evidence.push({ source: "tasks/sprint-0.md", summary: `status ${statusLine(sprint)}` });
   }
@@ -499,9 +573,13 @@ async function resolveState(args: Args): Promise<ContinueResult> {
   }
 
   const invalidGates = await invalidStateGates(args.cwd, tasks, args.strict);
+  const ownerSignals = taskOwnerGates(tasks);
+  const conflictSignals = conflictGates(conflicts);
   const founderGates = [
     ...blueprintGates(blueprint),
     ...openQuestionGates(openQuestions),
+    ...ownerSignals.founder,
+    ...conflictSignals.founder,
   ];
   const releaseSignals = releaseGateSignals(releaseGates);
   const backlogGate = backlogNextActionGate(postRelease);
@@ -510,17 +588,25 @@ async function resolveState(args: Args): Promise<ContinueResult> {
   }
   const externalFollowUps = [
     ...releaseSignals.external,
+    ...ownerSignals.external,
+    ...conflictSignals.external,
     ...(backlogGate?.type === "external-state" ? [backlogGate] : []),
+  ];
+  const aiBlockingGates = [
+    ...releaseSignals.blocking,
+    ...conflictSignals.blocking,
   ];
   const blockingGates = [
     ...invalidGates,
     ...founderGates,
-    ...releaseSignals.blocking,
+    ...aiBlockingGates,
     ...externalFollowUps,
   ];
 
   const activeTasks = tasks.filter((task) => task.status === "active");
   const readyTasks = tasks.filter((task) => task.status === "ready");
+  const executableActiveTasks = activeTasks.filter((task) => isAiOwned(task.owner));
+  const executableReadyTasks = readyTasks.filter((task) => isAiOwned(task.owner));
   const completedTasks = tasks.filter((task) => task.status === "complete");
   const hasExecutionRules = await exists(args.cwd, "docs/execution-rules.md");
   const hasTracker = Boolean(sprint || postRelease);
@@ -539,16 +625,16 @@ async function resolveState(args: Args): Promise<ContinueResult> {
   } else if (externalFollowUps.length > 0) {
     decision = "wait-external";
     nextAction = externalFollowUps[0].reason;
-  } else if (releaseSignals.blocking.length > 0) {
+  } else if (aiBlockingGates.length > 0) {
     decision = "create-blocker";
-    nextAction = releaseSignals.blocking[0].reason;
-  } else if (activeTasks.length > 0) {
+    nextAction = aiBlockingGates[0].reason;
+  } else if (executableActiveTasks.length > 0) {
     decision = "continue-active-task";
-    nextTask = activeTasks[0];
+    nextTask = executableActiveTasks[0];
     nextAction = `Continue active task ${nextTask.id}: ${nextTask.path || nextTask.title}`;
-  } else if (readyTasks.length > 0) {
+  } else if (executableReadyTasks.length > 0) {
     decision = "execute-task";
-    nextTask = readyTasks[0];
+    nextTask = executableReadyTasks[0];
     nextAction = `Execute ready task ${nextTask.id}: ${nextTask.path || nextTask.title}`;
   } else if (missingExecutionSurface) {
     decision = "create-blocker";

@@ -51,6 +51,8 @@ implementing product features.
 Stop or ask when:
 
 - founder-owned product, positioning, buyer/user, or MVP decision is required
+- a ready or active task is not owned by AI
+- `docs/conflicts.md` has an open founder-owned, external, or AI-owned conflict
 - external discovery, search indexing, publishing, secrets, paid services, or
   production access is required
 - verification failed or could not run

@@ -2,6 +2,14 @@ import { join, resolve } from "node:path";
 
 type Mode = "inventory" | "readiness" | "all";
 type OutputFormat = "markdown" | "json";
+type PreflightDecision =
+  | "delegate-inventory"
+  | "ask-founder"
+  | "run-research"
+  | "write-artifacts"
+  | "create-sprint0"
+  | "ready-for-execution"
+  | "blocked";
 
 type Args = {
   cwd: string;
@@ -13,6 +21,9 @@ type Args = {
 type CheckResult = {
   cwd: string;
   mode: Mode;
+  decision: PreflightDecision;
+  nextAction: string;
+  confidence: "high" | "medium" | "low";
   projectTypeSignal: "blank/new" | "existing";
   inventory: Record<string, string | number | boolean>;
   missingArtifacts: string[];
@@ -73,7 +84,8 @@ function usage(): string {
   return `Usage: bun preflight-check.ts [--cwd <path>] [--mode inventory|readiness|all] [--format markdown|json]
 
 Read-only helper for Build Right preflight. Reports project type signals,
-missing docs/tasks, readiness warnings, and likely founder-input gaps.`;
+missing docs/tasks, readiness warnings, likely founder-input gaps, and one
+recommended preflight decision.`;
 }
 
 async function exists(cwd: string, path: string): Promise<boolean> {
@@ -102,6 +114,10 @@ function hasAny(text: string, values: string[]): boolean {
   return values.some((value) => lower.includes(value.toLowerCase()));
 }
 
+function sourceMode(text: string): string {
+  return text.match(/^Source mode:\s*(.+)$/m)?.[1]?.trim().toLowerCase() ?? "";
+}
+
 async function runCheck(args: Args): Promise<CheckResult> {
   const docs = await globFiles(args.cwd, "docs/**/*.md");
   const taskFiles = [
@@ -119,6 +135,7 @@ async function runCheck(args: Args): Promise<CheckResult> {
   const blueprintStatus = await readIfExists(args.cwd, "docs/blueprint-status.md");
   const mvpScope = await readIfExists(args.cwd, "docs/mvp-scope.md");
   const openQuestions = await readIfExists(args.cwd, "docs/open-questions.md");
+  const activeSourceMode = sourceMode(blueprintStatus) || sourceMode(mvpScope);
 
   const requiredArtifacts = [
     "docs/blueprint-status.md",
@@ -147,7 +164,8 @@ async function runCheck(args: Args): Promise<CheckResult> {
   const hasExecutionSurface =
     (await exists(args.cwd, "docs/execution-rules.md")) &&
     taskFiles.some((file) => file.includes("tasks/"));
-  const projectTypeSignal = hasProductTruth || hasExecutionSurface ? "existing" : "blank/new";
+  const hasExistingDocsOrTasks = docs.length + taskFiles.length >= 2;
+  const projectTypeSignal = hasProductTruth || hasExecutionSurface || hasExistingDocsOrTasks ? "existing" : "blank/new";
 
   const readinessWarnings: string[] = [];
   if (!hasProductTruth) {
@@ -176,10 +194,10 @@ async function runCheck(args: Args): Promise<CheckResult> {
   if (!(await exists(args.cwd, "docs/raw/founder-interview.md"))) {
     founderInputGaps.push("founder interview record is missing");
   }
-  if (!mvpScope || hasAny(mvpScope, ["<one customer>", "primary customer", "unknown"])) {
+  if (!mvpScope || /<one customer>|primary customer:\s*(unknown|<|$)|customer:\s*(unknown|<|$)/i.test(mvpScope)) {
     founderInputGaps.push("primary customer may need founder confirmation");
   }
-  if (!mvpScope || hasAny(mvpScope, ["<one workflow>", "primary workflow", "unknown"])) {
+  if (!mvpScope || /<one workflow>|primary workflow:\s*(unknown|<|$)|workflow:\s*(unknown|<|$)/i.test(mvpScope)) {
     founderInputGaps.push("primary workflow may need founder confirmation");
   }
   if (openQuestions && hasAny(openQuestions, ["founder", "primary user", "mvp", "positioning", "promise"])) {
@@ -200,6 +218,50 @@ async function runCheck(args: Args): Promise<CheckResult> {
     hasSprintTracker: await exists(args.cwd, "tasks/sprint-0.md"),
   };
 
+  const visibleMissingArtifacts = args.mode === "readiness" ? [] : missingArtifacts;
+  const visibleReadinessWarnings = args.mode === "inventory" ? [] : readinessWarnings;
+  const visibleFounderInputGaps = args.mode === "inventory" ? [] : founderInputGaps;
+  const publicEvidenceFiles = docs.filter((file) =>
+    /^docs\/evidence\/.+\.md$/.test(file) &&
+    /competitor|pricing|market|public|evidence-notes/.test(file),
+  );
+  const needsPublicResearch =
+    /web-assisted|public-first-prototype/.test(activeSourceMode) && publicEvidenceFiles.length === 0;
+  const needsDelegatedInventory =
+    projectTypeSignal === "existing" &&
+    docs.length + taskFiles.length >= 6 &&
+    !(await exists(args.cwd, "docs/source-index.md"));
+  const missingCoreDocs = missingArtifacts.filter((item) => !item.startsWith("tasks/"));
+  const missingTaskSurface = missingArtifacts.some((item) => item.startsWith("tasks/"));
+
+  let decision: PreflightDecision = "blocked";
+  let nextAction = "Resolve readiness warnings before claiming execution readiness.";
+  if (needsDelegatedInventory) {
+    decision = "delegate-inventory";
+    nextAction = "Run or prompt an existing-project inventory review before writing canonical artifacts.";
+  } else if (founderInputGaps.length > 0) {
+    decision = "ask-founder";
+    nextAction = "Ask the smallest useful founder-question batch before claiming product readiness.";
+  } else if (needsPublicResearch) {
+    decision = "run-research";
+    nextAction = "Run bounded public research and record public evidence before upgrading prototype claims.";
+  } else if (missingCoreDocs.length > 0) {
+    decision = "write-artifacts";
+    nextAction = `Create or update missing canonical artifacts: ${missingCoreDocs.join(", ")}.`;
+  } else if (missingTaskSurface) {
+    decision = "create-sprint0";
+    nextAction = "Create Sprint 0 and the first bounded executable task.";
+  } else if (readinessWarnings.length === 0) {
+    decision = "ready-for-execution";
+    nextAction = "Preflight surface looks ready for a bounded execution task.";
+  }
+
+  const confidence = decision === "ready-for-execution"
+    ? "high"
+    : readinessWarnings.length > 0 || founderInputGaps.length > 0
+      ? "medium"
+      : "low";
+
   let recommendation = "Proceed with preflight inventory and scaffold missing artifacts.";
   if (readinessWarnings.length === 0 && founderInputGaps.length === 0) {
     recommendation = "Preflight surface looks ready for a bounded execution task.";
@@ -210,11 +272,14 @@ async function runCheck(args: Args): Promise<CheckResult> {
   return {
     cwd: args.cwd,
     mode: args.mode,
+    decision,
+    nextAction,
+    confidence,
     projectTypeSignal,
     inventory,
-    missingArtifacts: args.mode === "readiness" ? [] : missingArtifacts,
-    readinessWarnings: args.mode === "inventory" ? [] : readinessWarnings,
-    founderInputGaps: args.mode === "inventory" ? [] : founderInputGaps,
+    missingArtifacts: visibleMissingArtifacts,
+    readinessWarnings: visibleReadinessWarnings,
+    founderInputGaps: visibleFounderInputGaps,
     recommendation,
   };
 }
@@ -225,7 +290,12 @@ function renderMarkdown(result: CheckResult): string {
     "",
     `CWD: ${result.cwd}`,
     `Mode: ${result.mode}`,
+    `Decision: ${result.decision}`,
+    `Confidence: ${result.confidence}`,
     `Project type signal: ${result.projectTypeSignal}`,
+    "",
+    "## Next Action",
+    result.nextAction,
     "",
     "## Inventory",
     ...Object.entries(result.inventory).map(([key, value]) => `- ${key}: ${value}`),
@@ -265,4 +335,3 @@ try {
   console.error(usage());
   process.exit(1);
 }
-

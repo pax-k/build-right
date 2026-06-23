@@ -103,8 +103,9 @@ Then move to the next task.
 16. Report the resolver findings again before deciding whether another task is
     safe to select.
 17. Stop at any founder, external-state, failed-verification, stale-task, source
-    mismatch, or release-claim gate. Do not advance to the next task until the
-    gate is resolved or explicitly converted into a ready AI-owned task.
+    mismatch, open-conflict, non-AI-owner, or release-claim gate. Do not
+    advance to the next task until the gate is resolved or explicitly converted
+    into a ready AI-owned task.
 18. Commit or hand off according to project workflow.
 
 ## Not-Ready Rule
@@ -132,6 +133,8 @@ After each task, check whether the next step is truly AI-owned and ready. Stop
 and ask or report the blocker when the next step requires:
 
 - founder-owned product, positioning, buyer/user, or MVP decisions
+- ready or active task ownership that is not AI
+- open conflicts in `docs/conflicts.md`
 - external discovery, search indexing, publishing, secrets, paid services, or
   production access
 - failed verification, stale task state, source mismatch, or ambiguous evidence

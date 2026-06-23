@@ -15,6 +15,7 @@ type TaskInfo = {
   path: string;
   status: string;
   title: string;
+  owner?: string;
 };
 
 type CheckResult = {
@@ -131,7 +132,8 @@ async function globFiles(cwd: string, pattern: string): Promise<string[]> {
 function parseTask(path: string, text: string): TaskInfo {
   const title = text.match(/^#\s+(.+)$/m)?.[1]?.trim() ?? path;
   const status = text.match(/^Status:\s*(.+)$/m)?.[1]?.trim() ?? "missing";
-  return { path, status, title };
+  const owner = text.match(/^Owner:\s*(.+)$/m)?.[1]?.trim();
+  return { path, status, title, owner };
 }
 
 async function taskFiles(cwd: string): Promise<string[]> {
@@ -199,6 +201,22 @@ function nonEmptyBlockers(text: string): boolean {
   );
 }
 
+function isAiOwned(owner?: string): boolean {
+  return ["ai", "agent", "codex"].includes((owner ?? "").trim().toLowerCase());
+}
+
+function openConflictReasons(text: string): string[] {
+  return text
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line.startsWith("|") && line.endsWith("|"))
+    .map((line) => line.replace(/^\|/, "").replace(/\|$/, "").split("|").map((cell) => cell.trim()))
+    .filter((cells) => cells.length >= 5)
+    .filter((cells) => cells[0] !== "Conflict" && !cells[0].includes("<"))
+    .filter((cells) => !["resolved", "closed", "complete", "done", "none"].includes(cells[4]?.toLowerCase() ?? ""))
+    .map((cells) => `open conflict: ${cells[0]}`);
+}
+
 async function gateReasons(cwd: string, selectedTask: TaskInfo | null, taskText: string): Promise<string[]> {
   const reasons: string[] = [];
   if (!(await exists(cwd, "docs/execution-rules.md"))) {
@@ -214,6 +232,8 @@ async function gateReasons(cwd: string, selectedTask: TaskInfo | null, taskText:
     reasons.push("no selected task");
   } else if (!["ready", "active"].includes(selectedTask.status)) {
     reasons.push(`selected task status is ${selectedTask.status}`);
+  } else if (!isAiOwned(selectedTask.owner)) {
+    reasons.push(`selected task is owned by ${selectedTask.owner ?? "unknown"}, not AI`);
   }
   if (taskText && nonEmptyBlockers(taskText)) {
     reasons.push("selected task has blockers");
@@ -228,6 +248,9 @@ async function gateReasons(cwd: string, selectedTask: TaskInfo | null, taskText:
   if (/\bunproven\b|\bmissing\b|\bexternal\b|\bdirectory indexing\b/i.test(releaseGates)) {
     reasons.push("release gates contain unproven or external-state language");
   }
+
+  const conflicts = await readIfExists(cwd, "docs/conflicts.md");
+  reasons.push(...openConflictReasons(conflicts));
 
   return reasons;
 }

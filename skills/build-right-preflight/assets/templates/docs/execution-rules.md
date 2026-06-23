@@ -24,6 +24,8 @@
 ## Stop/Ask Gates
 
 - Founder-owned product, positioning, customer, or MVP decision required.
+- Ready or active task ownership is not AI.
+- Open conflict in docs/conflicts.md.
 - External discovery, publishing, secrets, paid services, or production access required.
 - Failed verification, stale task state, source mismatch, or ambiguous evidence.
 - Required subagent review skipped without an equivalent substitute.
@@ -49,9 +51,11 @@ Use bundled helper scripts as read-only checks when available:
 - Execution task contract: `bun <skill-path>/scripts/execution-check.ts --cwd . --task <path> --mode task-contract --format markdown`
 - Execution stop gates: `bun <skill-path>/scripts/execution-check.ts --cwd . --task <path> --mode stop-gates --format markdown`
 
-Helper output is evidence input, not authority. The main agent still reconciles
-helper findings with founder input, repo evidence, web research, subagent
-findings, and the selected task boundary.
+Helper output is evidence input, not authority. The preflight helper reports a
+decision, next action, project type, missing artifacts, readiness warnings, and
+founder input gaps. The main agent still reconciles helper findings with
+founder input, repo evidence, web research, subagent findings, and the selected
+task boundary.
 
 Before continuing through a task queue, run the continue state resolver, report
 its decision, confidence, next action, next task, blocking gates, and external

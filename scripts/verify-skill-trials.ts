@@ -203,12 +203,12 @@ ${rows}
 `;
 }
 
-function taskFile(id: string, status: string): string {
+function taskFile(id: string, status: string, owner = "AI"): string {
   return `# ${id}: Fixture Task
 
 Status: ${status}
 Type: validation
-Owner: AI
+Owner: ${owner}
 
 Assumption basis: repo-evidence-backed
 Reversibility: easy
@@ -269,6 +269,26 @@ async function continueDecisionForFixture(files: Record<string, string>): Promis
     "--format",
     "json",
     "--strict",
+  ]);
+  return JSON.parse(output);
+}
+
+async function preflightDecisionForFixture(files: Record<string, string>): Promise<{
+  decision?: string;
+  nextAction?: string;
+  confidence?: string;
+  projectTypeSignal?: string;
+}> {
+  const root = await createFixture("preflight", files);
+  const output = await runCommand([
+    "bun",
+    "skills/build-right-preflight/scripts/preflight-check.ts",
+    "--cwd",
+    root,
+    "--mode",
+    "all",
+    "--format",
+    "json",
   ]);
   return JSON.parse(output);
 }
@@ -347,6 +367,7 @@ const checks: Check[] = [
         "references/founder-gates.md",
         "references/research-and-delegation.md",
         "scripts/preflight-check.ts",
+        "Preflight decision:",
       ]);
       await assertIncludes("skills/build-right-execution/SKILL.md", [
         "references/gates.md",
@@ -355,6 +376,10 @@ const checks: Check[] = [
         "--strict",
         "Report the resolver findings",
         "scripts/execution-check.ts",
+      ]);
+      await assertIncludes("skills/build-right-execution/scripts/execution-check.ts", [
+        "openConflictReasons",
+        "not AI",
       ]);
       await assertIncludes("skills/build-right-preflight/assets/templates/docs/blueprint-status.md", [
         "Source mode",
@@ -367,11 +392,23 @@ const checks: Check[] = [
         "Learning objective",
         "Learning Notes",
       ]);
+      await assertIncludes("skills/build-right-preflight/assets/templates/tasks/issues/001-establish-execution-baseline.md", [
+        "Assumption basis:",
+        "Reversibility:",
+        "Learning objective:",
+        "Source under test:",
+      ]);
       await assertIncludes("skills/build-right-execution/assets/templates/task-template.md", [
         "Assumption basis",
         "Reversibility",
         "Learning objective",
         "Learning Notes",
+      ]);
+      await assertIncludes("skills/build-right-execution/assets/templates/not-ready-blocker.md", [
+        "Assumption basis:",
+        "Reversibility:",
+        "Learning objective:",
+        "Source under test:",
       ]);
       await assertIncludes("skills/build-right-execution/references/workflow.md", [
         "Source under test: <repo-local path | installed path | GitHub source | release tag | n/a>",
@@ -383,6 +420,8 @@ const checks: Check[] = [
         "State Resolver Gate",
         "continue-check.ts",
         "Stop/Ask Gates",
+        "docs/conflicts.md",
+        "not owned by AI",
         "Source Under Test Gate",
         "Before selecting another task, run the state resolver and stop/ask gate again.",
       ]);
@@ -410,6 +449,7 @@ const checks: Check[] = [
       ]);
       await assertIncludes("agent-skills-research-delegation-design.md", [
         "scripts/preflight-check.ts",
+        "preflight-check.ts`, report its decision",
         "scripts/continue-check.ts",
         "--strict",
         "scripts/execution-check.ts",
@@ -422,6 +462,7 @@ const checks: Check[] = [
       ]);
       await assertIncludes("agent-skills-flow-diagrams.md", [
         "Ask focused founder question batch",
+        "Preflight decision?",
         "Required trigger applies?",
         "Stop/ask gate before next task?",
         "Deterministic Helper Lane",
@@ -484,9 +525,16 @@ const checks: Check[] = [
         "--format",
         "json",
       ]);
-      const preflightJson = JSON.parse(preflightSmoke) as { projectTypeSignal?: string };
+      const preflightJson = JSON.parse(preflightSmoke) as {
+        projectTypeSignal?: string;
+        decision?: string;
+        nextAction?: string;
+      };
       if (!preflightJson.projectTypeSignal) {
         throw new Error("preflight helper smoke output missing projectTypeSignal");
+      }
+      if (!preflightJson.decision || !preflightJson.nextAction) {
+        throw new Error("preflight helper smoke output missing decision or nextAction");
       }
 
       const executionSmoke = await runCommand([
@@ -526,6 +574,61 @@ const checks: Check[] = [
     },
   },
   {
+    name: "preflight helper fixture decisions are stable",
+    run: async () => {
+      const blank = await preflightDecisionForFixture({});
+      if (blank.decision !== "ask-founder" || blank.projectTypeSignal !== "blank/new") {
+        throw new Error(`blank preflight fixture returned ${blank.decision}`);
+      }
+
+      const existing = await preflightDecisionForFixture({
+        "README.md": "# Existing Project\n",
+        "docs/a.md": "# A\n",
+        "docs/b.md": "# B\n",
+        "docs/c.md": "# C\n",
+        "docs/d.md": "# D\n",
+        "docs/e.md": "# E\n",
+        "tasks/roadmap.md": "# Roadmap\n",
+      });
+      if (existing.decision !== "delegate-inventory") {
+        throw new Error(`existing preflight fixture returned ${existing.decision}`);
+      }
+
+      const baseReadyPreflight = {
+        "docs/raw/founder-dump.md": "# Founder Dump\n",
+        "docs/raw/founder-interview.md": "# Founder Interview\n",
+        "docs/blueprint-status.md": readyBlueprint(),
+        "docs/source-index.md": "# Source Index\n",
+        "docs/mvp-scope.md": `# MVP Scope
+
+Status: ready
+Source mode: founder-fed
+Prototype confidence: n/a
+
+Primary customer: Operators
+Primary workflow: Evidence-driven execution
+`,
+        "docs/execution-rules.md": "# Execution Rules\n",
+        "docs/release-gates.md": releaseGates(),
+        "tasks/sprint-0.md": tracker("| 001 | Ready task | ready | tasks/issues/001-task.md |"),
+        "tasks/issues/001-task.md": taskFile("001", "ready"),
+      };
+
+      const publicResearch = await preflightDecisionForFixture({
+        ...baseReadyPreflight,
+        "docs/blueprint-status.md": readyBlueprint().replace("Status: ready", "Status: ready\nSource mode: public-first-prototype"),
+      });
+      if (publicResearch.decision !== "run-research") {
+        throw new Error(`public research preflight fixture returned ${publicResearch.decision}`);
+      }
+
+      const ready = await preflightDecisionForFixture(baseReadyPreflight);
+      if (ready.decision !== "ready-for-execution") {
+        throw new Error(`ready preflight fixture returned ${ready.decision}`);
+      }
+    },
+  },
+  {
     name: "continue resolver fixture decisions are stable",
     run: async () => {
       const baseDocs = {
@@ -555,6 +658,17 @@ const checks: Check[] = [
         throw new Error(`ready fixture returned ${ready.decision}`);
       }
 
+      const starterTask = await continueDecisionForFixture({
+        ...baseDocs,
+        "tasks/sprint-0.md": tracker("| 001 | Starter task | ready | tasks/issues/001-establish-execution-baseline.md |"),
+        "tasks/issues/001-establish-execution-baseline.md": await read(
+          "skills/build-right-preflight/assets/templates/tasks/issues/001-establish-execution-baseline.md",
+        ),
+      });
+      if (starterTask.decision !== "execute-task" || starterTask.nextTask?.id !== "001") {
+        throw new Error(`starter task fixture returned ${starterTask.decision}`);
+      }
+
       const founder = await continueDecisionForFixture({
         ...baseDocs,
         "docs/blueprint-status.md": readyBlueprint().replace(
@@ -568,6 +682,24 @@ const checks: Check[] = [
         throw new Error(`founder fixture returned ${founder.decision}`);
       }
 
+      const founderOwnedTask = await continueDecisionForFixture({
+        ...baseDocs,
+        "tasks/sprint-0.md": tracker("| 001 | Founder task | ready | tasks/issues/001-task.md |"),
+        "tasks/issues/001-task.md": taskFile("001", "ready", "Founder"),
+      });
+      if (founderOwnedTask.decision !== "ask-founder") {
+        throw new Error(`founder-owned task fixture returned ${founderOwnedTask.decision}`);
+      }
+
+      const externalOwnedTask = await continueDecisionForFixture({
+        ...baseDocs,
+        "tasks/sprint-0.md": tracker("| 001 | External task | ready | tasks/issues/001-task.md |"),
+        "tasks/issues/001-task.md": taskFile("001", "ready", "External provider"),
+      });
+      if (externalOwnedTask.decision !== "wait-external") {
+        throw new Error(`external-owned task fixture returned ${externalOwnedTask.decision}`);
+      }
+
       const external = await continueDecisionForFixture({
         ...baseDocs,
         "docs/release-gates.md": releaseGates("post-release-follow-up"),
@@ -576,6 +708,40 @@ const checks: Check[] = [
       });
       if (external.decision !== "wait-external") {
         throw new Error(`external fixture returned ${external.decision}`);
+      }
+
+      const openConflict = await continueDecisionForFixture({
+        ...baseDocs,
+        "docs/conflicts.md": `# Conflicts
+
+## Conflicts
+
+| Conflict | Sources | Severity | Owner | Status | Resolution |
+| --- | --- | --- | --- | --- | --- |
+| Customer definition conflicts | docs/a.md, docs/b.md | high | founder | open |  |
+`,
+        "tasks/sprint-0.md": tracker("| 001 | Ready task | ready | tasks/issues/001-task.md |"),
+        "tasks/issues/001-task.md": taskFile("001", "ready"),
+      });
+      if (openConflict.decision !== "ask-founder") {
+        throw new Error(`open conflict fixture returned ${openConflict.decision}`);
+      }
+
+      const aiOwnedConflict = await continueDecisionForFixture({
+        ...baseDocs,
+        "docs/conflicts.md": `# Conflicts
+
+## Conflicts
+
+| Conflict | Sources | Severity | Owner | Status | Resolution |
+| --- | --- | --- | --- | --- | --- |
+| Task tracker paths disagree | tasks/a.md, tasks/b.md | medium | AI | open |  |
+`,
+        "tasks/sprint-0.md": tracker("| 001 | Ready task | ready | tasks/issues/001-task.md |"),
+        "tasks/issues/001-task.md": taskFile("001", "ready"),
+      });
+      if (aiOwnedConflict.decision !== "create-blocker" || aiOwnedConflict.blockingGates?.[0]?.type !== "open-conflict") {
+        throw new Error(`AI-owned conflict fixture returned ${aiOwnedConflict.decision}`);
       }
 
       const missing = await continueDecisionForFixture({

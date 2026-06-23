@@ -375,6 +375,12 @@ Helper scripts detect state, mechanical gaps, and gate signals. They do not
 perform web research, make founder-owned decisions, replace subagent critique,
 or close tasks by themselves.
 
+Before a preflight agent writes or claims readiness, it should run
+`scripts/preflight-check.ts`, report its decision, confidence, project type,
+next action, missing artifacts, readiness warnings, and founder input gaps, then
+reconcile that output with founder input, repo evidence, web research, and
+subagent findings.
+
 Before an execution agent continues through a queue, it should run
 `scripts/continue-check.ts --strict`, report the decision, confidence, next
 action, next task, blocking gates, and external follow-ups, then reconcile that
@@ -387,7 +393,8 @@ output with repo evidence and any subagent findings.
 - Subagents must not independently update canonical docs, trackers, commits, or
   publishing state unless the user explicitly asks for that behavior.
 - The main agent owns synthesis and final writes.
-- Founder-owned, external-state, failed-verification, stale-task, and
-  source-mismatch gates must stop advancement to the next task until resolved.
+- Founder-owned, external-state, non-AI-owner, open-conflict,
+  failed-verification, stale-task, source-mismatch, and release-claim gates must
+  stop advancement to the next task until resolved.
 - Research and delegation should reduce uncertainty, not expand scope
   indefinitely.
