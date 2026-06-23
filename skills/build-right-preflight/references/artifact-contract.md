@@ -64,9 +64,17 @@ Use these templates when creating new artifacts:
 - `assets/templates/docs/raw/founder-interview.md`
 - `assets/templates/tasks/sprint-0.md`
 - `assets/templates/tasks/issue-template.md`
+- `assets/templates/tasks/foundation/architecture-boundaries.md`
+- `assets/templates/tasks/foundation/tech-stack-runtime.md`
+- `assets/templates/tasks/foundation/directory-structure.md`
+- `assets/templates/tasks/foundation/deployment-env-contract.md`
 
 If a target project has an established equivalent, adapt to it instead of
 forcing these exact paths.
+
+Foundation templates are optional. Use them as Sprint 0 tasks when inventory
+shows architecture, stack, directory, deployment, environment, or boundary work
+is needed before feature execution.
 
 ## Required Blueprint Status Fields
 

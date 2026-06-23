@@ -1067,12 +1067,60 @@ Status: draft
         "## Verification Summary",
         "## Blockers",
       ]);
+      const foundationTemplates = [
+        "skills/build-right-preflight/assets/templates/tasks/foundation/architecture-boundaries.md",
+        "skills/build-right-preflight/assets/templates/tasks/foundation/tech-stack-runtime.md",
+        "skills/build-right-preflight/assets/templates/tasks/foundation/directory-structure.md",
+        "skills/build-right-preflight/assets/templates/tasks/foundation/deployment-env-contract.md",
+      ];
+      for (const template of foundationTemplates) {
+        await assertIncludes(template, [
+          "Assumption basis:",
+          "Reversibility:",
+          "Learning objective:",
+          "Source under test:",
+          "## Baseline Evidence",
+          "## Verification",
+          "## Evidence Log",
+          "## Learning Notes",
+          "## Blockers",
+          "## Follow-Ups",
+        ]);
+      }
+      await assertIncludes("skills/build-right-preflight/assets/templates/tasks/foundation/architecture-boundaries.md", [
+        "module, component, and ownership boundaries",
+        "Core components and ownership boundaries",
+      ]);
+      await assertIncludes("skills/build-right-preflight/assets/templates/tasks/foundation/tech-stack-runtime.md", [
+        "runtime and package manager",
+        "adapts to the existing stack",
+      ]);
+      await assertIncludes("skills/build-right-preflight/assets/templates/tasks/foundation/directory-structure.md", [
+        "directory structure",
+        "generated-file boundaries",
+      ]);
+      await assertIncludes("skills/build-right-preflight/assets/templates/tasks/foundation/deployment-env-contract.md", [
+        "Docker/self-hosted",
+        "cloud-equivalent",
+        "environment variables",
+      ]);
       await assertIncludes("skills/build-right-preflight/references/artifact-contract.md", [
         "Use `docs/blueprint-status.md` as the lean state and resume file.",
         "a second mandatory master state file",
         "## Decision Log Contract",
         "MVP boundary",
         "routine command results",
+        "Foundation templates are optional.",
+        "assets/templates/tasks/foundation/architecture-boundaries.md",
+      ]);
+      await assertIncludes("skills/build-right-preflight/references/workflow.md", [
+        "Optional foundation task templates",
+        "assets/templates/tasks/foundation/",
+        "architecture boundaries and module ownership",
+        "tech stack and runtime choices",
+        "directory structure and ownership map",
+        "Docker/self-hosting, cloud equivalents",
+        "not mandatory docs for every project",
       ]);
     },
   },

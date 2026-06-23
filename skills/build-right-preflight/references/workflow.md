@@ -183,6 +183,18 @@ Typical tasks:
 - first architecture risks
 - first issue tracker shape
 
+Optional foundation task templates are available under
+`assets/templates/tasks/foundation/` for:
+
+- architecture boundaries and module ownership
+- tech stack and runtime choices
+- directory structure and ownership map
+- deployment path, Docker/self-hosting, cloud equivalents, and environment
+  contract
+
+Use these only when project inventory shows the foundation area is relevant.
+They should surface as Sprint 0 tasks, not mandatory docs for every project.
+
 Prepare the first executable task with assumption basis, reversibility, learning
 objective, source under test, baseline evidence, and verification.
 
