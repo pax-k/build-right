@@ -15,16 +15,15 @@ where files are created or updated.
 flowchart TD
   A["Invoke skill: /build-right-preflight or $build-right-preflight"] --> B["Read core workflow and routed references"]
   B --> C["Inspect project state"]
-  C --> C0["Run preflight-check helper for inventory and readiness signals"]
+  C --> C0["Run preflight-check helper for inventory, readiness, and next decision"]
   C0 --> C1["Report decision, confidence, project type, next action, missing artifacts, warnings, founder gaps"]
   C1 --> C2{"Preflight decision?"}
   C2 -->|"delegate-inventory"| F
   C2 -->|"ask-founder"| J0
   C2 -->|"run-research"| S
-  C2 -->|"write-artifacts or create-sprint0"| G
+  C2 -->|"write-artifacts or create-sprint0"| D{"Project type signal?"}
   C2 -->|"ready-for-execution"| AH
   C2 -->|"blocked"| I
-  C2 -->|"continue inventory/classification"| D{"Project type?"}
 
   D -->|"Blank or new"| E["Prepare starter scaffold plan"]
   D -->|"Existing project"| F["Inventory docs, tasks, code surfaces, validation, release gates"]
@@ -307,11 +306,11 @@ flowchart TD
   C --> D{"Highest-priority decision"}
 
   D -->|"Invalid or contradictory state"| E["invalid-state"]
-  D -->|"Founder-owned gate"| F["ask-founder"]
-  D -->|"External-state gate"| G["wait-external"]
+  D -->|"Founder-owned gate, task, or conflict"| F["ask-founder"]
+  D -->|"External-state gate, task, or conflict"| G["wait-external"]
   D -->|"Source mismatch, stale, failed verification, release claim, AI-owned open conflict"| J["create-blocker"]
-  D -->|"Active task exists"| H["continue-active-task"]
-  D -->|"Ready task exists"| I["execute-task"]
+  D -->|"AI-owned active task exists"| H["continue-active-task"]
+  D -->|"AI-owned ready task exists"| I["execute-task"]
   D -->|"Execution surface missing"| J
   D -->|"Nothing AI-owned ready"| K["no-ready-task"]
 

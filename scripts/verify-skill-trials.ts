@@ -453,7 +453,8 @@ const checks: Check[] = [
         "scripts/continue-check.ts",
         "--strict",
         "scripts/execution-check.ts",
-        "Founder-owned, external-state, failed-verification, stale-task, and",
+        "Founder-owned, external-state, non-AI-owner, open-conflict,",
+        "release-claim gates",
       ]);
       await assertIncludes("skills/build-right-preflight/assets/templates/docs/execution-rules.md", [
         "## Stop/Ask Gates",
