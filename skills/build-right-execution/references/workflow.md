@@ -9,8 +9,8 @@ Use this workflow for one bounded task with evidence.
   independent review would improve confidence.
 - Read `evidence-contract.md` before completing or updating a task.
 - Use templates in `assets/templates/` when creating a missing or split task.
-- Run `scripts/continue-check.ts` before selecting a task or advancing through a
-  queue.
+- Run `scripts/continue-check.ts --strict` before selecting a task or advancing
+  through a queue.
 
 ## 1. Task Selection
 
@@ -19,8 +19,11 @@ Start with one task, not a broad project area.
 Run the read-only state resolver before choosing work:
 
 ```sh
-bun <skill-path>/scripts/continue-check.ts --cwd <project> --format markdown
+bun <skill-path>/scripts/continue-check.ts --cwd <project> --format markdown --strict
 ```
+
+Report the resolver decision, confidence, next action, next task, blocking
+gates, and external follow-ups before acting on the result.
 
 If the resolver returns `ask-founder`, `wait-external`, `create-blocker`,
 `no-ready-task`, or `invalid-state`, stop or create the named blocker. Continue
@@ -194,12 +197,15 @@ task is complete.
 Before selecting another task, run the state resolver and stop/ask gate again.
 
 ```sh
-bun <skill-path>/scripts/continue-check.ts --cwd <project> --format markdown
+bun <skill-path>/scripts/continue-check.ts --cwd <project> --format markdown --strict
 ```
 
 ```sh
 bun <skill-path>/scripts/execution-check.ts --cwd <project> --task <task-path> --mode stop-gates --format markdown
 ```
+
+Report the resolver findings before deciding whether another task is safe to
+select.
 
 A completed task may create a blocker, founder question, stale follow-up, or
 external-state wait. In that case, close out and stop instead of advancing.

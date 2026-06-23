@@ -43,7 +43,7 @@ substitute verification, and residual risk before closing.
 
 Use bundled helper scripts as read-only checks when available:
 
-- Continue state resolver: `bun <skill-path>/scripts/continue-check.ts --cwd . --format markdown`
+- Continue state resolver: `bun <skill-path>/scripts/continue-check.ts --cwd . --format markdown --strict`
 - Preflight inventory/readiness: `bun <skill-path>/scripts/preflight-check.ts --cwd . --mode all --format markdown`
 - Execution next task: `bun <skill-path>/scripts/execution-check.ts --cwd . --mode next-task --format markdown`
 - Execution task contract: `bun <skill-path>/scripts/execution-check.ts --cwd . --task <path> --mode task-contract --format markdown`
@@ -53,10 +53,11 @@ Helper output is evidence input, not authority. The main agent still reconciles
 helper findings with founder input, repo evidence, web research, subagent
 findings, and the selected task boundary.
 
-Before continuing through a task queue, run the continue state resolver and
-follow its decision. Do not manually skim Markdown and skip a resolver-reported
-founder, external-state, invalid-state, stale, failed-verification, or
-source-mismatch gate.
+Before continuing through a task queue, run the continue state resolver, report
+its decision, confidence, next action, next task, blocking gates, and external
+follow-ups, then follow its decision. Do not manually skim Markdown and skip a
+resolver-reported founder, external-state, invalid-state, stale,
+failed-verification, or source-mismatch gate.
 
 ## Evidence Destinations
 

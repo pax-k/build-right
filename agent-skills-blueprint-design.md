@@ -280,24 +280,28 @@ description: Execute one bounded task using baseline evidence, narrow implementa
 
 When activated, the skill should:
 
-1. Select exactly one task from the user prompt or task queue.
-2. Read authority docs and local agent instructions.
-3. Define done and non-goals.
-4. Inspect workspace state before editing.
-5. Capture baseline evidence.
-6. Diagnose the gap.
-7. Make the smallest implementation change.
-8. Verify in layers.
-9. Record evidence in the task tracker or evidence file.
-10. Update only the relevant project state.
-11. Run trigger-based subagent review when release evidence, workflows,
+1. Run `continue-check.ts --strict` before selecting or advancing work.
+2. Report the resolver decision, confidence, next action, next task, blocking
+   gates, and external follow-ups.
+3. Stop, ask, wait, or create a blocker for non-executable resolver decisions.
+4. Select exactly one task only for `continue-active-task` or `execute-task`.
+5. Read authority docs and local agent instructions.
+6. Define done and non-goals.
+7. Inspect workspace state before editing.
+8. Capture baseline evidence.
+9. Diagnose the gap.
+10. Make the smallest implementation change.
+11. Verify in layers.
+12. Record evidence in the task tracker or evidence file.
+13. Update only the relevant project state.
+14. Run trigger-based subagent review when release evidence, workflows,
     templates, verifier behavior, broad tracker state, or failed-then-fixed
     verification makes independent review valuable and tooling is available.
-12. Stop at founder-owned, external-state, failed-verification, stale-task,
+15. Stop at founder-owned, external-state, failed-verification, stale-task,
     source-mismatch, or release-claim gates instead of advancing to the next
     task.
-13. Commit or hand off, depending on project workflow.
-14. Name the next logical task without silently widening scope.
+16. Commit or hand off, depending on project workflow.
+17. Name the next logical task without silently widening scope.
 
 ### Not-Ready Behavior
 
@@ -316,6 +320,10 @@ It should either:
 Active task: <task id or path>
 Done means: <observable completion criteria>
 Non-goals: <explicit exclusions>
+Assumption basis: <founder-claimed | ai-inferred | prototype-assumption | repo-evidence-backed | public-evidence-backed | customer-evidence-backed>
+Reversibility: <easy | moderate | hard>
+Learning hook: <how this task will produce evidence>
+Source under test: <repo-local path | installed path | GitHub source | release tag | n/a>
 Baseline evidence: <artifact or command>
 Verification ladder: <focused -> broader checks>
 Evidence destination: <task file or evidence file>

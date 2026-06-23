@@ -108,7 +108,7 @@ bun run verify:skill-trials
 Run deterministic helper smoke checks:
 
 ```sh
-bun skills/build-right-execution/scripts/continue-check.ts --cwd . --format markdown
+bun skills/build-right-execution/scripts/continue-check.ts --cwd . --format markdown --strict
 bun skills/build-right-preflight/scripts/preflight-check.ts --cwd . --mode all --format markdown
 bun skills/build-right-execution/scripts/execution-check.ts --cwd . --mode next-task --format markdown
 ```
@@ -140,11 +140,14 @@ loaded only when relevant.
 To continue safely through prepared work, run the state resolver first:
 
 ```sh
-bun skills/build-right-execution/scripts/continue-check.ts --cwd . --format markdown
+bun skills/build-right-execution/scripts/continue-check.ts --cwd . --format markdown --strict
 ```
 
-It parses the markdown operating system and returns one decision, such as
-`execute-task`, `ask-founder`, `wait-external`, or `no-ready-task`.
+It parses the markdown operating system and returns one decision:
+`execute-task`, `continue-active-task`, `ask-founder`, `wait-external`,
+`create-blocker`, `no-ready-task`, or `invalid-state`. Agents should report the
+decision, confidence, next action, next task, blocking gates, and external
+follow-ups before acting.
 
 Founder-fed context is the default source for product truth. When founder input
 is thin and speed matters, bounded public web research can fill prototype-grade

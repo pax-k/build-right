@@ -162,8 +162,9 @@ flowchart TD
 ```mermaid
 flowchart TD
   A["Invoke skill: /build-right-execution or $build-right-execution"] --> B["Read workflow, gates, evidence contract, and routed references"]
-  B --> B0["Run continue-check state resolver"]
-  B0 --> B1{"Resolver decision?"}
+  B --> B0["Run continue-check --strict state resolver"]
+  B0 --> B00["Report decision, confidence, next action, next task, blocking gates, and external follow-ups"]
+  B00 --> B1{"Resolver decision?"}
   B1 -->|"ask-founder, wait-external, invalid-state, no-ready-task"| B2["Ask, report blocker, or stop"]
   B1 -->|"create-blocker"| B3["Create or propose smallest AI-owned blocker"]
   B1 -->|"continue-active-task or execute-task"| B4["Run execution-check next-task helper"]
@@ -202,8 +203,9 @@ flowchart TD
 
   Q --> U["Record evidence, learning notes, files changed, blockers, follow-ups"]
   U --> V["Update only relevant tracker and docs"]
-  V --> V0["Run continue-check state resolver"]
-  V0 --> V00["Run execution-check stop-gates helper"]
+  V --> V0["Run continue-check --strict state resolver"]
+  V0 --> V01["Report resolver findings before selecting more work"]
+  V01 --> V00["Run execution-check stop-gates helper"]
   V00 --> V1{"Stop/ask gate before next task?"}
   V1 -->|"Gate hit"| V2["Ask, record blocker, or stop"]
   V1 -->|"No gate"| W{"Project expects commit?"}
@@ -229,14 +231,14 @@ flowchart TD
   G --> H["Check required contract markers"]
   H --> I{"Trial passed?"}
 
-  I -->|"No"| J["Mark task partial-needs-rerun or fail"]
-  I -->|"Yes"| K["Update manual-trials evidence"]
+  I -->|"No"| J["Mark external trial task partial-needs-rerun or fail"]
+  I -->|"Yes"| K["Record manual-trials evidence in external test repo"]
 
-  K --> L["Update release gates"]
+  K --> L["Update external release gates"]
   L --> M["Update release checklist"]
   M --> N{"Any ready follow-up?"}
   N -->|"Manual trial remains"| O["Advance to next manual trial"]
-  N -->|"Post-release discovery"| P["Track in post-release backlog"]
+  N -->|"Post-release discovery"| P["Track in external post-release backlog"]
   N -->|"Founder or external blocker"| Q["Record blocker and stop"]
   N -->|"No AI-owned task"| R["Record no ready AI-owned task"]
 ```
@@ -274,7 +276,7 @@ flowchart TD
   A["Main agent reaches an inventory, task, contract, or gate checkpoint"] --> B{"Which helper applies?"}
 
   B -->|"Preflight inventory/readiness"| C["Run preflight-check.ts"]
-  B -->|"Execution continuation decision"| D["Run continue-check.ts"]
+  B -->|"Execution continuation decision"| D["Run continue-check.ts --strict"]
   B -->|"Execution task contract or stop gates"| D1["Run execution-check.ts"]
 
   C --> E["Helper returns read-only signals, missing artifacts, warnings, recommendation"]
@@ -292,22 +294,23 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-  A["Run continue-check.ts"] --> B["Parse markdown status lines, task tables, gate tables, readiness table, next-action block, issue files"]
+  A["Run continue-check.ts --strict"] --> B["Parse markdown status lines, task tables, gate tables, readiness table, next-action block, issue files"]
   B --> C["Build execution state: active, ready, completed, blocking gates, external follow-ups"]
   C --> D{"Highest-priority decision"}
 
   D -->|"Invalid or contradictory state"| E["invalid-state"]
   D -->|"Founder-owned gate"| F["ask-founder"]
   D -->|"External-state gate"| G["wait-external"]
+  D -->|"Source mismatch, stale, failed verification, release claim"| J["create-blocker"]
   D -->|"Active task exists"| H["continue-active-task"]
   D -->|"Ready task exists"| I["execute-task"]
-  D -->|"Execution surface missing"| J["create-blocker"]
+  D -->|"Execution surface missing"| J
   D -->|"Nothing AI-owned ready"| K["no-ready-task"]
 
-  E --> L["Main agent stops and reconciles"]
+  E --> L["Main agent reports findings and stops or reconciles"]
   F --> L
   G --> L
-  H --> M["Main agent continues only selected task"]
+  H --> M["Main agent reports findings and acts only on selected task"]
   I --> M
   J --> L
   K --> L

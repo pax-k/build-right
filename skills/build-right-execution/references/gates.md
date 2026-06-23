@@ -8,8 +8,11 @@ advancing to another task.
 Before selecting work or continuing through a prepared queue, run:
 
 ```sh
-bun <skill-path>/scripts/continue-check.ts --cwd <project> --format markdown
+bun <skill-path>/scripts/continue-check.ts --cwd <project> --format markdown --strict
 ```
+
+Report the resolver decision, confidence, next action, next task, blocking
+gates, and external follow-ups before acting.
 
 Reconcile the resolver decision before continuing:
 

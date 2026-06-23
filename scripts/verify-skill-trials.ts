@@ -177,6 +177,19 @@ Status: ready
 `;
 }
 
+function releaseGatesWithRow(row: string): string {
+  return `# Release Gates
+
+Status: active
+
+## Gates
+
+| Gate | Required Evidence | Command or Proof | Status |
+| --- | --- | --- | --- |
+${row}
+`;
+}
+
 function tracker(rows: string): string {
   return `# Sprint 0
 
@@ -245,6 +258,7 @@ async function continueDecisionForFixture(files: Record<string, string>): Promis
   decision?: string;
   nextTask?: { id?: string } | null;
   readyTasks?: Array<{ id?: string }>;
+  blockingGates?: Array<{ type?: string }>;
 }> {
   const root = await createFixture("continue", files);
   const output = await runCommand([
@@ -254,6 +268,7 @@ async function continueDecisionForFixture(files: Record<string, string>): Promis
     root,
     "--format",
     "json",
+    "--strict",
   ]);
   return JSON.parse(output);
 }
@@ -337,6 +352,8 @@ const checks: Check[] = [
         "references/gates.md",
         "references/review-and-delegation.md",
         "scripts/continue-check.ts",
+        "--strict",
+        "Report the resolver findings",
         "scripts/execution-check.ts",
       ]);
       await assertIncludes("skills/build-right-preflight/assets/templates/docs/blueprint-status.md", [
@@ -394,6 +411,7 @@ const checks: Check[] = [
       await assertIncludes("agent-skills-research-delegation-design.md", [
         "scripts/preflight-check.ts",
         "scripts/continue-check.ts",
+        "--strict",
         "scripts/execution-check.ts",
         "Founder-owned, external-state, failed-verification, stale-task, and",
       ]);
@@ -410,8 +428,9 @@ const checks: Check[] = [
         "Continue State Resolver",
         "preflight-check.ts",
         "continue-check.ts",
+        "Report decision, confidence, next action, next task, blocking gates, and external follow-ups",
         "execution-check.ts",
-        "Track in post-release backlog",
+        "Track in external post-release backlog",
         "Record no ready AI-owned task",
       ]);
       await assertIncludes("README.md", [
@@ -419,6 +438,8 @@ const checks: Check[] = [
         "continue-check.ts",
         "execution-check.ts",
         "read-only Bun scripts",
+        "continue-active-task",
+        "invalid-state",
         "does not commit generated `docs/` or `tasks/`",
       ]);
     },
@@ -490,6 +511,7 @@ const checks: Check[] = [
         ".",
         "--format",
         "json",
+        "--strict",
       ]);
       const continueJson = JSON.parse(continueSmoke) as {
         decision?: string;
@@ -564,6 +586,54 @@ const checks: Check[] = [
       });
       if (missing.decision !== "create-blocker") {
         throw new Error(`missing tracker fixture returned ${missing.decision}`);
+      }
+
+      const noReady = await continueDecisionForFixture({
+        ...baseDocs,
+        "tasks/sprint-0.md": tracker("| 001 | Done task | complete | tasks/issues/001-task.md |"),
+        "tasks/issues/001-task.md": taskFile("001", "complete"),
+      });
+      if (noReady.decision !== "no-ready-task") {
+        throw new Error(`no-ready fixture returned ${noReady.decision}`);
+      }
+
+      const invalid = await continueDecisionForFixture({
+        ...baseDocs,
+        "tasks/sprint-0.md": tracker("| 001 | Missing task file | ready | tasks/issues/001-missing.md |"),
+      });
+      if (invalid.decision !== "invalid-state") {
+        throw new Error(`invalid-state fixture returned ${invalid.decision}`);
+      }
+
+      const blockingReleaseRows: Array<[string, string]> = [
+        [
+          "source-mismatch",
+          "| Installed source parity | skill diff | diff installed skill | partial-needs-rerun |",
+        ],
+        [
+          "failed-verification",
+          "| Local validation | checks pass | bun run verify:skill-trials | failed |",
+        ],
+        [
+          "stale",
+          "| Manual trial freshness | current installed skill | stale trial evidence | stale |",
+        ],
+        [
+          "release-claim",
+          "| release-claim proof | durable evidence | missing durable artifact | blocked |",
+        ],
+      ];
+
+      for (const [expectedType, row] of blockingReleaseRows) {
+        const blocked = await continueDecisionForFixture({
+          ...baseDocs,
+          "docs/release-gates.md": releaseGatesWithRow(row),
+          "tasks/sprint-0.md": tracker("| 001 | Ready task | ready | tasks/issues/001-task.md |"),
+          "tasks/issues/001-task.md": taskFile("001", "ready"),
+        });
+        if (blocked.decision !== "create-blocker" || blocked.blockingGates?.[0]?.type !== expectedType) {
+          throw new Error(`release blocker ${expectedType} returned ${blocked.decision}`);
+        }
       }
     },
   },

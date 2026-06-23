@@ -375,6 +375,11 @@ Helper scripts detect state, mechanical gaps, and gate signals. They do not
 perform web research, make founder-owned decisions, replace subagent critique,
 or close tasks by themselves.
 
+Before an execution agent continues through a queue, it should run
+`scripts/continue-check.ts --strict`, report the decision, confidence, next
+action, next task, blocking gates, and external follow-ups, then reconcile that
+output with repo evidence and any subagent findings.
+
 ## Guardrails
 
 - Web research must cite sources when used.

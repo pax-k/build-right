@@ -30,8 +30,9 @@ Then move to the next task.
 - Read `references/evidence-contract.md` before completing or updating a task.
 - Use `assets/templates/task-template.md` when creating a missing task or
   splitting an overbroad task.
-- Use bundled `scripts/continue-check.ts` before selecting a task or advancing
-  through a queue. Reconcile its decision before continuing.
+- Use bundled `scripts/continue-check.ts --strict` before selecting a task or
+  advancing through a queue. Report and reconcile its decision before
+  continuing.
 - Use bundled `scripts/execution-check.ts` for deterministic task, contract,
   and gate signals. Treat script output as input to judgment, not authority.
 
@@ -40,10 +41,21 @@ Then move to the next task.
 1. Run the read-only state resolver when available:
 
    ```sh
-   bun <skill-path>/scripts/continue-check.ts --cwd <project> --format markdown
+   bun <skill-path>/scripts/continue-check.ts --cwd <project> --format markdown --strict
    ```
 
-2. Follow the resolver decision before selecting work:
+2. Report the resolver findings before selecting work:
+
+   ```text
+   Resolver decision: <decision>
+   Confidence: <confidence>
+   Next action: <next action>
+   Next task: <task or none>
+   Blocking gates: <gates or none>
+   External follow-ups: <follow-ups or none>
+   ```
+
+3. Follow the resolver decision before selecting work:
 
    - `ask-founder`: ask or report the founder-owned gate; do not continue.
    - `wait-external`: report the external-state gate; do not continue.
@@ -52,15 +64,15 @@ Then move to the next task.
    - `invalid-state`: stop and reconcile contradictory tracker/gate state.
    - `continue-active-task` or `execute-task`: select exactly that task.
 
-3. Run the read-only execution helper when available:
+4. Run the read-only execution helper when available:
 
    ```sh
    bun <skill-path>/scripts/execution-check.ts --cwd <project> --mode next-task --format markdown
    ```
 
-4. Read task, sprint/milestone tracker, authority docs, and local agent
+5. Read task, sprint/milestone tracker, authority docs, and local agent
    instructions.
-5. Print task intake:
+6. Print task intake:
 
    ```text
    Active task: <task id or path>
@@ -75,23 +87,25 @@ Then move to the next task.
    Evidence destination: <task file or evidence file>
    ```
 
-6. Run the execution helper in `task-contract` or `all` mode when a task path
+7. Run the execution helper in `task-contract` or `all` mode when a task path
    exists, then reconcile any missing fields before editing.
-7. Inspect current workspace state before editing.
-8. Capture baseline evidence.
-9. Implement the smallest change that satisfies the task.
-10. Verify in layers.
-11. Run subagent review when a required review trigger applies and subagent tools
+8. Inspect current workspace state before editing.
+9. Capture baseline evidence.
+10. Implement the smallest change that satisfies the task.
+11. Verify in layers.
+12. Run subagent review when a required review trigger applies and subagent tools
    are available. If unavailable or forbidden, record the skipped review and
    substitute verification before closing.
-12. Record evidence before marking the task complete.
-13. Update only the relevant tracker/docs.
-14. Run `continue-check.ts` and the execution helper in `stop-gates` mode before
+13. Record evidence before marking the task complete.
+14. Update only the relevant tracker/docs.
+15. Run `continue-check.ts --strict` and the execution helper in `stop-gates` mode before
     selecting another task.
-15. Stop at any founder, external-state, failed-verification, stale-task, source
+16. Report the resolver findings again before deciding whether another task is
+    safe to select.
+17. Stop at any founder, external-state, failed-verification, stale-task, source
     mismatch, or release-claim gate. Do not advance to the next task until the
     gate is resolved or explicitly converted into a ready AI-owned task.
-16. Commit or hand off according to project workflow.
+18. Commit or hand off according to project workflow.
 
 ## Not-Ready Rule
 
