@@ -1,6 +1,7 @@
 ---
 name: build-right-execution
 description: Execute one bounded task using baseline evidence, narrow implementation, verification, evidence capture, and tracker updates. Use when the user invokes /build-right-execution, wants to work the next issue, run an evidence-driven implementation loop, verify a task, update task state, or continue execution from a prepared task queue.
+license: MIT
 ---
 
 # Build Right Execution
