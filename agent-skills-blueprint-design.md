@@ -8,10 +8,10 @@ Agent Skills ecosystem and skills.sh.
 
 Create two portable skills:
 
-- `pre-execution-blueprint`: guides a founder or project owner through product
+- `build-right-preflight`: guides a founder or project owner through product
   truth, evidence, MVP scope, operating docs, Sprint 0, and the first executable
   AI task.
-- `execution-blueprint`: executes one bounded task using baseline evidence,
+- `build-right-execution`: executes one bounded task using baseline evidence,
   narrow implementation, verification, evidence capture, and tracker updates.
 
 Current implementation decisions:
@@ -31,8 +31,8 @@ Current implementation decisions:
 These skills should work when invoked explicitly, such as:
 
 ```text
-/pre-execution-blueprint
-/execution-blueprint
+/build-right-preflight
+/build-right-execution
 ```
 
 They should also trigger from natural-language requests such as:
@@ -83,7 +83,7 @@ update only missing or clearly stale artifacts.
 
 ```text
 skills/
-  pre-execution-blueprint/
+  build-right-preflight/
     SKILL.md
     references/
       workflow.md
@@ -93,7 +93,7 @@ skills/
         docs/
         tasks/
 
-  execution-blueprint/
+  build-right-execution/
     SKILL.md
     references/
       workflow.md
@@ -133,8 +133,8 @@ canonical docs, MVP scope, operating rules, and a first task exist.
 
 ```md
 ---
-name: pre-execution-blueprint
-description: Guide founder/product pre-execution setup before AI implementation. Use when the user invokes /pre-execution-blueprint, wants to bootstrap a blank or existing project, capture founder intent, validate assumptions, create product truth, define MVP scope, create operating docs, create Sprint 0 tasks, or prepare the first executable AI task.
+name: build-right-preflight
+description: Guide founder/product pre-execution setup before AI implementation. Use when the user invokes /build-right-preflight, wants to bootstrap a blank or existing project, capture founder intent, validate assumptions, create product truth, define MVP scope, create operating docs, create Sprint 0 tasks, or prepare the first executable AI task.
 ---
 ```
 
@@ -261,8 +261,8 @@ Then move to the next task.
 
 ```md
 ---
-name: execution-blueprint
-description: Execute one bounded task using baseline evidence, narrow implementation, verification, evidence capture, and tracker updates. Use when the user invokes /execution-blueprint, wants to work the next issue, run an evidence-driven implementation loop, verify a task, update task state, or continue execution from a prepared task queue.
+name: build-right-execution
+description: Execute one bounded task using baseline evidence, narrow implementation, verification, evidence capture, and tracker updates. Use when the user invokes /build-right-execution, wants to work the next issue, run an evidence-driven implementation loop, verify a task, update task state, or continue execution from a prepared task queue.
 ---
 ```
 
@@ -290,7 +290,7 @@ the skill should not pretend execution is ready.
 
 It should either:
 
-- ask the user to run `/pre-execution-blueprint`, or
+- ask the user to run `/build-right-preflight`, or
 - create a narrow Sprint 0 blocker that establishes the missing execution
   surface.
 
@@ -368,8 +368,8 @@ two workflows mostly require judgment, interaction, and careful file edits.
       "title": "Blueprints",
       "description": "Skills for preparing and executing evidence-driven AI project work.",
       "skills": [
-        "pre-execution-blueprint",
-        "execution-blueprint"
+        "build-right-preflight",
+        "build-right-execution"
       ]
     }
   ]
@@ -390,19 +390,19 @@ The first implementation should be instruction-and-template driven:
 Useful test prompts:
 
 ```text
-Use /pre-execution-blueprint in this blank project and guide me until the first executable AI task exists.
+Use /build-right-preflight in this blank project and guide me until the first executable AI task exists.
 ```
 
 ```text
-Use /pre-execution-blueprint in this existing project. Do not overwrite existing docs; index them, find gaps, and prepare execution.
+Use /build-right-preflight in this existing project. Do not overwrite existing docs; index them, find gaps, and prepare execution.
 ```
 
 ```text
-Use /execution-blueprint to take the next ready task and complete it with evidence.
+Use /build-right-execution to take the next ready task and complete it with evidence.
 ```
 
 ```text
-Use /execution-blueprint on this project that has no task tracker. Tell me whether execution is ready and create the smallest blocker if not.
+Use /build-right-execution on this project that has no task tracker. Tell me whether execution is ready and create the smallest blocker if not.
 ```
 
 ## Design Principle

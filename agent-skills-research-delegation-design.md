@@ -6,8 +6,8 @@ subagent delegation.
 It extends `agent-skills-blueprint-design.md` and is intended to guide the next
 implementation pass for:
 
-- `skills/pre-execution-blueprint`
-- `skills/execution-blueprint`
+- `skills/build-right-preflight`
+- `skills/build-right-execution`
 
 ## Core Principle
 
@@ -287,7 +287,7 @@ Return findings with paths and severity. Do not edit files.
 
 ## Implementation Changes To Make
 
-Update `skills/pre-execution-blueprint`:
+Update `skills/build-right-preflight`:
 
 - Add a `Research Lane` section to `references/workflow.md`.
 - Add a `Delegation Lane` section to `references/workflow.md`.
@@ -297,7 +297,7 @@ Update `skills/pre-execution-blueprint`:
 - Update evidence templates to separate public evidence from customer evidence.
 - Add subagent prompt templates under `assets/templates/subagents/`.
 
-Update `skills/execution-blueprint`:
+Update `skills/build-right-execution`:
 
 - Add optional subagent review guidance to `references/workflow.md`.
 - Add evidence completeness and scope review prompt templates under

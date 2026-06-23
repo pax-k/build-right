@@ -1,9 +1,9 @@
 ---
-name: execution-blueprint
-description: Execute one bounded task using baseline evidence, narrow implementation, verification, evidence capture, and tracker updates. Use when the user invokes /execution-blueprint, wants to work the next issue, run an evidence-driven implementation loop, verify a task, update task state, or continue execution from a prepared task queue.
+name: build-right-execution
+description: Execute one bounded task using baseline evidence, narrow implementation, verification, evidence capture, and tracker updates. Use when the user invokes /build-right-execution, wants to work the next issue, run an evidence-driven implementation loop, verify a task, update task state, or continue execution from a prepared task queue.
 ---
 
-# Execution Blueprint
+# Build Right Execution
 
 Use this skill after pre-execution work has produced product truth, MVP scope,
 operating rules, and an executable task queue.
@@ -53,7 +53,7 @@ Then move to the next task.
 ## Not-Ready Rule
 
 If authority docs, MVP scope, execution rules, or task files are missing, do not
-pretend execution is ready. Route the user to `/pre-execution-blueprint` or
+pretend execution is ready. Route the user to `/build-right-preflight` or
 create the smallest Sprint 0 blocker needed to establish the missing execution
 surface.
 

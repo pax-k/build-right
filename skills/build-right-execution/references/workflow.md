@@ -33,7 +33,7 @@ Evidence destination: <task file or evidence file>
 ```
 
 If no task exists, inspect whether the project has pre-execution artifacts. If
-it does not, route to `/pre-execution-blueprint` or create a Sprint 0 blocker.
+it does not, route to `/build-right-preflight` or create a Sprint 0 blocker.
 
 ## 2. Readiness Check
 

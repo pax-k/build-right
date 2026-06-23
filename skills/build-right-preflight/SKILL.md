@@ -1,9 +1,9 @@
 ---
-name: pre-execution-blueprint
-description: Guide founder/product pre-execution setup before AI implementation. Use when the user invokes /pre-execution-blueprint, wants to bootstrap a blank or existing project, capture founder intent, validate assumptions, create product truth, define MVP scope, create operating docs, create Sprint 0 tasks, or prepare the first executable AI task.
+name: build-right-preflight
+description: Guide founder/product pre-execution setup before AI implementation. Use when the user invokes /build-right-preflight, wants to bootstrap a blank or existing project, capture founder intent, validate assumptions, create product truth, define MVP scope, create operating docs, create Sprint 0 tasks, or prepare the first executable AI task.
 ---
 
-# Pre-Execution Blueprint
+# Build Right Preflight
 
 Use this skill to prepare a project before repetitive AI execution begins.
 

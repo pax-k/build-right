@@ -2,18 +2,18 @@
 
 This document visualizes the implemented flows for:
 
-- `skills/pre-execution-blueprint`
-- `skills/execution-blueprint`
+- `skills/build-right-preflight`
+- `skills/build-right-execution`
 
 The diagrams are intentionally operational: they show what the main agent does,
 where founder input is required, where web research or subagents may help, and
 where files are created or updated.
 
-## Pre-Execution Blueprint
+## Build Right Preflight
 
 ```mermaid
 flowchart TD
-  A["Invoke skill: /pre-execution-blueprint or $pre-execution-blueprint"] --> B["Read required references and templates"]
+  A["Invoke skill: /build-right-preflight or $build-right-preflight"] --> B["Read required references and templates"]
   B --> C["Inspect project state"]
   C --> D{"Project type?"}
 
@@ -125,11 +125,11 @@ flowchart TD
   C --> N
 ```
 
-## Execution Blueprint
+## Build Right Execution
 
 ```mermaid
 flowchart TD
-  A["Invoke skill: /execution-blueprint or $execution-blueprint"] --> B["Read workflow, evidence contract, task template"]
+  A["Invoke skill: /build-right-execution or $build-right-execution"] --> B["Read workflow, evidence contract, task template"]
   B --> C["Select exactly one task"]
   C --> D{"Task exists and is bounded?"}
 

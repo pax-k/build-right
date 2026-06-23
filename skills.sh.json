@@ -6,8 +6,8 @@
       "title": "Blueprints",
       "description": "Skills for preparing and executing evidence-driven AI project work.",
       "skills": [
-        "pre-execution-blueprint",
-        "execution-blueprint"
+        "build-right-preflight",
+        "build-right-execution"
       ]
     }
   ]
