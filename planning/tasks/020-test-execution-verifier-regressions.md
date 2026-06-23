@@ -1,6 +1,6 @@
 # 020: Test Execution Verifier And Browser Proof Regressions
 
-Status: ready
+Status: complete
 Type: testing/regression
 Owner: AI
 
@@ -29,14 +29,14 @@ and filter behavior evidence.
 
 ## Acceptance Criteria
 
-- [ ] Test that forbidden terms inside docs or dependencies do not fail runtime
+- [x] Test that forbidden terms inside docs or dependencies do not fail runtime
   source scanning.
-- [ ] Test that forbidden terms inside runtime source still fail.
-- [ ] Test that browser proof missing `localStorage restore` fails with a clear
+- [x] Test that forbidden terms inside runtime source still fail.
+- [x] Test that browser proof missing `localStorage restore` fails with a clear
   message.
-- [ ] Test that filter behavior can pass without the literal
+- [x] Test that filter behavior can pass without the literal
   `filter-completed` string.
-- [ ] Append failures to `planning/failed-tests.md` if any regression command
+- [x] Append failures to `planning/failed-tests.md` if any regression command
   fails during execution.
 
 ## Baseline Evidence
@@ -55,13 +55,26 @@ unit-level regressions.
 
 | Date | Evidence | Result | Notes |
 | --- | --- | --- | --- |
+| 2026-06-24 | `bun test` | pass | Added `execution verifier scan is scoped and browser proof failures stay isolated`. |
+| 2026-06-24 | `bun scripts/todo-trial.ts verify-execution --target /tmp/build-right-todo-trial` | pass | Live scratch execution verifier remains green. |
+| 2026-06-24 | `bun scripts/todo-trial.ts verify-execution-negative` | pass | Browser-proof corruption remains isolated as an expected failing control. |
+
+## Files Changed
+
+- `tests/skill-trials.test.ts` - added scoped scan fixtures, runtime-source negative, browser-proof negative, and absence check for the old filter marker.
+- `scripts/todo-trial.ts` - added `scan-runtime` command for focused verifier coverage.
+
+## Verification Summary
+
+- `bun test` - pass.
+- `bun scripts/todo-trial.ts verify-execution --target /tmp/build-right-todo-trial` - pass.
+- `bun scripts/todo-trial.ts verify-execution-negative` - pass.
 
 ## Learning Notes
 
-- Proved: pending.
-- Simulated: pending.
-- Test next: whether browser proof corruption remains isolated to browser
-  evidence.
+- Proved: docs/dependency forbidden terms are ignored by runtime scans, runtime-source forbidden terms fail, and browser proof corruption fails clearly.
+- Simulated: full Playwright-style browser replay is not part of this regression; the persisted browser-proof artifact remains the end-to-end proof.
+- Test next: add browser replay only if the manual proof artifact becomes insufficient.
 
 ## Skill Trial Notes
 
@@ -77,4 +90,3 @@ unit-level regressions.
 ## Follow-Ups
 
 - None yet.
-

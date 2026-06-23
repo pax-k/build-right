@@ -1,6 +1,6 @@
 # Sprint 003: Failed-Test Remediation And Regression Proof
 
-Status: ready
+Status: complete
 Owner: AI
 Created: 2026-06-24
 
@@ -47,18 +47,18 @@ Excluded:
 
 | ID | Title | Kind | Status | Evidence |
 | --- | --- | --- | --- | --- |
-| 015 | Fix failure-log status semantics and stale-open rollups | fix | ready | planning/tasks/015-fix-failure-log-status-semantics.md |
-| 016 | Test failure-log status semantics and rollups | test | ready | planning/tasks/016-test-failure-log-status-semantics.md |
-| 017 | Fix preflight snapshot and marker verification robustness | fix | ready | planning/tasks/017-fix-preflight-snapshot-and-markers.md |
-| 018 | Test preflight verifier regressions | test | ready | planning/tasks/018-test-preflight-verifier-regressions.md |
-| 019 | Fix execution verifier scoping and browser proof semantics | fix | ready | planning/tasks/019-fix-execution-verifier-scoping.md |
-| 020 | Test execution verifier and browser proof regressions | test | ready | planning/tasks/020-test-execution-verifier-regressions.md |
-| 021 | Fix negative gate fixtures and conflict diagnostics | fix | ready | planning/tasks/021-fix-negative-gate-fixtures.md |
-| 022 | Test negative gate resolver matrix regressions | test | ready | planning/tasks/022-test-negative-gate-regressions.md |
-| 023 | Fix baseline and status-audit environment noise handling | fix | ready | planning/tasks/023-fix-baseline-and-status-audit-noise.md |
-| 024 | Test baseline and status-audit regressions | test | ready | planning/tasks/024-test-baseline-and-status-audit-regressions.md |
-| 025 | Fix source parity mismatch remediation guidance | fix | ready | planning/tasks/025-fix-source-parity-remediation-guidance.md |
-| 026 | Test source parity mismatch remediation path | test | ready | planning/tasks/026-test-source-parity-remediation.md |
+| 015 | Fix failure-log status semantics and stale-open rollups | fix | complete | planning/tasks/015-fix-failure-log-status-semantics.md |
+| 016 | Test failure-log status semantics and rollups | test | complete | planning/tasks/016-test-failure-log-status-semantics.md |
+| 017 | Fix preflight snapshot and marker verification robustness | fix | complete | planning/tasks/017-fix-preflight-snapshot-and-markers.md |
+| 018 | Test preflight verifier regressions | test | complete | planning/tasks/018-test-preflight-verifier-regressions.md |
+| 019 | Fix execution verifier scoping and browser proof semantics | fix | complete | planning/tasks/019-fix-execution-verifier-scoping.md |
+| 020 | Test execution verifier and browser proof regressions | test | complete | planning/tasks/020-test-execution-verifier-regressions.md |
+| 021 | Fix negative gate fixtures and conflict diagnostics | fix | complete | planning/tasks/021-fix-negative-gate-fixtures.md |
+| 022 | Test negative gate resolver matrix regressions | test | complete | planning/tasks/022-test-negative-gate-regressions.md |
+| 023 | Fix baseline and status-audit environment noise handling | fix | complete | planning/tasks/023-fix-baseline-and-status-audit-noise.md |
+| 024 | Test baseline and status-audit regressions | test | complete | planning/tasks/024-test-baseline-and-status-audit-regressions.md |
+| 025 | Fix source parity mismatch remediation guidance | fix | complete | planning/tasks/025-fix-source-parity-remediation-guidance.md |
+| 026 | Test source parity mismatch remediation path | test | complete | planning/tasks/026-test-source-parity-remediation.md |
 
 ## Gate
 
@@ -66,3 +66,11 @@ Do not mark Sprint 003 complete until every remediation task has a paired
 regression task with fresh command evidence. If a regression task fails, append
 the failure to `planning/failed-tests.md` and leave the task open.
 
+## Review And Delegation
+
+Required review triggers applied because helper scripts, verifier behavior, and
+more than three durable task/tracker files changed. Subagent review was skipped
+because the available subagent tool requires an explicit user request to spawn
+subagents. Substitute review evidence: `bun test`, `bun run
+verify:skill-trials`, `bun scripts/todo-trial.ts status-audit`, final trial
+verifier commands, and `git diff --check` all passed.

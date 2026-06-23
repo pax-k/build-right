@@ -61,6 +61,10 @@ const failureSummaryPath =
   argValue("--summary-output", defaultFailureSummaryPath) ?? defaultFailureSummaryPath;
 const skillNames = ["build-right-preflight", "build-right-execution"];
 
+function trialTempRoot(label: string): string {
+  return `${defaultTarget}-${label}-${Date.now()}-${process.pid}-${crypto.randomUUID()}`;
+}
+
 function argValue(name: string, fallback?: string): string | undefined {
   const index = Bun.argv.indexOf(name);
   if (index === -1) {
@@ -310,7 +314,7 @@ async function copyPreflightSnapshot(source: string, destination: string): Promi
   }
 }
 
-async function verifyPreflight(target: string): Promise<void> {
+async function verifyPreflight(target: string, failureOverrides: Partial<FailureRow> = {}): Promise<void> {
   const problems: string[] = [];
   const requiredFiles = [
     "docs/blueprint-status.md",
@@ -438,11 +442,12 @@ async function verifyPreflight(target: string): Promise<void> {
     artifact: target,
     followUp: "planning/tasks/011-automate-preflight-artifact-verification.md",
     status: "open",
+    ...failureOverrides,
   }, problems);
 }
 
 async function verifyPreflightNegative(kind: "missing" | "app-file"): Promise<void> {
-  const root = `${defaultTarget}-preflight-negative-${kind}-${Date.now()}`;
+  const root = trialTempRoot(`preflight-negative-${kind}`);
   await copyPreflightSnapshot(argValue("--source", defaultTarget) ?? defaultTarget, root);
   if (kind === "missing") {
     await mustRun(["rm", "-f", join(root, "docs/source-index.md")], repoRoot, {
@@ -454,7 +459,13 @@ async function verifyPreflightNegative(kind: "missing" | "app-file"): Promise<vo
   }
 
   try {
-    await verifyPreflight(root);
+    await verifyPreflight(root, {
+      phase: `verify-preflight-negative-${kind}`,
+      command: `bun scripts/todo-trial.ts verify-preflight-negative --kind ${kind}`,
+      expected: "negative preflight fixture fails",
+      artifact: root,
+      status: "expected-control",
+    });
   } catch {
     console.log(`preflight negative (${kind}): expected failure logged`);
     return;
@@ -526,7 +537,7 @@ async function verifyLiveServer(target: string): Promise<void> {
   }
 }
 
-async function verifyExecution(target: string): Promise<void> {
+async function verifyExecution(target: string, failureOverrides: Partial<FailureRow> = {}): Promise<void> {
   const problems: string[] = [];
   const requiredFiles = [
     "package.json",
@@ -602,6 +613,7 @@ async function verifyExecution(target: string): Promise<void> {
     artifact: target,
     followUp: "planning/tasks/012-automate-execution-and-browser-proof-verification.md",
     status: "open",
+    ...failureOverrides,
   }, problems);
 
   await mustRun(["bun", "test"], target, {
@@ -690,7 +702,7 @@ async function conflictFixtureError(root: string): Promise<string | null> {
 }
 
 async function verifyExecutionNegative(): Promise<void> {
-  const root = `${defaultTarget}-execution-negative-${Date.now()}`;
+  const root = trialTempRoot("execution-negative");
   await copyExecutionFixture(argValue("--source", defaultTarget) ?? defaultTarget, root);
   await Bun.write(
     join(root, "docs/evidence/browser-proof.md"),
@@ -701,7 +713,13 @@ async function verifyExecutionNegative(): Promise<void> {
   );
 
   try {
-    await verifyExecution(root);
+    await verifyExecution(root, {
+      phase: "verify-execution-negative",
+      command: "bun scripts/todo-trial.ts verify-execution-negative",
+      expected: "negative execution fixture fails",
+      artifact: root,
+      status: "expected-control",
+    });
   } catch {
     console.log("execution negative: expected failure logged");
     return;
@@ -837,7 +855,7 @@ Fixture state.
 }
 
 async function createGateFixture(name: string, files: Record<string, string>): Promise<string> {
-  const root = `${defaultTarget}-gate-${name}-${Date.now()}`;
+  const root = trialTempRoot(`gate-${name}`);
   assertScratchTarget(root);
   await mustRun(["rm", "-rf", root], repoRoot, {
     task: "013",
@@ -1159,7 +1177,7 @@ async function writeFailureSummary(): Promise<void> {
     "",
     "## Groups",
     "",
-    "| Class | Phase | Count | Actionable Open | Historical Resolved | Expected/Control | Candidate Follow-Up |",
+    "| Class | Phase | Count | Actionable Open | Historical Resolved | Expected/Control | Related Task |",
     "| --- | --- | --- | --- | --- | --- | --- |",
   ];
 
@@ -1188,17 +1206,16 @@ async function writeFailureSummary(): Promise<void> {
     "",
   );
 
-  const repeated = [...groups.entries()].filter(([, group]) => {
-    const hasActionable = group.some((record) => {
+  const actionableGroups = [...groups.entries()].filter(([, group]) => {
+    return group.some((record) => {
       const disposition = dispositions.get(record.index);
       return disposition === "actionable-open" || disposition === "needs-triage";
     });
-    return group.length >= 2 || hasActionable;
   });
-  if (repeated.length === 0) {
-    lines.push("- No repeated failure groups yet.");
+  if (actionableGroups.length === 0) {
+    lines.push("- No actionable failure groups remain.");
   } else {
-    for (const [key, group] of repeated) {
+    for (const [key, group] of actionableGroups) {
       const [failureClass, phase] = key.split("::");
       const followUps = [...new Set(group.map((record) => record.followUp).filter(Boolean))].join(", ");
       const actionable = group.filter((record) => {
@@ -1208,6 +1225,37 @@ async function writeFailureSummary(): Promise<void> {
       lines.push(
         `- ${failureClass}/${phase}: ${group.length} rows, ${actionable} actionable. Candidate follow-up: ${followUps || "triage needed"}.`,
       );
+    }
+  }
+
+  const closedOrControlGroups = [...groups.entries()].filter(([, group]) => {
+    return group.some((record) => {
+      const disposition = dispositions.get(record.index);
+      return disposition === "historical-resolved"
+        || disposition === "resolved"
+        || disposition === "expected-control"
+        || disposition === "forced-control";
+    });
+  });
+  lines.push(
+    "",
+    "## Closed And Control Inventory",
+    "",
+  );
+  if (closedOrControlGroups.length === 0) {
+    lines.push("- No closed or control groups recorded.");
+  } else {
+    for (const [key, group] of closedOrControlGroups) {
+      const [failureClass, phase] = key.split("::");
+      const closed = group.filter((record) => {
+        const disposition = dispositions.get(record.index);
+        return disposition === "historical-resolved" || disposition === "resolved";
+      }).length;
+      const controls = group.filter((record) => {
+        const disposition = dispositions.get(record.index);
+        return disposition === "expected-control" || disposition === "forced-control";
+      }).length;
+      lines.push(`- ${failureClass}/${phase}: ${closed} closed, ${controls} expected/control.`);
     }
   }
 
@@ -1348,7 +1396,7 @@ async function failureLogSmoke(): Promise<void> {
 }
 
 async function parityNegative(): Promise<void> {
-  const root = `/tmp/build-right-parity-negative-${Date.now()}`;
+  const root = trialTempRoot("parity-negative");
   await copySkillSource(root);
   await Bun.write(
     join(root, "build-right-preflight", "SKILL.md"),

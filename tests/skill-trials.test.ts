@@ -804,6 +804,316 @@ const checks: Check[] = [
     },
   },
   {
+    name: "failure summary separates actionable, expected, forced, and resolved rows",
+    run: async () => {
+      const root = await createFixture("failure-summary", {
+        "failed-tests.md": failureLogFixture([
+          "| 2026-06-24 | 101 | alpha | cmd | expected | actual | verifier-gap | artifact | follow-up.md | open |",
+          "| 2026-06-24 | 101 | alpha | fix | expected | actual | verifier-gap | artifact | follow-up.md | resolved |",
+          "| 2026-06-24 | 102 | beta | cmd | expected | actual | generated-artifact | artifact | follow-up.md | open |",
+          "| 2026-06-24 | 103 | gamma | cmd | expected | actual | source-under-test | artifact | follow-up.md | expected-logged |",
+          "| 2026-06-24 | 104 | delta | cmd | expected | actual | verifier-gap | artifact | follow-up.md | forced-open |",
+        ].join("\n")),
+      });
+      const summary = `${root}/summary.md`;
+      await runCommand([
+        "bun",
+        "scripts/todo-trial.ts",
+        "failure-summary",
+        "--failure-log",
+        `${root}/failed-tests.md`,
+        "--summary-output",
+        summary,
+      ]);
+      const text = await read(summary);
+      for (const marker of [
+        "Actionable open rows: 1",
+        "Historical open rows with resolution: 1",
+        "Expected/control rows: 2",
+        "Resolved rows: 1",
+        "| verifier-gap | alpha | 2 | 0 | 1 | 0 | follow-up.md |",
+        "| generated-artifact | beta | 1 | 1 | 0 | 0 | follow-up.md |",
+        "- generated-artifact/beta: 1 rows, 1 actionable. Candidate follow-up: follow-up.md.",
+        "## Closed And Control Inventory",
+        "- verifier-gap/alpha: 2 closed, 0 expected/control.",
+        "- source-under-test/gamma: 0 closed, 1 expected/control.",
+        "- verifier-gap/delta: 0 closed, 1 expected/control.",
+      ]) {
+        if (!text.includes(marker)) {
+          throw new Error(`failure summary missing marker: ${marker}\n${text}`);
+        }
+      }
+      for (const forbidden of [
+        "Candidate follow-up: follow-up.md.\n- source-under-test/gamma",
+        "- verifier-gap/alpha: 2 rows, 0 actionable.",
+        "- source-under-test/gamma: 1 rows, 0 actionable.",
+        "- verifier-gap/delta: 1 rows, 0 actionable.",
+      ]) {
+        if (text.includes(forbidden)) {
+          throw new Error(`failure summary still lists closed/control group as actionable: ${forbidden}\n${text}`);
+        }
+      }
+    },
+  },
+  {
+    name: "preflight verifier accepts nested fixtures and lowercase bun while rejecting bad preflight state",
+    run: async () => {
+      const target = await positivePreflightFixture();
+      await runCommand(["bun", "scripts/todo-trial.ts", "verify-preflight", "--target", target]);
+
+      const missing = await positivePreflightFixture();
+      await runCommand(["rm", "-f", `${missing}/docs/source-index.md`]);
+      const missingLog = `${missing}/failed-tests.md`;
+      const missingResult = await runCommandResult([
+        "bun",
+        "scripts/todo-trial.ts",
+        "verify-preflight",
+        "--target",
+        missing,
+        "--failure-log",
+        missingLog,
+      ]);
+      if (missingResult.exitCode === 0 || !missingResult.output.includes("missing file")) {
+        throw new Error(`missing preflight artifact was not rejected: ${missingResult.output}`);
+      }
+
+      const appFile = await positivePreflightFixture();
+      await Bun.write(`${appFile}/package.json`, "{\"name\":\"bad-preflight\"}\n");
+      const appLog = `${appFile}/failed-tests.md`;
+      const appResult = await runCommandResult([
+        "bun",
+        "scripts/todo-trial.ts",
+        "verify-preflight",
+        "--target",
+        appFile,
+        "--failure-log",
+        appLog,
+      ]);
+      if (appResult.exitCode === 0 || !appResult.output.includes("app file exists during preflight verification")) {
+        throw new Error(`preflight app file was not rejected: ${appResult.output}`);
+      }
+    },
+  },
+  {
+    name: "execution verifier scan is scoped and browser proof failures stay isolated",
+    run: async () => {
+      const scoped = await createFixture("runtime-scan-scoped", {
+        "package.json": "{\"name\":\"fixture\",\"type\":\"module\"}\n",
+        "index.ts": "Bun.serve({ routes: {} });\n",
+        "index.html": "<script type=\"module\" src=\"./frontend.tsx\"></script>\n",
+        "todo.ts": "export const todos = [];\n",
+        "frontend.tsx": "const marker = 'ok';\n",
+        "index.css": "body{}\n",
+        "todo.test.ts": "import { test } from 'bun:test';\n",
+        "docs/notes.md": "Do not use vite, npm, pnpm, yarn, npx, express, dotenv, or ws.\n",
+        "node_modules/pkg/readme.md": "mentions express and vite\n",
+      });
+      await runCommand(["bun", "scripts/todo-trial.ts", "scan-runtime", "--target", scoped]);
+
+      await Bun.write(`${scoped}/frontend.tsx`, "import 'vite';\n");
+      const runtimeLog = `${scoped}/failed-tests.md`;
+      const runtimeResult = await runCommandResult([
+        "bun",
+        "scripts/todo-trial.ts",
+        "scan-runtime",
+        "--target",
+        scoped,
+        "--failure-log",
+        runtimeLog,
+      ]);
+      if (runtimeResult.exitCode === 0 || !runtimeResult.output.includes("forbidden runtime reference")) {
+        throw new Error(`runtime forbidden reference was not rejected: ${runtimeResult.output}`);
+      }
+
+      const browserProof = `| Check | Result |
+| --- | --- |
+| Add todo | pass |
+| Complete todo | pass |
+| Completed filter | pass |
+| Active filter | pass |
+| Delete todo | pass |
+| localStorage restore | fail |
+`;
+      const execution = await executionEvidenceFixture(browserProof);
+      const browserLog = `${execution}/failed-tests.md`;
+      const browserResult = await runCommandResult([
+        "bun",
+        "scripts/todo-trial.ts",
+        "verify-execution",
+        "--target",
+        execution,
+        "--failure-log",
+        browserLog,
+      ]);
+      if (browserResult.exitCode === 0 || !browserResult.output.includes("| localStorage restore | pass |")) {
+        throw new Error(`browser proof corruption was not isolated: ${browserResult.output}`);
+      }
+
+      const script = await read("scripts/todo-trial.ts");
+      if (script.includes("filter-completed")) {
+        throw new Error("execution verifier still depends on literal filter-completed marker");
+      }
+    },
+  },
+  {
+    name: "negative gate matrix rejects malformed conflict fixtures distinctly",
+    run: async () => {
+      await runCommand(["bun", "scripts/todo-trial.ts", "negative-gates"]);
+      const malformed = await runCommand([
+        "bun",
+        "scripts/todo-trial.ts",
+        "negative-gates-malformed-conflict",
+      ]);
+      if (!malformed.includes("fixture error: docs/conflicts.md is missing required ## Conflicts section")) {
+        throw new Error(`malformed conflict fixture was not rejected distinctly: ${malformed}`);
+      }
+    },
+  },
+  {
+    name: "baseline and status audit commands are shell independent",
+    run: async () => {
+      const baseline = await createFixture("baseline-no-tests", {
+        "package.json": "{\"name\":\"baseline-no-tests\",\"type\":\"module\"}\n",
+      });
+      const baselineOutput = await runCommand([
+        "bun",
+        "scripts/todo-trial.ts",
+        "baseline-check",
+        "--target",
+        baseline,
+        "--phase",
+        "baseline",
+      ]);
+      if (!baselineOutput.includes("expected-baseline")) {
+        throw new Error(`baseline no-tests output was not classified: ${baselineOutput}`);
+      }
+
+      const finalLog = `${baseline}/failed-tests.md`;
+      const finalResult = await runCommandResult([
+        "bun",
+        "scripts/todo-trial.ts",
+        "baseline-check",
+        "--target",
+        baseline,
+        "--phase",
+        "final",
+        "--failure-log",
+        finalLog,
+      ]);
+      if (finalResult.exitCode === 0 || !finalResult.output.includes("final bun test failed")) {
+        throw new Error(`final no-tests failure was not rejected: ${finalResult.output}`);
+      }
+
+      const auditFiles: Record<string, string> = {
+        "planning/sprints/003-failed-test-remediation.md": "# Sprint 003\n\nStatus: complete\n",
+      };
+      for (let id = 15; id <= 26; id += 1) {
+        const idText = String(id).padStart(3, "0");
+        auditFiles[`planning/tasks/${idText}-fixture.md`] = `# ${idText}: Fixture
+
+Status: complete
+
+## Acceptance Criteria
+
+- [x] done
+`;
+      }
+      const auditRoot = await createFixture("status-audit", auditFiles);
+      await runCommand(["bun", "scripts/todo-trial.ts", "status-audit", "--audit-root", auditRoot]);
+
+      await Bun.write(`${auditRoot}/planning/tasks/020-fixture.md`, "# 020: Fixture\n\nStatus: ready\n\n- [ ] not done\n");
+      const auditLog = `${auditRoot}/failed-tests.md`;
+      const auditResult = await runCommandResult([
+        "bun",
+        "scripts/todo-trial.ts",
+        "status-audit",
+        "--audit-root",
+        auditRoot,
+        "--failure-log",
+        auditLog,
+      ]);
+      if (auditResult.exitCode === 0 || !auditResult.output.includes("020-fixture.md is not complete")) {
+        throw new Error(`status audit did not report incomplete task: ${auditResult.output}`);
+      }
+    },
+  },
+  {
+    name: "source parity mismatch output includes remediation guidance",
+    run: async () => {
+      await runCommand(["bun", "scripts/todo-trial.ts", "parity"]);
+
+      const compareRoot = await createFixture("parity-mismatch", {});
+      await runCommand(["cp", "-R", "skills/build-right-preflight", `${compareRoot}/build-right-preflight`]);
+      await runCommand(["cp", "-R", "skills/build-right-execution", `${compareRoot}/build-right-execution`]);
+      await Bun.write(
+        `${compareRoot}/build-right-preflight/SKILL.md`,
+        `${await read(`${compareRoot}/build-right-preflight/SKILL.md`)}\n<!-- mismatch -->\n`,
+      );
+      const parityLog = `${compareRoot}/failed-tests.md`;
+      const mismatch = await runCommandResult([
+        "bun",
+        "scripts/todo-trial.ts",
+        "parity",
+        "--compare-root",
+        compareRoot,
+        "--failure-log",
+        parityLog,
+      ]);
+      for (const marker of ["partial-needs-rerun", "Mismatched source:", "Remediation: use the repo-local skills/ source"]) {
+        if (!mismatch.output.includes(marker)) {
+          throw new Error(`parity mismatch output missing ${marker}: ${mismatch.output}`);
+        }
+      }
+      if (mismatch.exitCode === 0) {
+        throw new Error("parity mismatch unexpectedly passed");
+      }
+
+      const negativeLog = `${compareRoot}/negative-failed-tests.md`;
+      const negativeSummary = `${compareRoot}/negative-summary.md`;
+      await Bun.write(negativeLog, failureLogFixture(""));
+      await runCommand([
+        "bun",
+        "scripts/todo-trial.ts",
+        "parity-negative",
+        "--failure-log",
+        negativeLog,
+      ]);
+      const concurrentLogA = `${compareRoot}/negative-concurrent-a.md`;
+      const concurrentLogB = `${compareRoot}/negative-concurrent-b.md`;
+      await Bun.write(concurrentLogA, failureLogFixture(""));
+      await Bun.write(concurrentLogB, failureLogFixture(""));
+      await Promise.all([
+        runCommand([
+          "bun",
+          "scripts/todo-trial.ts",
+          "parity-negative",
+          "--failure-log",
+          concurrentLogA,
+        ]),
+        runCommand([
+          "bun",
+          "scripts/todo-trial.ts",
+          "parity-negative",
+          "--failure-log",
+          concurrentLogB,
+        ]),
+      ]);
+      await runCommand([
+        "bun",
+        "scripts/todo-trial.ts",
+        "failure-summary",
+        "--failure-log",
+        negativeLog,
+        "--summary-output",
+        negativeSummary,
+      ]);
+      const summary = await read(negativeSummary);
+      if (!summary.includes("Expected/control rows: 1")) {
+        throw new Error(`parity negative was not classified as expected control: ${summary}`);
+      }
+    },
+  },
+  {
     name: "preflight helper fixture decisions are stable",
     run: async () => {
       const blank = await preflightDecisionForFixture({});

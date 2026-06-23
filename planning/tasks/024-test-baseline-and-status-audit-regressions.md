@@ -1,6 +1,6 @@
 # 024: Test Baseline And Status-Audit Regressions
 
-Status: ready
+Status: complete
 Type: testing/regression
 Owner: AI
 
@@ -29,14 +29,14 @@ task status audits.
 
 ## Acceptance Criteria
 
-- [ ] Test that a pre-implementation repo with no tests can be logged as an
+- [x] Test that a pre-implementation repo with no tests can be logged as an
   expected baseline signal.
-- [ ] Test that the same repo must pass final verification after tests are
+- [x] Test that the same repo must pass final verification after tests are
   added.
-- [ ] Test status audits through Bun-native enumeration, not zsh globs.
-- [ ] Test that missing acceptance criteria or incomplete statuses are reported
+- [x] Test status audits through Bun-native enumeration, not zsh globs.
+- [x] Test that missing acceptance criteria or incomplete statuses are reported
   clearly.
-- [ ] Append failures to `planning/failed-tests.md` if any regression command
+- [x] Append failures to `planning/failed-tests.md` if any regression command
   fails during execution.
 
 ## Baseline Evidence
@@ -53,12 +53,26 @@ with explicit paths by hand.
 
 | Date | Evidence | Result | Notes |
 | --- | --- | --- | --- |
+| 2026-06-24 | `bun test` | pass | Added `baseline and status audit commands are shell independent`. |
+| 2026-06-24 | `bun scripts/todo-trial.ts baseline-check --target /tmp/build-right-todo-trial --phase final` | pass | Final scratch Todo tests classify as pass. |
+| 2026-06-24 | `bun scripts/todo-trial.ts status-audit` | pass | Live Sprint 003 status audit passes after tracker closeout. |
+
+## Files Changed
+
+- `tests/skill-trials.test.ts` - added no-tests baseline fixture, final failure fixture, positive status audit fixture, and incomplete-task status audit fixture.
+- `scripts/todo-trial.ts` - added commands under test.
+
+## Verification Summary
+
+- `bun test` - pass.
+- `bun scripts/todo-trial.ts baseline-check --target /tmp/build-right-todo-trial --phase final` - pass.
+- `bun scripts/todo-trial.ts status-audit` - pass.
 
 ## Learning Notes
 
-- Proved: pending.
-- Simulated: pending.
-- Test next: whether task audit output is stable when new task files are added.
+- Proved: baseline and status-audit behavior is deterministic through Bun commands and temporary fixtures.
+- Simulated: none for Sprint 003; live audit passes.
+- Test next: if task numbering changes, update `status-audit` task range options.
 
 ## Skill Trial Notes
 
@@ -73,4 +87,3 @@ with explicit paths by hand.
 ## Follow-Ups
 
 - None yet.
-

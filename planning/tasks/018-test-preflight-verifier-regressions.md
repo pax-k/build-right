@@ -1,6 +1,6 @@
 # 018: Test Preflight Verifier Regressions
 
-Status: ready
+Status: complete
 Type: testing/regression
 Owner: AI
 
@@ -29,12 +29,12 @@ Sprint 002.
 
 ## Acceptance Criteria
 
-- [ ] Test that a positive preflight fixture with nested `docs/raw` and
+- [x] Test that a positive preflight fixture with nested `docs/raw` and
   `docs/evidence` passes.
-- [ ] Test that lowercase `bun` wording satisfies the Bun-only execution rule.
-- [ ] Test that a missing required artifact fails with a clear message.
-- [ ] Test that an app implementation file in a preflight-only repo fails.
-- [ ] Append failures to `planning/failed-tests.md` if any regression command
+- [x] Test that lowercase `bun` wording satisfies the Bun-only execution rule.
+- [x] Test that a missing required artifact fails with a clear message.
+- [x] Test that an app implementation file in a preflight-only repo fails.
+- [x] Append failures to `planning/failed-tests.md` if any regression command
   fails during execution.
 
 ## Baseline Evidence
@@ -53,12 +53,28 @@ exact directory-copy and marker regressions are not isolated as durable tests.
 
 | Date | Evidence | Result | Notes |
 | --- | --- | --- | --- |
+| 2026-06-24 | `bun test` | pass | Added `preflight verifier accepts nested fixtures and lowercase bun while rejecting bad preflight state`. |
+| 2026-06-24 | `bun scripts/todo-trial.ts verify-preflight --target /tmp/build-right-todo-trial-preflight` | pass | Live preflight snapshot still satisfies verifier. |
+| 2026-06-24 | `bun scripts/todo-trial.ts verify-preflight-negative --kind missing` | pass | Missing artifact regression remains a failing control. |
+| 2026-06-24 | `bun scripts/todo-trial.ts verify-preflight-negative --kind app-file` | pass | Preflight app-file ban remains enforced. |
+
+## Files Changed
+
+- `tests/skill-trials.test.ts` - added positive preflight fixture, missing artifact negative, and app-file negative checks.
+- `scripts/todo-trial.ts` - added fixture-friendly expected-control logging.
+
+## Verification Summary
+
+- `bun test` - pass.
+- `bun scripts/todo-trial.ts verify-preflight --target /tmp/build-right-todo-trial-preflight` - pass.
+- `bun scripts/todo-trial.ts verify-preflight-negative --kind missing` - pass.
+- `bun scripts/todo-trial.ts verify-preflight-negative --kind app-file` - pass.
 
 ## Learning Notes
 
-- Proved: pending.
-- Simulated: pending.
-- Test next: whether semantic marker checks stay stable after copy edits.
+- Proved: the original directory-copy and marker regressions are now isolated as Bun tests.
+- Simulated: generated prose remains fixture-level, not a fresh human preflight run.
+- Test next: rerun positive and negative checks after any preflight artifact contract change.
 
 ## Skill Trial Notes
 
@@ -74,4 +90,3 @@ exact directory-copy and marker regressions are not isolated as durable tests.
 ## Follow-Ups
 
 - None yet.
-

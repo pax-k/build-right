@@ -1,6 +1,6 @@
 # 016: Test Failure-Log Status Semantics And Rollups
 
-Status: ready
+Status: complete
 Type: testing/regression
 Owner: AI
 
@@ -30,14 +30,14 @@ historical rows.
 
 ## Acceptance Criteria
 
-- [ ] Add a fixture or helper path that runs summary logic against a temporary
+- [x] Add a fixture or helper path that runs summary logic against a temporary
   failure log.
-- [ ] Test at least one unresolved row, one expected negative row, one forced
+- [x] Test at least one unresolved row, one expected negative row, one forced
   control row, and one resolved row pair.
-- [ ] Test that actionable-open counts exclude expected controls.
-- [ ] Test that the live `planning/failed-tests.md` can still generate a
+- [x] Test that actionable-open counts exclude expected controls.
+- [x] Test that the live `planning/failed-tests.md` can still generate a
   summary.
-- [ ] Append failures to `planning/failed-tests.md` if any regression command
+- [x] Append failures to `planning/failed-tests.md` if any regression command
   fails during execution.
 
 ## Baseline Evidence
@@ -54,13 +54,24 @@ isolated fixtures for status semantics.
 
 | Date | Evidence | Result | Notes |
 | --- | --- | --- | --- |
+| 2026-06-24 | `bun test` | pass | Added `failure summary separates actionable, expected, forced, and resolved rows` fixture regression. |
+| 2026-06-24 | `bun scripts/todo-trial.ts failure-summary` | pass | Live summary still generates after fixture support was added. |
+
+## Files Changed
+
+- `tests/skill-trials.test.ts` - added temporary failure-log fixture regression coverage.
+- `scripts/todo-trial.ts` - exposed `--failure-log` and `--summary-output` fixture paths.
+
+## Verification Summary
+
+- `bun test` - pass.
+- `bun scripts/todo-trial.ts failure-summary` - pass.
 
 ## Learning Notes
 
-- Proved: pending.
-- Simulated: pending.
-- Test next: whether summary semantics remain stable after future forced
-  failures.
+- Proved: temporary logs can exercise actionable, expected, forced, resolved, and historical-resolved summary behavior without mutating the live log.
+- Simulated: none.
+- Test next: add new fixture statuses only when the failure-log taxonomy expands.
 
 ## Skill Trial Notes
 
@@ -75,4 +86,3 @@ isolated fixtures for status semantics.
 ## Follow-Ups
 
 - None yet.
-

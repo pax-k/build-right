@@ -1,6 +1,6 @@
 # 025: Fix Source Parity Mismatch Remediation Guidance
 
-Status: ready
+Status: complete
 Type: tooling/fix
 Owner: AI
 
@@ -31,13 +31,13 @@ recording a raw diff signal.
 
 ## Acceptance Criteria
 
-- [ ] Keep intentional source-parity negative controls logged as expected.
-- [ ] For real source mismatch, emit a `partial-needs-rerun` or blocker result
+- [x] Keep intentional source-parity negative controls logged as expected.
+- [x] For real source mismatch, emit a `partial-needs-rerun` or blocker result
   with the exact mismatched source path.
-- [ ] Include a remediation hint that tells the agent whether to use repo-local
+- [x] Include a remediation hint that tells the agent whether to use repo-local
   skill source, reinstall/update installed skill source, or rerun the trial.
-- [ ] Ensure mismatch status is visible in the failed-test summary.
-- [ ] Append any failed verifier command from this task to
+- [x] Ensure mismatch status is visible in the failed-test summary.
+- [x] Append any failed verifier command from this task to
   `planning/failed-tests.md`.
 
 ## Baseline Evidence
@@ -56,12 +56,29 @@ follow-up guidance is still too thin for a future real drift event.
 
 | Date | Evidence | Result | Notes |
 | --- | --- | --- | --- |
+| 2026-06-24 | `bun scripts/todo-trial.ts parity` | pass | Repo-local skill source parity is clean. |
+| 2026-06-24 | `bun scripts/todo-trial.ts parity-negative` | pass | Forced mismatch reports `partial-needs-rerun`, mismatched source path, and remediation hint. |
+| 2026-06-24 | `bun scripts/todo-trial.ts failure-summary` | pass | Source parity negative rows classify as expected/control. |
+| 2026-06-24 | `bun test` | pass | Parity remediation regression is covered. |
+
+## Files Changed
+
+- `scripts/todo-trial.ts` - added parity remediation output and expected-control-compatible mismatch logging.
+- `tests/skill-trials.test.ts` - added clean parity, mismatch, remediation, and parity-negative summary regression coverage.
+- `planning/failed-tests.md` - appended parity-negative expected-control evidence with remediation text.
+
+## Verification Summary
+
+- `bun scripts/todo-trial.ts parity` - pass.
+- `bun scripts/todo-trial.ts parity-negative` - pass.
+- `bun scripts/todo-trial.ts failure-summary` - pass.
+- `bun test` - pass.
 
 ## Learning Notes
 
-- Proved: pending.
-- Simulated: pending.
-- Test next: real mismatch fixture and clean parity fixture.
+- Proved: source drift blocks with `partial-needs-rerun`, an exact mismatched path, and a remediation hint.
+- Simulated: the mismatch is forced in a temporary copied skill source.
+- Test next: rerun parity before every full manual trial.
 
 ## Skill Trial Notes
 
@@ -76,5 +93,4 @@ follow-up guidance is still too thin for a future real drift event.
 
 ## Follow-Ups
 
-- planning/tasks/026-test-source-parity-remediation.md
-
+- Completed: planning/tasks/026-test-source-parity-remediation.md

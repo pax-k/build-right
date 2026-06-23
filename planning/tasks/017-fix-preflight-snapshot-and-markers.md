@@ -1,6 +1,6 @@
 # 017: Fix Preflight Snapshot And Marker Verification Robustness
 
-Status: ready
+Status: complete
 Type: tooling/fix
 Owner: AI
 
@@ -30,14 +30,14 @@ literal strings.
 
 ## Acceptance Criteria
 
-- [ ] Replace any file-only existence checks used for directory snapshotting
+- [x] Replace any file-only existence checks used for directory snapshotting
   with directory-aware logic.
-- [ ] Ensure preflight snapshot commands preserve `docs/raw`,
+- [x] Ensure preflight snapshot commands preserve `docs/raw`,
   `docs/evidence`, and nested task artifacts.
-- [ ] Make required marker checks semantic and case-tolerant where case is not
+- [x] Make required marker checks semantic and case-tolerant where case is not
   contractually meaningful.
-- [ ] Keep missing required artifacts as hard failures.
-- [ ] Append any failed verifier command from this task to
+- [x] Keep missing required artifacts as hard failures.
+- [x] Append any failed verifier command from this task to
   `planning/failed-tests.md`.
 
 ## Baseline Evidence
@@ -57,12 +57,28 @@ the brittle `Bun` marker.
 
 | Date | Evidence | Result | Notes |
 | --- | --- | --- | --- |
+| 2026-06-24 | `bun scripts/todo-trial.ts verify-preflight --target /tmp/build-right-todo-trial-preflight` | pass | Positive preflight artifact verification passes. |
+| 2026-06-24 | `bun scripts/todo-trial.ts verify-preflight-negative --kind missing` | pass | Expected missing-artifact control is logged with `expected-control`. |
+| 2026-06-24 | `bun scripts/todo-trial.ts verify-preflight-negative --kind app-file` | pass | Expected app-file control is logged with `expected-control`. |
+| 2026-06-24 | `bun test` | pass | 21 tests passed, including preflight verifier fixture regressions. |
+
+## Files Changed
+
+- `scripts/todo-trial.ts` - added directory-aware snapshot preconditions, semantic case-insensitive bun marker checks, and expected-control logging for preflight negatives.
+- `planning/failed-tests.md` - appended expected-control and resolution rows for preflight verifier evidence.
+
+## Verification Summary
+
+- `bun scripts/todo-trial.ts verify-preflight --target /tmp/build-right-todo-trial-preflight` - pass.
+- `bun scripts/todo-trial.ts verify-preflight-negative --kind missing` - pass.
+- `bun scripts/todo-trial.ts verify-preflight-negative --kind app-file` - pass.
+- `bun test` - pass.
 
 ## Learning Notes
 
-- Proved: pending.
-- Simulated: pending.
-- Test next: nested-directory and marker regression fixtures.
+- Proved: valid nested preflight artifacts pass, lowercase `bun` wording is accepted, and real missing/app-file violations still fail as controls.
+- Simulated: no founder interaction; fixture docs provide contract coverage.
+- Test next: run the same preflight checks whenever the manual-trial packet changes.
 
 ## Skill Trial Notes
 
@@ -77,5 +93,4 @@ the brittle `Bun` marker.
 
 ## Follow-Ups
 
-- planning/tasks/018-test-preflight-verifier-regressions.md
-
+- Completed: planning/tasks/018-test-preflight-verifier-regressions.md

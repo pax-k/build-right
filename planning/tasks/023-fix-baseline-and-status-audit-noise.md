@@ -1,6 +1,6 @@
 # 023: Fix Baseline And Status-Audit Environment Noise Handling
 
-Status: ready
+Status: complete
 Type: tooling/fix
 Owner: AI
 
@@ -30,14 +30,14 @@ without being mistaken for final verification failures.
 
 ## Acceptance Criteria
 
-- [ ] Define baseline status handling for expected pre-implementation command
+- [x] Define baseline status handling for expected pre-implementation command
   failures.
-- [ ] Ensure final verification still requires green commands after
+- [x] Ensure final verification still requires green commands after
   implementation.
-- [ ] Replace shell glob status audits with a Bun-native path enumeration or
+- [x] Replace shell glob status audits with a Bun-native path enumeration or
   explicit path list.
-- [ ] Keep environment failures visible in the failed-test log.
-- [ ] Append any failed verifier command from this task to
+- [x] Keep environment failures visible in the failed-test log.
+- [x] Append any failed verifier command from this task to
   `planning/failed-tests.md`.
 
 ## Baseline Evidence
@@ -55,13 +55,26 @@ final status audit failure caused by zsh expanding a nonexistent task glob.
 
 | Date | Evidence | Result | Notes |
 | --- | --- | --- | --- |
+| 2026-06-24 | `bun scripts/todo-trial.ts baseline-check --target /tmp/build-right-todo-trial --phase final` | pass | Implemented Todo scratch repo passes final Bun test classification. |
+| 2026-06-24 | `bun test` | pass | Baseline no-tests and shell-independent status-audit fixtures pass. |
+| 2026-06-24 | `bun scripts/todo-trial.ts status-audit` | pass | Live Sprint 003 tracker and tasks 015-026 are complete with no unchecked acceptance criteria. |
+
+## Files Changed
+
+- `scripts/todo-trial.ts` - added `baseline-check` and Bun-native `status-audit` commands.
+- `tests/skill-trials.test.ts` - added fixture coverage for expected baseline failures and status-audit failures.
+
+## Verification Summary
+
+- `bun scripts/todo-trial.ts baseline-check --target /tmp/build-right-todo-trial --phase final` - pass.
+- `bun scripts/todo-trial.ts status-audit` - pass.
+- `bun test` - pass.
 
 ## Learning Notes
 
-- Proved: pending.
-- Simulated: pending.
-- Test next: fixture coverage for no-tests baseline and explicit task path
-  audit.
+- Proved: no-tests can be an expected baseline signal, final no-tests still fails, and task audits no longer depend on zsh glob expansion.
+- Simulated: no shell glob behavior remains in the audit path.
+- Test next: run live `status-audit` after future sprint tracker closeout.
 
 ## Skill Trial Notes
 
@@ -76,5 +89,4 @@ final status audit failure caused by zsh expanding a nonexistent task glob.
 
 ## Follow-Ups
 
-- planning/tasks/024-test-baseline-and-status-audit-regressions.md
-
+- Completed: planning/tasks/024-test-baseline-and-status-audit-regressions.md

@@ -1,6 +1,6 @@
 # 022: Test Negative Gate Resolver Matrix Regressions
 
-Status: ready
+Status: complete
 Type: testing/regression
 Owner: AI
 
@@ -29,15 +29,15 @@ fixture failure discovered during Sprint 002.
 
 ## Acceptance Criteria
 
-- [ ] Test blank repo execution returns a blocker.
-- [ ] Test founder-owned work returns `ask-founder`.
-- [ ] Test external-provider ownership returns `wait-external`.
-- [ ] Test founder-owned conflict returns `ask-founder`.
-- [ ] Test AI-owned conflict returns a blocker.
-- [ ] Test failed release gate and source mismatch block execution.
-- [ ] Test malformed conflict fixtures fail as fixture errors, not
+- [x] Test blank repo execution returns a blocker.
+- [x] Test founder-owned work returns `ask-founder`.
+- [x] Test external-provider ownership returns `wait-external`.
+- [x] Test founder-owned conflict returns `ask-founder`.
+- [x] Test AI-owned conflict returns a blocker.
+- [x] Test failed release gate and source mismatch block execution.
+- [x] Test malformed conflict fixtures fail as fixture errors, not
   `execute-task`.
-- [ ] Append failures to `planning/failed-tests.md` if any regression command
+- [x] Append failures to `planning/failed-tests.md` if any regression command
   fails during execution.
 
 ## Baseline Evidence
@@ -54,13 +54,26 @@ regression proving malformed conflict fixtures are rejected distinctly.
 
 | Date | Evidence | Result | Notes |
 | --- | --- | --- | --- |
+| 2026-06-24 | `bun test` | pass | Added `negative gate matrix rejects malformed conflict fixtures distinctly`. |
+| 2026-06-24 | `bun scripts/todo-trial.ts negative-gates` | pass | Blank, founder, external, conflict, release, and source-mismatch gates pass. |
+| 2026-06-24 | `bun scripts/todo-trial.ts negative-gates-malformed-conflict` | pass | Malformed conflict fixture fails distinctly as a fixture error. |
+
+## Files Changed
+
+- `tests/skill-trials.test.ts` - added regression coverage for the gate matrix command and malformed conflict control.
+- `scripts/todo-trial.ts` - added the malformed fixture control path.
+
+## Verification Summary
+
+- `bun test` - pass.
+- `bun scripts/todo-trial.ts negative-gates` - pass.
+- `bun scripts/todo-trial.ts negative-gates-malformed-conflict` - pass.
 
 ## Learning Notes
 
-- Proved: pending.
-- Simulated: pending.
-- Test next: whether future gate fixtures fail before resolver assertions when
-  malformed.
+- Proved: malformed conflict fixtures fail before resolver assertions and cannot silently become `execute-task`.
+- Simulated: only fixture-owned gate states are covered.
+- Test next: keep malformed-fixture controls beside every parser-sensitive gate fixture.
 
 ## Skill Trial Notes
 
@@ -76,4 +89,3 @@ regression proving malformed conflict fixtures are rejected distinctly.
 ## Follow-Ups
 
 - None yet.
-

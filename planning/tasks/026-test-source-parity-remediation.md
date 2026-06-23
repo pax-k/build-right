@@ -1,6 +1,6 @@
 # 026: Test Source Parity Mismatch Remediation Path
 
-Status: ready
+Status: complete
 Type: testing/regression
 Owner: AI
 
@@ -29,13 +29,13 @@ output.
 
 ## Acceptance Criteria
 
-- [ ] Test that clean repo-local source parity passes.
-- [ ] Test that a temporary mismatch fixture fails with the exact mismatched
+- [x] Test that clean repo-local source parity passes.
+- [x] Test that a temporary mismatch fixture fails with the exact mismatched
   path.
-- [ ] Test that mismatch output includes the required remediation hint.
-- [ ] Test that intentional parity-negative rows are classified as expected
+- [x] Test that mismatch output includes the required remediation hint.
+- [x] Test that intentional parity-negative rows are classified as expected
   controls in the summary.
-- [ ] Append failures to `planning/failed-tests.md` if any regression command
+- [x] Append failures to `planning/failed-tests.md` if any regression command
   fails during execution.
 
 ## Baseline Evidence
@@ -53,13 +53,30 @@ regression asserts the remediation text or summary classification.
 
 | Date | Evidence | Result | Notes |
 | --- | --- | --- | --- |
+| 2026-06-24 | `bun test` | pass | Added `source parity mismatch output includes remediation guidance`. |
+| 2026-06-24 | `bun scripts/todo-trial.ts parity` | pass | Clean repo-local parity passes. |
+| 2026-06-24 | `bun scripts/todo-trial.ts parity-negative` | pass | Intentional mismatch remains an expected control with remediation output. |
+| 2026-06-24 | `bun run verify:skill-trials` | fail | Final verifier exposed Date.now-only parity-negative scratch root collision under concurrent verification; logged in `planning/failed-tests.md`. |
+| 2026-06-24 | `bun test` | pass | Added concurrent parity-negative regression after switching scratch roots to process id plus `crypto.randomUUID()`. |
+| 2026-06-24 | `bun run verify:skill-trials` | pass | Final verifier passes after collision-resistant scratch roots. |
+
+## Files Changed
+
+- `tests/skill-trials.test.ts` - added clean parity, temporary mismatch, remediation text, expected-control summary assertions, and concurrent parity-negative regression.
+- `scripts/todo-trial.ts` - added remediation output and collision-resistant helper scratch roots under test.
+
+## Verification Summary
+
+- `bun test` - pass.
+- `bun run verify:skill-trials` - pass after fixing the logged final-verification failure.
+- `bun scripts/todo-trial.ts parity` - pass.
+- `bun scripts/todo-trial.ts parity-negative` - pass.
 
 ## Learning Notes
 
-- Proved: pending.
-- Simulated: pending.
-- Test next: whether source parity remains a mandatory gate in future full
-  trials.
+- Proved: clean parity passes, temporary source drift fails with the exact mismatched path, parity-negative rows remain expected controls, and parallel parity-negative runs no longer collide.
+- Simulated: mismatch uses a temporary copied skill source, not a real installed-skill drift event.
+- Test next: source parity remains a mandatory gate before future full trials.
 
 ## Skill Trial Notes
 
@@ -75,4 +92,3 @@ regression asserts the remediation text or summary classification.
 ## Follow-Ups
 
 - None yet.
-

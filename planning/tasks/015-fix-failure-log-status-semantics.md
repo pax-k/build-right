@@ -1,6 +1,6 @@
 # 015: Fix Failure-Log Status Semantics And Stale-Open Rollups
 
-Status: ready
+Status: complete
 Type: tooling/fix
 Owner: AI
 
@@ -30,15 +30,15 @@ rows remain visible.
 
 ## Acceptance Criteria
 
-- [ ] Define a small status taxonomy for `open`, `resolved`, `expected`,
+- [x] Define a small status taxonomy for `open`, `resolved`, `expected`,
   `forced-control`, and `needs-triage` style rows.
-- [ ] Update summary generation to group expected negative controls separately
+- [x] Update summary generation to group expected negative controls separately
   from actionable open bugs.
-- [ ] Pair resolution rows with their original failure cluster without deleting
+- [x] Pair resolution rows with their original failure cluster without deleting
   either row.
-- [ ] Preserve append-only failure history and include a clear count of
+- [x] Preserve append-only failure history and include a clear count of
   historical unresolved rows.
-- [ ] Append any failed verifier command from this task to
+- [x] Append any failed verifier command from this task to
   `planning/failed-tests.md`.
 
 ## Baseline Evidence
@@ -57,12 +57,28 @@ are deliberate negative controls or have later appended resolution evidence.
 
 | Date | Evidence | Result | Notes |
 | --- | --- | --- | --- |
+| 2026-06-24 | `bun scripts/todo-trial.ts failure-summary` | pass | Regenerated summary with actionable-open, historical-resolved, expected/control, and resolved totals. |
+| 2026-06-24 | `bun test` | pass | 21 tests passed, including fixture-backed summary semantics. |
+| 2026-06-24 | `bun scripts/todo-trial.ts failure-summary` | pass | Follow-up cleanup: candidate improvements now list only actionable groups; closed/control history moved to a separate inventory. |
+
+## Files Changed
+
+- `scripts/todo-trial.ts` - added failure status taxonomy, same-cluster resolution pairing, and fixture paths for summary generation.
+- `scripts/todo-trial.ts` - follow-up cleanup keeps closed/control groups out of the candidate improvement queue.
+- `planning/failed-test-summary.md` - regenerated with the new status groups.
+- `planning/failed-tests.md` - appended same-cluster resolution rows for historical Sprint 002 failures.
+
+## Verification Summary
+
+- `bun scripts/todo-trial.ts failure-summary` - pass.
+- `bun test` - pass.
+- `bun run verify:skill-trials` - pass.
 
 ## Learning Notes
 
-- Proved: pending.
-- Simulated: pending.
-- Test next: whether fixture-based rollup tests catch stale-open regressions.
+- Proved: expected controls and historical rows with later same-cluster resolution no longer inflate actionable-open counts or candidate-improvement output.
+- Simulated: none for the live log; fixture tests cover additional status combinations.
+- Test next: future failure rows should include either an explicit expected-control status or a same-cluster resolution row.
 
 ## Skill Trial Notes
 
@@ -76,5 +92,4 @@ are deliberate negative controls or have later appended resolution evidence.
 
 ## Follow-Ups
 
-- planning/tasks/016-test-failure-log-status-semantics.md
-
+- Completed: planning/tasks/016-test-failure-log-status-semantics.md
