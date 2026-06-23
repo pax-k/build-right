@@ -1,0 +1,289 @@
+# Pre-Execution Artifact Contract
+
+Use strict structure where downstream execution depends on it. Use lighter
+claim-tagged structure for founder discovery and product docs.
+
+## Claim Statuses
+
+Use one of:
+
+- `founder-claimed`: founder stated it, not independently validated
+- `ai-inferred`: AI inferred it from available material
+- `evidence-backed`: linked to specific evidence
+- `unknown`: known gap
+
+## Validation Marks
+
+Use one of:
+
+- `correct`
+- `wrong`
+- `unclear`
+- `important-now`
+- `post-mvp`
+- `ignore`
+
+## Lightweight Discovery/Product Doc Shape
+
+Use this shape for raw and canonical product docs that benefit from flexibility:
+
+```md
+# <Document Title>
+
+Status: draft | founder-validated | evidence-backed
+Owner: founder | AI | founder + AI
+Confidence: low | medium | high
+Last updated: YYYY-MM-DD
+
+## Summary
+
+<short summary>
+
+## Claims
+
+| Claim | Status | Evidence | Notes |
+| --- | --- | --- | --- |
+| <claim> | founder-claimed | <path/link or none> | <notes> |
+
+## Open Questions
+
+- <question>
+```
+
+## Strict Blueprint Status Shape
+
+Use for `docs/blueprint-status.md`:
+
+```md
+# Blueprint Status
+
+Status: collecting-context | validating | evidence-review | operating-system | sprint-0-ready | blocked
+Project state: blank/new | existing
+Last updated: YYYY-MM-DD
+
+## Readiness
+
+| Gate | Status | Evidence | Notes |
+| --- | --- | --- | --- |
+| Founder intent captured | missing |  |  |
+| Claims tagged | missing |  |  |
+| Evidence recorded | missing |  |  |
+| Canonical docs exist | missing |  |  |
+| Conflicts resolved | missing |  |  |
+| MVP extracted | missing |  |  |
+| Manual ops understood | missing |  |  |
+| Operating rules exist | missing |  |  |
+| First task is bounded and verifiable | missing |  |  |
+
+## Current File Plan
+
+### Create
+
+- <path> - <purpose>
+
+### Update
+
+- <path> - <purpose>
+
+### Leave Untouched
+
+- <path> - <reason>
+
+### Needs User Input
+
+- <question or blocker>
+
+## Next Action
+
+<single next action>
+```
+
+Gate statuses: `missing`, `draft`, `needs-validation`, `blocked`, `ready`.
+
+## Source Index Shape
+
+Use for `docs/source-index.md`:
+
+```md
+# Source Index
+
+| Document | Purpose | Status | Confidence | Owner | Last Reviewed |
+| --- | --- | --- | --- | --- | --- |
+| <path> | <purpose> | draft | low | founder + AI | YYYY-MM-DD |
+```
+
+Document statuses: `raw`, `draft`, `needs-validation`, `validated`,
+`evidence-backed`, `stale`.
+
+## Decision Log Shape
+
+Use for `docs/decision-log.md`:
+
+```md
+# Decision Log
+
+| Date | Decision | Owner | Evidence | Consequence |
+| --- | --- | --- | --- | --- |
+| YYYY-MM-DD | <decision> | founder | <path/link> | <impact> |
+```
+
+## Conflicts Shape
+
+Use for `docs/conflicts.md`:
+
+```md
+# Conflicts
+
+| Conflict | Sources | Severity | Owner | Status | Resolution |
+| --- | --- | --- | --- | --- | --- |
+| <conflict> | <paths> | low | founder | open |  |
+```
+
+Severity: `low`, `medium`, `high`.
+Status: `open`, `needs-founder`, `resolved`, `deferred`.
+
+## MVP Scope Shape
+
+Use for `docs/mvp-scope.md`:
+
+```md
+# MVP Scope
+
+Status: draft | founder-validated | evidence-backed
+Owner: founder
+Confidence: low | medium | high
+Last updated: YYYY-MM-DD
+
+## Primary Customer
+
+<one customer>
+
+## Primary Workflow
+
+<one workflow>
+
+## Value Moment
+
+<clear value moment>
+
+## Included
+
+| Capability | User Outcome | Risk Reduced | Evidence |
+| --- | --- | --- | --- |
+| <capability> | <outcome> | <risk> | <path/link> |
+
+## Excluded
+
+- <non-goal>
+
+## Manual Before Automated
+
+- <manual step>
+
+## Readiness Notes
+
+<what must be true before product feature work starts>
+```
+
+## Operating Rules Shape
+
+Use for `docs/execution-rules.md`:
+
+```md
+# Execution Rules
+
+## Authority Order
+
+1. <highest authority>
+2. <next authority>
+
+## AI May Decide
+
+- <decision>
+
+## AI Must Ask
+
+- <decision>
+
+## Evidence Destinations
+
+- Task evidence: `tasks/issues/*.md`
+- Release evidence: `<path>`
+
+## Required Verification
+
+| Change Type | Required Checks | Evidence |
+| --- | --- | --- |
+| <type> | <commands/proof> | <where recorded> |
+```
+
+## Sprint 0 Shape
+
+Use for `tasks/sprint-0.md`:
+
+```md
+# Sprint 0
+
+Status: draft | active | complete | blocked
+Purpose: establish trustworthy execution baseline before product feature work.
+
+## Tasks
+
+| ID | Title | Status | Evidence |
+| --- | --- | --- | --- |
+| 001 | <title> | ready | tasks/issues/001-*.md |
+
+## Gate
+
+Do not start product feature work until validation baseline or explicit blockers
+exist.
+```
+
+## Issue Shape
+
+Use for `tasks/issues/*.md` and `tasks/001-first-ai-task.md`:
+
+```md
+# <ID>: <Title>
+
+Status: ready | active | blocked | complete
+Type: validation | docs | architecture | feature | bug | release
+Owner: AI
+
+## Goal
+
+<one goal>
+
+## Non-Goals
+
+- <explicit exclusion>
+
+## Required Reading
+
+- <path>
+
+## Acceptance Criteria
+
+- [ ] <observable criterion>
+
+## Baseline Evidence
+
+<current state proof required before edits>
+
+## Verification
+
+- <command or proof>
+
+## Evidence Log
+
+| Date | Evidence | Result | Notes |
+| --- | --- | --- | --- |
+
+## Blockers
+
+- <blocker or none>
+
+## Follow-Ups
+
+- <follow-up or none>
+```

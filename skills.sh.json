@@ -1,0 +1,14 @@
+{
+  "$schema": "https://skills.sh/schemas/skills.sh.schema.json",
+  "notGrouped": "bottom",
+  "groupings": [
+    {
+      "title": "Blueprints",
+      "description": "Skills for preparing and executing evidence-driven AI project work.",
+      "skills": [
+        "pre-execution-blueprint",
+        "execution-blueprint"
+      ]
+    }
+  ]
+}
