@@ -1,6 +1,6 @@
 # Sprint 001: Workflow Backbone Foundation
 
-Status: planned
+Status: complete
 Owner: AI
 Created: 2026-06-23
 
@@ -50,7 +50,7 @@ Excluded:
 | 003 | Expand the script and Markdown testing matrix | complete | planning/tasks/003-expand-testing-matrix.md |
 | 004 | Tighten decision log and lean state contracts | complete | planning/tasks/004-tighten-decision-log-and-state-contracts.md |
 | 005 | Add optional foundation preflight task templates | complete | planning/tasks/005-add-foundation-preflight-task-templates.md |
-| 006 | Define workflow customization hooks | ready | planning/tasks/006-define-workflow-customization-hooks.md |
+| 006 | Define workflow customization hooks | complete | planning/tasks/006-define-workflow-customization-hooks.md |
 
 ## Testing Matrix
 

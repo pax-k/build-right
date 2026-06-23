@@ -63,6 +63,43 @@ follow-ups, then follow its decision. Do not manually skim Markdown and skip a
 resolver-reported founder, external-state, invalid-state, stale,
 failed-verification, or source-mismatch gate.
 
+## Workflow Customization
+
+Project-local workflow customization belongs in this file or the project's
+established execution-rules equivalent. Customization is additive policy around
+the stable workflow backbone; it must not bypass stop/ask gates, ownership
+checks, source-under-test checks, evidence capture, or verification.
+
+Supported hooks:
+
+| Hook | Policy |
+| --- | --- |
+| `before-task-select` | <policy before choosing or continuing a task> |
+| `after-task-intake` | <policy after task goal, non-goals, owner, and evidence destination are known> |
+| `before-edit` | <policy after baseline evidence and before file changes> |
+| `after-verify` | <policy after verification commands or proof have run> |
+| `after-evidence-recorded` | <policy after task evidence exists and before status changes> |
+| `after-task-complete` | <policy after a task is marked complete, such as atomic commits> |
+| `before-next-task` | <policy before selecting or continuing more work> |
+
+Example additive policies:
+
+- `after-task-complete`: create an atomic commit after each completed task.
+- `after-verify`: require screenshot proof for UI work.
+- `before-task-select`: no web research unless explicitly approved.
+- `after-verify`: require stronger verification for release tasks.
+- `after-evidence-recorded`: add a decision-log entry for architecture changes.
+
+Forbidden customizations:
+
+- skip resolver
+- skip founder gate
+- ignore external-state gate
+- skip evidence
+- skip verification
+- auto-publish
+- widen task scope
+
 ## Evidence Destinations
 
 - Task evidence: tasks/issues/*.md

@@ -1,6 +1,6 @@
 # 006: Define Workflow Customization Hooks
 
-Status: ready
+Status: complete
 Type: docs/contract
 Owner: AI
 
@@ -32,19 +32,19 @@ Define a small hook vocabulary for user-customizable workflow policy.
 
 ## Acceptance Criteria
 
-- [ ] A reference or template section defines supported customization points:
+- [x] A reference or template section defines supported customization points:
   `before-task-select`, `after-task-intake`, `before-edit`, `after-verify`,
   `after-evidence-recorded`, `after-task-complete`, and `before-next-task`.
-- [ ] The hook model includes examples:
+- [x] The hook model includes examples:
   atomic commits after each task, screenshot proof for UI work, no web research,
   stronger verification for release tasks, and mandatory decision-log entries
   for architecture changes.
-- [ ] The hook model marks forbidden changes:
+- [x] The hook model marks forbidden changes:
   skip resolver, skip founder gate, ignore external-state gate, skip evidence,
   skip verification, auto-publish, or widen task scope.
-- [ ] Existing `docs/execution-rules.md` guidance explains where project-local
+- [x] Existing `docs/execution-rules.md` guidance explains where project-local
   workflow customization should live.
-- [ ] Tests assert that customization language is additive and still names the
+- [x] Tests assert that customization language is additive and still names the
   invariant gates.
 
 ## Baseline Evidence
@@ -64,17 +64,36 @@ Current customization behavior is implicit in:
 
 | Date | Evidence | Result | Notes |
 | --- | --- | --- | --- |
+| 2026-06-23 | Gate check for tasks 002 and 003 | pass | Both prerequisite tasks were marked complete and verified before implementing hooks. |
+| 2026-06-23 | `workflow-backbone.md` inspection | pass | Defines the seven hook names, additive examples, and forbidden gate-bypass changes. |
+| 2026-06-23 | `skills/build-right-preflight/assets/templates/docs/execution-rules.md` inspection | pass | Adds project-local Workflow Customization section and supported hook table. |
+| 2026-06-23 | `bun test` | pass | 14 tests passed after adding hook marker assertions. |
+| 2026-06-23 | `bun run verify:skill-trials` | pass | 14 tests passed through the compatibility wrapper after syncing the installed preflight skill copy. |
+| 2026-06-23 | Installed skill parity sync | pass | Synced `skills/build-right-preflight/` to `$HOME/.codex/skills/build-right-preflight/` because this task changed an installed skill template. |
+| 2026-06-23 | Required review trigger check | skipped | Skill template/workflow contract changed; subagent review tooling requires explicit user-requested delegation, so substituted marker tests, direct inspection, and both verification commands. |
+
+## Files Changed
+
+- `workflow-backbone.md` - defines supported hooks, additive examples, and forbidden changes.
+- `skills/build-right-preflight/assets/templates/docs/execution-rules.md` - documents where project-local workflow customization lives.
+- `tests/skill-trials.test.ts` - asserts hook vocabulary and invariant gate markers.
+- `planning/sprints/001-workflow-backbone-foundation.md` - marks task 006 complete.
+- `planning/tasks/006-define-workflow-customization-hooks.md` - records evidence and completion state.
+
+## Verification Summary
+
+- `bun test` - pass, 14 tests.
+- `bun run verify:skill-trials` - pass, 14 tests through compatibility wrapper.
 
 ## Learning Notes
 
-- Proved: pending
-- Simulated: pending
-- Test next: whether a later helper should lint customization hooks
+- Proved: project-local workflow customization can be expressed as additive hook policy without weakening the invariant gates.
+- Simulated: hooks are documented policy only; no automatic hook executor or DSL was added.
+- Test next: whether a later helper should lint customization hooks.
 
 ## Blockers
 
-- planning/tasks/002-convert-verifier-to-bun-tests.md should land first.
-- planning/tasks/003-expand-testing-matrix.md should land first.
+- None.
 
 ## Follow-Ups
 

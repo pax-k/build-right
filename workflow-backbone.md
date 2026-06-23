@@ -35,10 +35,23 @@ them stricter, but it should not make them weaker.
 Users can customize policy around the backbone by adding project-local rules in
 the execution rules or equivalent authority file.
 
+Supported customization points:
+
+| Hook | When It Applies |
+| --- | --- |
+| `before-task-select` | Before choosing or continuing a task. |
+| `after-task-intake` | After task goal, non-goals, ownership, and evidence destination are known. |
+| `before-edit` | After baseline evidence and before file changes. |
+| `after-verify` | After verification commands or proof have run. |
+| `after-evidence-recorded` | After task evidence exists and before status changes. |
+| `after-task-complete` | After a task is marked complete. |
+| `before-next-task` | Before selecting or continuing more work. |
+
 Useful examples:
 
 - commit after each completed task
 - require screenshot evidence for UI changes
+- require no web research for private founder-fed work
 - require broader verification before release-gate changes
 - disable web research for a project or phase
 - require decision-log entries for architecture or deployment choices
@@ -55,10 +68,14 @@ Customization is unsafe when it says:
 
 ```text
 skip the resolver
-skip founder gates
+skip founder gate
 ignore external-state gates
+skip evidence
+skip verification
 mark complete without evidence
 continue after failed verification
+auto-publish
+widen task scope
 combine unrelated tasks
 auto-publish or use secrets without approval
 ```
