@@ -133,6 +133,12 @@ guidance, `assets/templates/` for reusable Markdown artifacts, and bundled
 read-only Bun scripts for deterministic inventory, task-contract, and gate
 signals.
 
+The stable safety model is documented in
+[`workflow-backbone.md`](workflow-backbone.md): observe state, classify it,
+choose one next action, run gates, act, verify, record, then stop or continue.
+Project-local customization should add policy around that loop without
+bypassing gates, ownership checks, evidence capture, or verification.
+
 The preflight helper returns one decision: `delegate-inventory`, `ask-founder`,
 `run-research`, `write-artifacts`, `create-sprint0`, `ready-for-execution`, or
 `blocked`. Agents should report the decision, confidence, project type, next

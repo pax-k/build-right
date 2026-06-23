@@ -1,6 +1,6 @@
 # 001: Define the Workflow Backbone Contract
 
-Status: ready
+Status: complete
 Type: docs/contract
 Owner: AI
 
@@ -32,14 +32,14 @@ separates invariant safety behavior from customizable workflow policy.
 
 ## Acceptance Criteria
 
-- [ ] A repo-local reference file documents the backbone loop:
+- [x] A repo-local reference file documents the backbone loop:
   `observe state -> classify -> choose one next action -> run gates -> act -> verify -> record -> stop/continue`.
-- [ ] The reference identifies invariant gates that workflow customization must
+- [x] The reference identifies invariant gates that workflow customization must
   not bypass.
-- [ ] The reference explains customization as additive hooks around the stable
+- [x] The reference explains customization as additive hooks around the stable
   loop.
-- [ ] README or an existing design document links to the new reference.
-- [ ] No helper script behavior changes in this task.
+- [x] README or an existing design document links to the new reference.
+- [x] No helper script behavior changes in this task.
 
 ## Baseline Evidence
 
@@ -58,16 +58,31 @@ Record current references that already encode the loop:
 
 | Date | Evidence | Result | Notes |
 | --- | --- | --- | --- |
+| 2026-06-23 | `bun run verify:skill-trials` before edits | pass | 9 verifier checks passed. |
+| 2026-06-23 | Inspect `workflow-backbone.md` and `README.md` | pass | New reference names the loop, invariant gates, additive customization, and helper-script boundary. |
+| 2026-06-23 | Required review trigger check | skipped | More than three durable docs/task files changed; subagent review tooling exists but requires explicit user-requested delegation, so substituted direct diff inspection plus verifier run. |
+| 2026-06-23 | `bun run verify:skill-trials` after edits | pass | 9 verifier checks passed. |
+
+## Files Changed
+
+- `workflow-backbone.md` - new workflow backbone contract.
+- `README.md` - links the backbone reference from the Notes section.
+- `planning/sprints/001-workflow-backbone-foundation.md` - marks task 001 complete.
+- `planning/tasks/001-define-workflow-backbone-contract.md` - records evidence and completion state.
+
+## Verification Summary
+
+- `bun run verify:skill-trials` - pass, 9 verifier checks passed.
 
 ## Learning Notes
 
-- Proved: pending
-- Simulated: pending
-- Test next: whether customization hooks can be documented without changing resolver behavior
+- Proved: the workflow backbone can be documented as a repo-local contract without changing helper script behavior.
+- Simulated: automatic enforcement of customization hooks remains future work.
+- Test next: whether customization hooks can be documented and tested without changing resolver behavior.
 
 ## Blockers
 
-- None yet.
+- None.
 
 ## Follow-Ups
 
