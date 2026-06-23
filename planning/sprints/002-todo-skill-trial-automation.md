@@ -1,6 +1,6 @@
 # Sprint 002: Todo Skill Trial Automation
 
-Status: ready
+Status: complete
 Owner: AI
 Created: 2026-06-23
 
@@ -70,14 +70,14 @@ improvements can learn from the failure history.
 
 | ID | Title | Status | Evidence |
 | --- | --- | --- | --- |
-| 007 | Define the Todo trial protocol | ready | planning/tasks/007-define-todo-trial-protocol.md |
-| 008 | Add scratch repo seed and source parity checks | blocked | planning/tasks/008-add-scratch-repo-seed-and-source-parity-checks.md |
-| 009 | Run the preflight first-user Todo trial | blocked | planning/tasks/009-run-preflight-first-user-todo-trial.md |
-| 010 | Run the execution Todo app trial | blocked | planning/tasks/010-run-execution-todo-app-trial.md |
-| 011 | Automate preflight artifact verification | blocked | planning/tasks/011-automate-preflight-artifact-verification.md |
-| 012 | Automate execution and browser proof verification | blocked | planning/tasks/012-automate-execution-and-browser-proof-verification.md |
-| 013 | Automate negative gate-case trials | blocked | planning/tasks/013-automate-negative-gate-case-trials.md |
-| 014 | Add failed-test log feedback loop | blocked | planning/tasks/014-add-failed-test-log-feedback-loop.md |
+| 007 | Define the Todo trial protocol | complete | planning/tasks/007-define-todo-trial-protocol.md |
+| 008 | Add scratch repo seed and source parity checks | complete | planning/tasks/008-add-scratch-repo-seed-and-source-parity-checks.md |
+| 009 | Run the preflight first-user Todo trial | complete | planning/tasks/009-run-preflight-first-user-todo-trial.md |
+| 010 | Run the execution Todo app trial | complete | planning/tasks/010-run-execution-todo-app-trial.md |
+| 011 | Automate preflight artifact verification | complete | planning/tasks/011-automate-preflight-artifact-verification.md |
+| 012 | Automate execution and browser proof verification | complete | planning/tasks/012-automate-execution-and-browser-proof-verification.md |
+| 013 | Automate negative gate-case trials | complete | planning/tasks/013-automate-negative-gate-case-trials.md |
+| 014 | Add failed-test log feedback loop | complete | planning/tasks/014-add-failed-test-log-feedback-loop.md |
 
 ## Testing Matrix
 
@@ -98,4 +98,3 @@ improvements can learn from the failure history.
 Do not mark the manual trial ready until source-under-test parity is proven.
 Do not mark automation ready until at least one failure path is forced and
 logged to `planning/failed-tests.md`.
-

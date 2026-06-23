@@ -1,6 +1,6 @@
 # 013: Automate Negative Gate-Case Trials
 
-Status: blocked
+Status: complete
 Type: testing/tooling
 Owner: AI
 
@@ -33,17 +33,17 @@ source-mismatch states.
 
 ## Acceptance Criteria
 
-- [ ] Blank repo execution request routes to preflight or creates the smallest
+- [x] Blank repo execution request routes to preflight or creates the smallest
   baseline blocker.
-- [ ] Ready task with `Owner: Founder` returns `ask-founder`.
-- [ ] Ready task with external ownership returns `wait-external`.
-- [ ] Open founder-owned conflict returns `ask-founder`.
-- [ ] Open AI-owned conflict returns `create-blocker`.
-- [ ] Failed release gate returns `create-blocker`.
-- [ ] Source-under-test mismatch returns `partial-needs-rerun` or an equivalent
+- [x] Ready task with `Owner: Founder` returns `ask-founder`.
+- [x] Ready task with external ownership returns `wait-external`.
+- [x] Open founder-owned conflict returns `ask-founder`.
+- [x] Open AI-owned conflict returns `create-blocker`.
+- [x] Failed release gate returns `create-blocker`.
+- [x] Source-under-test mismatch returns `partial-needs-rerun` or an equivalent
   source-mismatch blocker.
-- [ ] Each negative trial records expected decision and actual decision.
-- [ ] Unexpected negative-trial behavior appends to `planning/failed-tests.md`.
+- [x] Each negative trial records expected decision and actual decision.
+- [x] Unexpected negative-trial behavior appends to `planning/failed-tests.md`.
 
 ## Baseline Evidence
 
@@ -61,19 +61,19 @@ connected to the Todo scratch workflow and failed-test log.
 
 | Date | Evidence | Result | Notes |
 | --- | --- | --- | --- |
+| 2026-06-24 | `bun scripts/todo-trial.ts negative-gates` | pass | Verified blank repo, founder owner, external owner, founder conflict, AI conflict, failed release gate, and source mismatch resolver decisions. |
+| 2026-06-24 | `planning/failed-tests.md` | pass | Initial founder-conflict fixture shape failure was logged and followed by a resolution row. |
 
 ## Learning Notes
 
-- Proved: <what evidence supports>
-- Simulated: <what remains unproven>
+- Proved: negative gate fixtures stop or block with expected resolver decisions.
+- Simulated: fixtures are minimal Markdown states, not full app repos.
 - Test next: whether failed-test aggregation produces useful improvement input.
 
 ## Blockers
 
-- Blocked until tasks 011 and 012 establish the shared verifier and logging
-  surface.
+- None.
 
 ## Follow-Ups
 
 - 014: Add failed-test log feedback loop.
-

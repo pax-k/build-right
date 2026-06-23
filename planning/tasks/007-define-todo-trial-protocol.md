@@ -1,6 +1,6 @@
 # 007: Define the Todo Trial Protocol
 
-Status: ready
+Status: complete
 Type: planning/testing
 Owner: AI
 
@@ -35,17 +35,17 @@ scratch repository.
 
 ## Acceptance Criteria
 
-- [ ] The protocol names the scratch repo path and seed files.
-- [ ] The protocol includes the exact human prompt for preflight.
-- [ ] The protocol includes the recommended founder reply batch.
-- [ ] The protocol includes the expected preflight questions, helper commands,
+- [x] The protocol names the scratch repo path and seed files.
+- [x] The protocol includes the exact human prompt for preflight.
+- [x] The protocol includes the recommended founder reply batch.
+- [x] The protocol includes the expected preflight questions, helper commands,
   artifact writes, and stop state.
-- [ ] The protocol includes the exact human prompt for execution.
-- [ ] The protocol includes the expected execution resolver, task intake,
+- [x] The protocol includes the exact human prompt for execution.
+- [x] The protocol includes the expected execution resolver, task intake,
   baseline, implementation, verification, evidence update, and stop-gate
   behavior.
-- [ ] The protocol names pass/fail criteria for every major expectation.
-- [ ] The protocol says any failed expectation must be logged in
+- [x] The protocol names pass/fail criteria for every major expectation.
+- [x] The protocol says any failed expectation must be logged in
   `planning/failed-tests.md`.
 
 ## Baseline Evidence
@@ -63,18 +63,21 @@ task files are being created in `planning/`.
 
 | Date | Evidence | Result | Notes |
 | --- | --- | --- | --- |
+| 2026-06-24 | `bun skills/build-right-execution/scripts/continue-check.ts --cwd . --format markdown --strict` | advisory | Helper returned `create-blocker` because this source repo uses `planning/` trackers instead of generated root `tasks/`; reconciled against Sprint 002 task 007. |
+| 2026-06-24 | `bun skills/build-right-execution/scripts/execution-check.ts --cwd . --task planning/tasks/007-define-todo-trial-protocol.md --mode task-contract --format markdown` | advisory | Helper did not select planning task paths; manual contract check confirmed required fields. |
+| 2026-06-24 | `planning/todo-trial-protocol.md` inspection | pass | Protocol names target, seed files, prompts, founder reply, expected preflight/execution behavior, pass/fail criteria, and failed-test logging. |
 
 ## Learning Notes
 
-- Proved: <what evidence supports>
-- Simulated: <what remains unproven>
+- Proved: the first-user Todo trial has a durable protocol covering both
+  skills and failure logging.
+- Simulated: no manual trial or automation has run yet.
 - Test next: whether a real agent follows the protocol without extra prompting.
 
 ## Blockers
 
-- None yet.
+- None.
 
 ## Follow-Ups
 
 - 008: Add scratch repo seed and source parity checks.
-

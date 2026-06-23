@@ -4,6 +4,7 @@
   "type": "module",
   "private": true,
   "scripts": {
+    "todo-trial": "bun scripts/todo-trial.ts",
     "verify:skill-trials": "bun scripts/verify-skill-trials.ts"
   },
   "devDependencies": {

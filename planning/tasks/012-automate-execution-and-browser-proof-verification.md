@@ -1,6 +1,6 @@
 # 012: Automate Execution and Browser Proof Verification
 
-Status: blocked
+Status: complete
 Type: testing/tooling
 Owner: AI
 
@@ -31,19 +31,19 @@ task evidence, Bun compliance, and browser-visible Todo behavior.
 
 ## Acceptance Criteria
 
-- [ ] Automation checks the execution transcript for resolver report, task
+- [x] Automation checks the execution transcript for resolver report, task
   intake, baseline evidence, task-contract check, verification ladder, evidence
   update, and stop-gate report.
-- [ ] Automation checks generated code for Bun-compatible frontend serving with
+- [x] Automation checks generated code for Bun-compatible frontend serving with
   `Bun.serve()` and HTML imports.
-- [ ] Automation rejects forbidden tools or dependencies: Vite, npm, pnpm,
+- [x] Automation rejects forbidden tools or dependencies: Vite, npm, pnpm,
   yarn, npx, Express, dotenv, and unrelated server libraries.
-- [ ] Automation runs scratch-repo `bun test`.
-- [ ] Automation starts the scratch app and verifies add, complete, delete,
+- [x] Automation runs scratch-repo `bun test`.
+- [x] Automation starts the scratch app and verifies add, complete, delete,
   filter, and localStorage restore behavior with browser proof.
-- [ ] Automation checks task evidence for files changed, commands, exit status
+- [x] Automation checks task evidence for files changed, commands, exit status
   or key output, proved, simulated, unproven, blockers, and follow-ups.
-- [ ] Automation appends failures to `planning/failed-tests.md`.
+- [x] Automation appends failures to `planning/failed-tests.md`.
 
 ## Baseline Evidence
 
@@ -61,18 +61,22 @@ automation is built.
 
 | Date | Evidence | Result | Notes |
 | --- | --- | --- | --- |
+| 2026-06-24 | `bun scripts/todo-trial.ts verify-execution --target /tmp/build-right-todo-trial` | pass | Verified execution transcript, Bun-compatible source, forbidden runtime scan, task evidence, scratch `bun test`, live server response, and browser-proof artifact. |
+| 2026-06-24 | `bun scripts/todo-trial.ts verify-execution-negative --source /tmp/build-right-todo-trial` | pass | Corrupted browser proof failed as expected and appended a failure row. |
+| 2026-06-24 | `planning/failed-tests.md` | pass | Captured initial brittle marker failure and a resolution row after verifier fix. |
 
 ## Learning Notes
 
-- Proved: <what evidence supports>
-- Simulated: <what remains unproven>
+- Proved: execution artifacts, scratch tests, live server response, and
+  browser-proof evidence can be verified automatically.
+- Simulated: automation verifies browser-proof artifact content instead of
+  driving the in-app browser itself.
 - Test next: whether negative gate-case fixtures detect unsafe continuation.
 
 ## Blockers
 
-- Blocked until task 010 completes the manual execution trial.
+- None.
 
 ## Follow-Ups
 
 - 013: Automate negative gate-case trials.
-

@@ -74,6 +74,23 @@ async function runCommand(command: string[], cwd = "."): Promise<string> {
   return output;
 }
 
+async function runCommandResult(command: string[], cwd = "."): Promise<{
+  exitCode: number;
+  output: string;
+}> {
+  const proc = Bun.spawn(command, {
+    cwd,
+    stdout: "pipe",
+    stderr: "pipe",
+  });
+  const [stdout, stderr, exitCode] = await Promise.all([
+    new Response(proc.stdout).text(),
+    new Response(proc.stderr).text(),
+    proc.exited,
+  ]);
+  return { exitCode, output: `${stdout}${stderr}` };
+}
+
 async function markdownFilesUnder(prefix: string): Promise<string[]> {
   const glob = new Bun.Glob(`${prefix}/**/*.md`);
   const files: string[] = [];
@@ -131,6 +148,157 @@ async function createFixture(name: string, files: Record<string, string>): Promi
     await writeFixtureFile(root, path, text);
   }
   return root;
+}
+
+function failureLogFixture(rows: string): string {
+  return `# Failed Tests Log
+
+Status: active
+
+## Failures
+
+| Date | Task | Phase | Command or Test | Expected | Actual | Class | Artifact | Follow-up | Status |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+${rows}
+`;
+}
+
+async function positivePreflightFixture(): Promise<string> {
+  return createFixture("todo-preflight-positive", {
+    "docs/blueprint-status.md": `# Blueprint Status
+
+Status: ready
+Current phase: preflight
+Project state: blank/new
+Source mode: founder-fed
+Prototype confidence: n/a
+Active task: tasks/issues/001-build-bun-react-todo-app.md
+Current gate: ready
+Last evidence: docs/evidence/preflight-transcript.md
+
+## Readiness
+
+| Gate | Status | Evidence | Notes |
+| --- | --- | --- | --- |
+| Founder intent captured | ready | docs/raw/founder-interview.md | ready |
+| Claims tagged | ready | docs/source-index.md | ready |
+| MVP extracted | ready | docs/mvp-scope.md | ready |
+| Operating rules exist | ready | docs/execution-rules.md | ready |
+| First task is bounded and verifiable | ready | tasks/issues/001-build-bun-react-todo-app.md | ready |
+
+## Current File Plan
+
+- Create docs and tasks only.
+
+## Next Action
+
+First executable AI task: tasks/issues/001-build-bun-react-todo-app.md
+`,
+    "docs/raw/founder-dump.md": "# Founder Dump\nTodo app demo.\n",
+    "docs/raw/founder-interview.md": "# Founder Interview\nPrimary customer: first-time skill user.\n",
+    "docs/source-index.md": `# Source Index
+
+- founder-claimed: Todo app demo.
+- repo-evidence-backed: AGENTS.md requires bun.
+- customer-evidence-backed: Founder reply in docs/raw/founder-interview.md.
+`,
+    "docs/mvp-scope.md": `# MVP Scope
+
+Status: ready
+Source mode: founder-fed
+Prototype confidence: n/a
+
+Primary customer: First-time Build Right user
+Primary workflow: Create a Bun React TypeScript Todo app
+
+## Included
+
+- Add, complete, delete, filter, and restore todos.
+
+## Excluded
+
+- Deployment.
+`,
+    "docs/execution-rules.md": `# Execution Rules
+
+## Authority Order
+
+1. AGENTS.md
+
+## Stop/Ask Gates
+
+- Stop on failed verification.
+
+Use bun for all commands.
+`,
+    "docs/release-gates.md": `# Release Gates
+
+Status: ready
+
+## Gates
+
+| Gate | Required Evidence | Command or Proof | Status |
+| --- | --- | --- | --- |
+| Source parity | skill source matches | bun scripts/todo-trial.ts parity | ready |
+| Preflight artifacts | docs/tasks verified | bun scripts/todo-trial.ts verify-preflight | ready |
+| Local validation | tests pass | bun test | ready |
+| Browser proof | browser evidence exists | docs/evidence/browser-proof.md | ready |
+`,
+    "docs/conflicts.md": "# Conflicts\n\n## Conflicts\n\n| Conflict | Sources | Severity | Owner | Status | Resolution |\n| --- | --- | --- | --- | --- | --- |\n| None | n/a | low | AI | resolved | n/a |\n",
+    "docs/evidence/evidence-notes.md": "# Evidence Notes\n\n## Repository Evidence\n\nAGENTS.md.\n\n## Founder Evidence\n\nInterview.\n\n## Prototype Assumptions\n\nNone.\n",
+    "docs/evidence/manual-trials.md": "# Manual Trials\n",
+    "docs/evidence/preflight-transcript.md": `# Preflight Transcript
+
+Preflight decision: ready-for-execution
+Confidence: high
+Project type: blank/new
+Next action: create first task
+
+## Focused Founder Questions
+
+1. Who is the user?
+
+## Founder Reply
+
+First-time skill user.
+
+## File Plan
+
+Create docs and tasks.
+
+First executable AI task: tasks/issues/001-build-bun-react-todo-app.md
+`,
+    "tasks/sprint-0.md": "# Sprint 0\n\nStatus: ready\n\n## Tasks\n\n| ID | Title | Status | Evidence |\n| --- | --- | --- | --- |\n| 001 | Build app | ready | tasks/issues/001-build-bun-react-todo-app.md |\n",
+    "tasks/issues/001-build-bun-react-todo-app.md": taskFile("001", "ready"),
+  });
+}
+
+async function executionEvidenceFixture(browserProof: string): Promise<string> {
+  return createFixture("todo-execution-evidence", {
+    "package.json": "{\"name\":\"fixture\",\"type\":\"module\",\"scripts\":{\"test\":\"bun test\"}}\n",
+    "bun.lock": "",
+    "index.ts": "import index from './index.html';\nBun.serve({ routes: { '/': index } });\n",
+    "index.html": "<html><body><script type=\"module\" src=\"./frontend.tsx\"></script></body></html>\n",
+    "todo.ts": "export const todos = [];\n",
+    "frontend.tsx": "import React from 'react';\nlocalStorage.getItem('todos');\nconst input = 'data-testid=\"todo-input\"';\nconst filter = 'data-testid={`filter-${option}`}';\nconsole.log(React, input, filter);\n",
+    "index.css": "body { font-family: sans-serif; }\n",
+    "todo.test.ts": "import { test } from 'bun:test';\ntest('filters active and completed todos', () => {});\ntest('restores only valid stored todos', () => {});\n",
+    "docs/evidence/execution-transcript.md": "Resolver decision: execute-task\n\n## Task Intake\n\nBaseline evidence: none\nVerification ladder: focused\n`bun install`\n`bun test`\nBrowser proof\nStop gates\n",
+    "docs/evidence/browser-proof.md": browserProof,
+    "docs/evidence/browser-proof.png": "not-a-real-png-for-marker-tests",
+    "tasks/issues/001-build-bun-react-todo-app.md": `${taskFile("001", "complete")}
+
+## Files Changed
+
+- index.ts
+
+## Verification Summary
+
+- bun test - pass
+
+Trial status: pass
+`,
+  });
 }
 
 function readyBlueprint(): string {
@@ -598,6 +766,41 @@ const checks: Check[] = [
       if ((continueJson.readyTasks ?? []).length !== 0) {
         throw new Error("continue helper found ready tasks in current completed repo");
       }
+    },
+  },
+  {
+    name: "todo trial helper exposes sprint 002 verifier commands",
+    run: async () => {
+      const help = await runCommand(["bun", "scripts/todo-trial.ts", "help"]);
+      for (const marker of [
+        "snapshot-preflight",
+        "verify-preflight",
+        "verify-preflight-negative",
+        "verify-execution",
+        "verify-execution-negative",
+        "negative-gates",
+        "failure-summary",
+        "failure-log-smoke",
+      ]) {
+        if (!help.includes(marker)) {
+          throw new Error(`todo trial helper help output missing ${marker}`);
+        }
+      }
+
+      await assertIncludes("planning/failed-tests.md", [
+        "## Failure Classes",
+        "Command or Test",
+        "Follow-up",
+      ]);
+      await assertIncludes("planning/todo-trial-protocol.md", [
+        "Human Prompt: Preflight",
+        "Human Prompt: Execution",
+        "Failure Logging",
+      ]);
+      await assertIncludes("planning/sprints/002-todo-skill-trial-automation.md", [
+        "Status: complete",
+        "Failure Logging Rule",
+      ]);
     },
   },
   {

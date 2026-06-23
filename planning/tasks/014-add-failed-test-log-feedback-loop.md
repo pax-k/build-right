@@ -1,6 +1,6 @@
 # 014: Add Failed-Test Log Feedback Loop
 
-Status: blocked
+Status: complete
 Type: testing/tooling
 Owner: AI
 
@@ -31,16 +31,16 @@ review workflow that turns repeated failures into follow-up tasks.
 
 ## Acceptance Criteria
 
-- [ ] Verifier scripts append failed assertions to `planning/failed-tests.md`
+- [x] Verifier scripts append failed assertions to `planning/failed-tests.md`
   with task, phase, command or test, expected, actual, class, artifact,
   follow-up, and status.
-- [ ] Manual-trial instructions require appending failed expectations to the
+- [x] Manual-trial instructions require appending failed expectations to the
   same log.
-- [ ] Failure classes are documented and usable for later analysis.
-- [ ] The feedback loop groups repeated failures into candidate follow-up tasks
+- [x] Failure classes are documented and usable for later analysis.
+- [x] The feedback loop groups repeated failures into candidate follow-up tasks
   without erasing the original rows.
-- [ ] A deliberately forced failure creates a durable log row.
-- [ ] A resolved failure can be marked resolved by appending resolution context
+- [x] A deliberately forced failure creates a durable log row.
+- [x] A resolved failure can be marked resolved by appending resolution context
   without deleting the original row.
 
 ## Baseline Evidence
@@ -59,19 +59,22 @@ scripts do not yet append to it automatically.
 
 | Date | Evidence | Result | Notes |
 | --- | --- | --- | --- |
+| 2026-06-24 | `bun scripts/todo-trial.ts failure-log-smoke` | pass | Appended a forced failure row and a separate resolution row, then regenerated the summary. |
+| 2026-06-24 | `bun scripts/todo-trial.ts failure-summary` | pass | Wrote `planning/failed-test-summary.md` with totals, grouped failures, open counts, and candidate follow-ups. |
+| 2026-06-24 | `planning/failed-tests.md` inspection | pass | Rows retain task, phase, command, expected, actual, class, artifact, follow-up, and status. |
 
 ## Learning Notes
 
-- Proved: <what evidence supports>
-- Simulated: <what remains unproven>
+- Proved: failed test rows are append-only, forced failures and resolution notes
+  are durable, and repeated failures are grouped into candidate follow-ups.
+- Simulated: candidate follow-up generation is a summary artifact, not an
+  automatic task creator.
 - Test next: whether repeated failures produce high-quality skill improvement tasks.
 
 ## Blockers
 
-- Blocked until at least one verifier exists and one forced failure path is
-  available.
+- None.
 
 ## Follow-Ups
 
-- None yet.
-
+- None.

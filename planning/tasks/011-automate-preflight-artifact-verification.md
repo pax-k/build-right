@@ -1,6 +1,6 @@
 # 011: Automate Preflight Artifact Verification
 
-Status: blocked
+Status: complete
 Type: testing/tooling
 Owner: AI
 
@@ -31,18 +31,18 @@ Build Right preflight contract.
 
 ## Acceptance Criteria
 
-- [ ] Automation checks that required generated preflight artifacts exist in
+- [x] Automation checks that required generated preflight artifacts exist in
   the scratch repo.
-- [ ] Automation checks blueprint status fields, source mode, prototype
+- [x] Automation checks blueprint status fields, source mode, prototype
   confidence, readiness table, file plan, and next action markers.
-- [ ] Automation checks MVP scope, source index, execution rules, release gates,
+- [x] Automation checks MVP scope, source index, execution rules, release gates,
   conflicts, evidence notes, Sprint 0, and first issue contract markers.
-- [ ] Automation checks preflight transcript markers when a transcript artifact
+- [x] Automation checks preflight transcript markers when a transcript artifact
   is available.
-- [ ] Automation runs `preflight-check.ts --mode all --format json` against the
+- [x] Automation runs `preflight-check.ts --mode all --format json` against the
   scratch repo and validates the expected final decision.
-- [ ] Automation fails when the app was implemented during preflight.
-- [ ] Automation appends failures to `planning/failed-tests.md`.
+- [x] Automation fails when the app was implemented during preflight.
+- [x] Automation appends failures to `planning/failed-tests.md`.
 
 ## Baseline Evidence
 
@@ -60,19 +60,24 @@ a real scratch-repo preflight artifact set.
 
 | Date | Evidence | Result | Notes |
 | --- | --- | --- | --- |
+| 2026-06-24 | `bun scripts/todo-trial.ts snapshot-preflight --target /tmp/build-right-todo-trial-preflight` | pass | Created a preflight-only snapshot from the scratch repo docs/tasks. |
+| 2026-06-24 | `bun scripts/todo-trial.ts verify-preflight --target /tmp/build-right-todo-trial-preflight` | pass | Verified required artifacts, markers, transcript, no app files, and preflight helper `ready-for-execution`. |
+| 2026-06-24 | `bun scripts/todo-trial.ts verify-preflight-negative --kind missing --source /tmp/build-right-todo-trial-preflight` | pass | Missing artifact negative failed as expected and appended a log row. |
+| 2026-06-24 | `bun scripts/todo-trial.ts verify-preflight-negative --kind app-file --source /tmp/build-right-todo-trial-preflight` | pass | App-file negative failed as expected and appended a log row. |
+| 2026-06-24 | `planning/failed-tests.md` | pass | Captured the initial verifier implementation failures and a resolution row. |
 
 ## Learning Notes
 
-- Proved: <what evidence supports>
-- Simulated: <what remains unproven>
+- Proved: preflight artifacts can be verified automatically, and both missing
+  artifact and accidental app-file failures are logged.
+- Simulated: verifier checks marker coverage, not full human judgment quality.
 - Test next: whether execution verification can reuse the same failure logger.
 
 ## Blockers
 
-- Blocked until task 009 captures the first preflight artifact set.
+- None.
 
 ## Follow-Ups
 
 - 012: Automate execution and browser proof verification.
 - 014: Add failed-test log feedback loop.
-
