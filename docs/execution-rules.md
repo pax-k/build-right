@@ -28,6 +28,31 @@
 - Changes requiring secrets, paid services, production access, publishing, or irreversible external actions.
 - Whether to publish a new release, change public positioning, or claim skills.sh directory indexing before search evidence exists.
 
+## Stop/Ask Gates
+
+Do not advance to the next task when the current result exposes one of these
+gates:
+
+- founder-owned product, positioning, buyer/user, or MVP decision required
+- external discovery, search indexing, publishing, secrets, paid services, or
+  production access required
+- failed verification, stale task state, source mismatch, or ambiguous evidence
+- required subagent review skipped without an equivalent substitute
+
+Ask the user when a user answer is required. Create a follow-up only when the
+blocker is AI-owned, bounded, and evidence-backed.
+
+## Subagent Review Triggers
+
+Use subagent review when tooling is available and a selected task changes
+release gates, release checklist, manual-trial evidence, verifier behavior,
+skill workflows, contracts, templates, or multiple trackers. Also use it when
+verification failed and was fixed inside the same task, or when findings imply
+a founder-owned, external-state, stale-task, or source-mismatch gate.
+
+If a trigger applies but subagent tooling is unavailable or forbidden, record
+the skipped review, substitute verification, and residual risk before closing.
+
 ## Concurrent Run Safety
 
 Before editing `tasks/`, `docs/release-gates.md`, `RELEASE_CHECKLIST.md`, or

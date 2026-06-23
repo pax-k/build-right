@@ -51,8 +51,22 @@ Needs user input:
 - <question or blocker>
 ```
 
-Then proceed by default. Stop only for planning-only mode, risky overwrites, or
-ambiguous project ownership.
+Then proceed by default with safe repo inventory and scaffolding. Stop before
+writing only for planning-only mode, risky overwrites, or ambiguous project
+ownership.
+
+Interaction gate:
+
+- In an interactive run, ask a focused founder-question batch before treating
+  founder intent, customer, positioning, MVP, or product promise as captured.
+- If the prompt or repo already contains explicit answers, record the evidence
+  path instead of asking again.
+- If founder-owned answers are missing and the user does not answer, continue
+  only with repo-evidence-backed inventory, scaffolding, and blockers. Do not
+  promote assumptions into product truth.
+- Do not bury founder-owned decisions only in `docs/open-questions.md` when the
+  user is present. Ask the smallest useful question batch and record the answer
+  or lack of answer.
 
 ## 3. Founder Context Dump
 
@@ -88,6 +102,13 @@ Outputs:
 
 - `docs/raw/founder-interview.md`
 - `docs/open-questions.md`
+
+This step is mandatory in interactive runs whenever founder-owned product
+truth is missing. For existing projects, ask only the unresolved founder-owned
+questions discovered by inventory, such as primary user, product promise, MVP
+boundary, or public positioning. If the user explicitly asks for a no-question
+or non-interactive pass, record that constraint and mark the affected claims as
+`needs-founder` or `founder-claimed`, not validated.
 
 ## 5. Draft Source Factory
 
@@ -258,8 +279,9 @@ ambiguity, or unsupported critical claims:
 
 ## 9. Delegation Lane
 
-Use subagents selectively for independent parallel judgment and bounded
-delegation. Do not use them as the default for every step.
+Use subagents for independent parallel judgment and bounded delegation when a
+trigger below applies. Do not use them as the default for every step, but also
+do not skip them silently when they would materially improve evidence quality.
 
 Rule:
 
@@ -267,6 +289,17 @@ Rule:
 Subagents may gather, draft, critique, and audit.
 The main agent decides, writes, updates trackers, and closes gates.
 ```
+
+Required delegation triggers, when subagent tools are available:
+
+- existing project inventory with multiple docs, task trackers, release gates,
+  or code surfaces
+- public research lane for competitors, pricing, market language, or public
+  pain signals
+- material conflict scan before resolving contradictions across docs
+- readiness audit before closing a preflight as ready when more than simple
+  scaffolding changed
+- evidence completeness review when release/manual-trial claims are touched
 
 Use subagents for:
 
@@ -305,6 +338,14 @@ Every subagent prompt must include:
 
 Use prompt templates in `assets/templates/subagents/` for common research,
 inventory, conflict, and readiness lanes.
+
+If a required trigger applies but subagent tools are unavailable, disabled, or
+forbidden by the user, record:
+
+- trigger that would have used a subagent
+- why it was skipped
+- confidence reduction or verification substituted
+- whether the readiness gate remains blocked
 
 ## 10. Canonical Product Docs
 
@@ -457,6 +498,20 @@ Before the first execution task, answer:
 - Is feature work allowed, or should Sprint 0 cleanup happen first?
 - Is the first task only prepared, or did the user explicitly ask to continue
   into execution?
+
+Stop/ask gates:
+
+- If founder-owned product promise, customer, positioning, or MVP boundary is
+  still unresolved, ask the founder and stop at `Needs founder/customer
+  validation before product commitment`.
+- If public research is required for the selected source mode and has not run,
+  stop or mark the affected claims as `prototype-assumption` or `unknown`.
+- If a required subagent trigger applied and was skipped without a substitute
+  review, stop or lower confidence; do not close as fully ready.
+- If the next step requires publishing, paid services, secrets, production
+  access, directory-indexing claims, or external state changes, stop and ask.
+- If only a blocker remains, record the blocker path and do not keep advancing
+  tasks to avoid the question.
 
 Close with:
 

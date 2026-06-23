@@ -11,10 +11,12 @@ implementation pass for:
 
 ## Core Principle
 
-Web research and subagents are optional support lanes, not replacements for the
-main workflow. Founder-fed context is the default source of product truth, but
-bounded public research may fill gaps when speed matters and the output is
-labeled as prototype-grade.
+Web research and subagents are support lanes, not replacements for the main
+workflow. They are not used everywhere, but they are required when defined
+research, inventory, conflict, readiness, or evidence-review triggers apply and
+tooling is available. Founder-fed context is the default source of product
+truth, but bounded public research may fill gaps when speed matters and the
+output is labeled as prototype-grade.
 
 ```text
 Founder input defines the terrain.
@@ -171,9 +173,10 @@ Do not interrupt after every search. Ask the founder to clarify when:
 
 ## Delegation Lane
 
-Use subagents selectively. They are valuable for independent parallel judgment
-and bounded delegation. They are harmful when the workflow needs direct founder
-interaction, careful state updates, or a single coherent source of truth.
+Use subagents selectively but not silently. They are valuable for independent
+parallel judgment and bounded delegation. They are harmful when the workflow
+needs direct founder interaction, careful state updates, or a single coherent
+source of truth.
 
 ### Subagent Rule
 
@@ -195,6 +198,24 @@ The main agent decides, writes, updates trackers, and closes gates.
 - evidence completeness review
 - execution review after implementation
 - large draft generation where the main agent will merge and edit
+
+### Required Delegation Triggers
+
+Use a subagent when tooling is available and any trigger applies:
+
+- existing project inventory spans multiple docs, task trackers, release gates,
+  or code surfaces
+- public research is needed for competitors, pricing, market language, or
+  public pain signals
+- material conflicts need an independent scan before resolution
+- preflight is closing as ready after more than simple scaffolding changed
+- execution changes release gates, manual-trial evidence, verifier behavior,
+  workflows, contracts, templates, or multiple trackers
+- verification failed and was fixed inside the same task
+
+If a trigger applies but subagent tooling is unavailable or forbidden, record
+the skipped trigger, substitute verification, confidence impact, and whether the
+gate remains blocked.
 
 ### Do Not Use Subagents For
 
@@ -332,7 +353,7 @@ Update `skills/build-right-preflight`:
 
 Update `skills/build-right-execution`:
 
-- Add optional subagent review guidance to `references/workflow.md`.
+- Add trigger-based subagent review guidance to `references/workflow.md`.
 - Add evidence completeness and scope review prompt templates under
   `assets/templates/subagents/`.
 - Keep the main agent responsible for final task updates and closeout.
@@ -344,5 +365,7 @@ Update `skills/build-right-execution`:
 - Subagents must not independently update canonical docs, trackers, commits, or
   publishing state unless the user explicitly asks for that behavior.
 - The main agent owns synthesis and final writes.
+- Founder-owned, external-state, failed-verification, stale-task, and
+  source-mismatch gates must stop advancement to the next task until resolved.
 - Research and delegation should reduce uncertainty, not expand scope
   indefinitely.

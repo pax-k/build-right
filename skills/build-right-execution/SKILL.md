@@ -51,9 +51,15 @@ Then move to the next task.
 5. Capture baseline evidence.
 6. Implement the smallest change that satisfies the task.
 7. Verify in layers.
-8. Record evidence before marking the task complete.
-9. Update only the relevant tracker/docs.
-10. Commit or hand off according to project workflow.
+8. Run subagent review when a required review trigger applies and subagent tools
+   are available. If unavailable or forbidden, record the skipped review and
+   substitute verification before closing.
+9. Record evidence before marking the task complete.
+10. Update only the relevant tracker/docs.
+11. Stop at any founder, external-state, failed-verification, stale-task, source
+    mismatch, or release-claim gate. Do not advance to the next task until the
+    gate is resolved or explicitly converted into a ready AI-owned task.
+12. Commit or hand off according to project workflow.
 
 ## Not-Ready Rule
 
@@ -73,3 +79,17 @@ trial `partial-needs-rerun` and do not advance release gates to ready.
 
 Do not silently widen scope. If the task reveals unrelated work, create a
 follow-up issue and continue only inside the selected task boundary.
+
+## Stop/Ask Gate
+
+After each task, check whether the next step is truly AI-owned and ready. Stop
+and ask or report the blocker when the next step requires:
+
+- founder-owned product, positioning, buyer/user, or MVP decisions
+- external discovery, search indexing, publishing, secrets, paid services, or
+  production access
+- failed verification, stale task state, source mismatch, or ambiguous evidence
+- required subagent review that was skipped without an equivalent substitute
+
+Continuing through a prepared queue is allowed only while every next task is
+ready, AI-owned, evidence-backed, and not blocked by one of these gates.

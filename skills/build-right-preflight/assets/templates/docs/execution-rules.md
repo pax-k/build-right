@@ -21,6 +21,24 @@
 - Risky overwrites of substantial existing content.
 - Changes requiring secrets, paid services, production access, or irreversible external actions.
 
+## Stop/Ask Gates
+
+- Founder-owned product, positioning, customer, or MVP decision required.
+- External discovery, publishing, secrets, paid services, or production access required.
+- Failed verification, stale task state, source mismatch, or ambiguous evidence.
+- Required subagent review skipped without an equivalent substitute.
+
+Ask the user when a user answer is required. Create a follow-up only when the
+blocker is AI-owned, bounded, and evidence-backed.
+
+## Subagent Review Triggers
+
+Use subagent review when tooling is available and a selected task changes
+release gates, manual-trial evidence, verifier behavior, workflows, contracts,
+templates, or multiple trackers. If a trigger applies but subagent tooling is
+unavailable or forbidden, record the skipped review, substitute verification,
+and residual risk before closing.
+
 ## Evidence Destinations
 
 - Task evidence: tasks/issues/*.md

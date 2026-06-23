@@ -21,6 +21,10 @@ Classify the task:
 - `duplicate`
 - `too-broad`
 
+If the task is not `ready`, stop or update the tracker with the reason. Do not
+implement, mark complete, or advance to the next task just because a queue
+exists.
+
 Print:
 
 ```text
@@ -30,6 +34,7 @@ Non-goals: <explicit exclusions>
 Assumption basis: <founder-claimed | ai-inferred | prototype-assumption | repo-evidence-backed | public-evidence-backed | customer-evidence-backed>
 Reversibility: <easy | moderate | hard>
 Learning hook: <how this task will produce evidence>
+Source under test: <repo-local path | installed path | GitHub source | release tag | n/a>
 Baseline evidence: <artifact or command>
 Verification ladder: <focused -> broader checks>
 Evidence destination: <task file or evidence file>
@@ -56,6 +61,21 @@ readiness.
 
 If missing, create the smallest blocker task instead of implementing product
 features.
+
+Stop/ask gates:
+
+- founder-owned product, positioning, buyer/user, or MVP decision required
+- external discovery, search indexing, publishing, secrets, paid services, or
+  production access required
+- verification failed or could not run
+- task evidence is stale, duplicated, ambiguous, or contradicted by current
+  files
+- installed skill source differs from repo-local source for a skill trial
+- required subagent review was skipped without an equivalent substitute
+
+When a stop/ask gate fires, do not continue to the next task. Record the gate,
+ask the user when a user answer is required, or create the smallest blocker
+task when the blocker is AI-owned and evidence-backed.
 
 ## 3. Preflight
 
@@ -206,11 +226,28 @@ For Build Right skill trials, check the current contract markers that apply:
 Record evidence inside the task tracker or evidence file before marking work
 done. Follow `references/evidence-contract.md`.
 
-## 10. Optional Subagent Review
+## 10. Required And Optional Subagent Review
 
-Use subagents selectively after implementation when independent review would
-improve confidence. Subagents may gather, critique, and audit; the main agent
-decides, writes, updates trackers, and closes gates.
+Use subagents after implementation when independent review would improve
+confidence. Some reviews are required when the task touches high-risk evidence
+or broad tracker state. Subagents may gather, critique, and audit; the main
+agent decides, writes, updates trackers, and closes gates.
+
+Required review triggers, when subagent tools are available:
+
+- release gates, release checklist, manual-trial evidence, or verifier behavior
+  changed
+- skill workflows, artifact contracts, evidence contracts, or templates changed
+- more than three durable docs/task files changed in one task
+- a verification command failed and was fixed inside the same task
+- the task changes status across multiple trackers
+- findings imply a founder-owned, external-state, stale-task, or source-mismatch
+  gate
+
+If a required trigger applies but subagent tools are unavailable, disabled, or
+forbidden by the user, record the skipped review, the substitute verification,
+and the residual risk before closing. If no adequate substitute exists, stop at
+the gate instead of advancing.
 
 Useful review lanes:
 
@@ -246,6 +283,10 @@ After evidence exists, update only artifacts that changed:
 
 Do not mark a parent sprint, milestone, or release complete just because one
 task is complete.
+
+Before selecting another task, run the stop/ask gate again. A completed task may
+create a blocker, founder question, stale follow-up, or external-state wait. In
+that case, close out and stop instead of advancing.
 
 ## 12. Commit Or Handoff
 

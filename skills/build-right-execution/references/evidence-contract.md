@@ -14,6 +14,7 @@ Non-goals: <explicit exclusions>
 Assumption basis: <founder-claimed | ai-inferred | prototype-assumption | repo-evidence-backed | public-evidence-backed | customer-evidence-backed>
 Reversibility: <easy | moderate | hard>
 Learning hook: <how this task will produce evidence>
+Source under test: <repo-local path | installed path | GitHub source | release tag | n/a>
 Baseline evidence: <artifact or command>
 Verification ladder: <focused -> broader checks>
 Evidence destination: <task file or evidence file>

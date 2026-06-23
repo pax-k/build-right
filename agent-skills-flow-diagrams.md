@@ -25,10 +25,13 @@ flowchart TD
 
   G --> H{"Safe to write by default?"}
   H -->|"No: risky overwrite or planning-only mode"| I["Stop for user decision"]
-  H -->|"Yes"| J["Create or update blueprint status and starter artifacts"]
-  J --> J1["Set source mode and prototype confidence"]
+  H -->|"Yes"| J{"Founder-owned answers missing?"}
+  J -->|"Yes, interactive run"| J0["Ask focused founder question batch"]
+  J -->|"No or already explicit"| J1["Create or update blueprint status and starter artifacts"]
+  J0 --> J1
+  J1 --> J2["Set source mode and prototype confidence"]
 
-  J1 --> K["Gather founder context dump"]
+  J2 --> K["Gather founder context dump"]
   K --> L["Interview founder in small batches"]
   L --> M["Create draft source material"]
   M --> N["Tag claims"]
@@ -61,11 +64,11 @@ flowchart TD
   AA --> AB["Create operating rules, release gates, AI working rules"]
   AB --> AC["Create Sprint 0 and first executable task"]
   AC --> AC1["Add assumption basis, reversibility, learning objective, source under test, and learning notes"]
-  AC1 --> AD{"Readiness gate"}
+  AC1 --> AD{"Stop/ask readiness gate"}
 
   AD -->|"Ready for foundation work"| AE["Go for Sprint 0"]
   AD -->|"Product features not ready"| AF["No-go for product features"]
-  AD -->|"Blocked"| AG["First blocker: task path"]
+  AD -->|"Founder/external/review blocker"| AG["Ask or record blocker and stop"]
   AD -->|"Ready task exists"| AH["First executable AI task: task path"]
 ```
 
@@ -127,10 +130,10 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-  A["Main agent identifies optional delegation need"] --> B{"Good subagent fit?"}
+  A["Main agent checks delegation triggers"] --> B{"Required trigger applies?"}
 
   B -->|"No: founder decision or authoritative write"| C["Main agent handles directly"]
-  B -->|"Yes: bounded research, inventory, critique, audit"| D["Create narrow subagent prompt"]
+  B -->|"Yes: research, inventory, conflict, audit, evidence review"| D["Create narrow subagent prompt"]
 
   D --> E["Include objective, context, scope, sources, output format, stop condition"]
   E --> F{"Delegation type"}
@@ -179,7 +182,7 @@ flowchart TD
   M --> N0["Implement smallest change"]
   N0 --> N["Verify in layers"]
 
-  N --> O{"Optional subagent review useful?"}
+  N --> O{"Required review trigger or useful review?"}
   O -->|"Yes"| P["Run evidence completeness or scope creep review"]
   O -->|"No"| Q["Proceed to evidence capture"]
 
@@ -191,9 +194,12 @@ flowchart TD
 
   Q --> U["Record evidence, learning notes, files changed, blockers, follow-ups"]
   U --> V["Update only relevant tracker and docs"]
-  V --> W{"Project expects commit?"}
+  V --> V1{"Stop/ask gate before next task?"}
+  V1 -->|"Gate hit"| V2["Ask, record blocker, or stop"]
+  V1 -->|"No gate"| W{"Project expects commit?"}
   W -->|"Yes"| X["Stage only task-related files and commit"]
   W -->|"No"| Y["Hand off changed files, verification, evidence, blockers"]
+  V2 --> Y
   X --> Z["Closeout with what was proved and next task"]
   Y --> Z
 ```
@@ -218,7 +224,11 @@ flowchart TD
 
   K --> L["Update release gates"]
   L --> M["Update release checklist"]
-  M --> N["Advance first blocker to next manual trial"]
+  M --> N{"Any ready follow-up?"}
+  N -->|"Manual trial remains"| O["Advance to next manual trial"]
+  N -->|"Post-release discovery"| P["Track in post-release backlog"]
+  N -->|"Founder or external blocker"| Q["Record blocker and stop"]
+  N -->|"No AI-owned task"| R["Record no ready AI-owned task"]
 ```
 
 ## Execution Subagent Review Lane

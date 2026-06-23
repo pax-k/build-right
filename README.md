@@ -11,7 +11,7 @@ It contains two skills:
   prepares Sprint 0 plus the first executable task.
 - `build-right-execution`: executes one bounded task at a time with baseline
   evidence, narrow changes, layered verification, evidence capture, tracker
-  updates, and optional subagent review.
+  updates, stop/ask gates, and trigger-based subagent review.
 
 ## Install
 
@@ -104,5 +104,7 @@ Founder-fed context is the default source for product truth. When founder input
 is thin and speed matters, bounded public web research can fill prototype-grade
 gaps, but those claims stay labeled as prototype assumptions or public evidence,
 not customer validation.
-Subagents may gather, draft, critique, and audit; the main agent decides,
-writes, updates trackers, and closes gates.
+Subagents may gather, draft, critique, and audit. The skills use them when
+defined triggers apply and tooling is available; the main agent still decides,
+writes, updates trackers, and closes gates. Founder-owned or external-state
+gates must stop execution instead of being silently converted into AI tasks.

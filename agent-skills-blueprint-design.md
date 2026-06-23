@@ -280,8 +280,14 @@ When activated, the skill should:
 8. Verify in layers.
 9. Record evidence in the task tracker or evidence file.
 10. Update only the relevant project state.
-11. Commit or hand off, depending on project workflow.
-12. Name the next logical task without silently widening scope.
+11. Run trigger-based subagent review when release evidence, workflows,
+    templates, verifier behavior, broad tracker state, or failed-then-fixed
+    verification makes independent review valuable and tooling is available.
+12. Stop at founder-owned, external-state, failed-verification, stale-task,
+    source-mismatch, or release-claim gates instead of advancing to the next
+    task.
+13. Commit or hand off, depending on project workflow.
+14. Name the next logical task without silently widening scope.
 
 ### Not-Ready Behavior
 

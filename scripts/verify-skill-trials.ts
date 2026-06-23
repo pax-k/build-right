@@ -167,6 +167,42 @@ const checks: Check[] = [
         "Unproven",
         "Follow-ups",
       ]);
+      await assertIncludes("skills/build-right-execution/references/workflow.md", [
+        "Source under test: <repo-local path | installed path | GitHub source | release tag | n/a>",
+        "Stop/ask gates:",
+        "Required review triggers",
+        "Before selecting another task, run the stop/ask gate again.",
+      ]);
+      await assertIncludes("skills/build-right-execution/references/evidence-contract.md", [
+        "Source under test: <repo-local path | installed path | GitHub source | release tag | n/a>",
+      ]);
+      await assertIncludes("skills/build-right-preflight/references/artifact-contract.md", [
+        "Source under test: <repo-local path | installed path | GitHub source | release tag | n/a>",
+      ]);
+      await assertIncludes("skills/build-right-preflight/references/workflow.md", [
+        "Interaction gate:",
+        "Required delegation triggers",
+        "Stop/ask gates:",
+      ]);
+      await assertIncludes("agent-skills-research-delegation-design.md", [
+        "Required Delegation Triggers",
+        "Founder-owned, external-state, failed-verification, stale-task, and",
+      ]);
+      await assertIncludes("docs/execution-rules.md", [
+        "## Stop/Ask Gates",
+        "## Subagent Review Triggers",
+      ]);
+      await assertIncludes("skills/build-right-preflight/assets/templates/docs/execution-rules.md", [
+        "## Stop/Ask Gates",
+        "## Subagent Review Triggers",
+      ]);
+      await assertIncludes("agent-skills-flow-diagrams.md", [
+        "Ask focused founder question batch",
+        "Required trigger applies?",
+        "Stop/ask gate before next task?",
+        "Track in post-release backlog",
+        "Record no ready AI-owned task",
+      ]);
     },
   },
   {
