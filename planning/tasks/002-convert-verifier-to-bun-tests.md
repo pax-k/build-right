@@ -1,6 +1,6 @@
 # 002: Convert Verifier Coverage to Bun Tests
 
-Status: ready
+Status: complete
 Type: testing
 Owner: AI
 
@@ -32,16 +32,16 @@ test cases, fixture helpers, and stable assertions.
 
 ## Acceptance Criteria
 
-- [ ] `bun test` runs a test suite for skill manifests, contract markers,
+- [x] `bun test` runs a test suite for skill manifests, contract markers,
   helper smoke checks, preflight fixture decisions, and continue resolver
   fixture decisions.
-- [ ] `bun run verify:skill-trials` either delegates to the Bun test suite or
+- [x] `bun run verify:skill-trials` either delegates to the Bun test suite or
   remains as a compatibility wrapper with no duplicate business logic.
-- [ ] Fixture helpers are reusable across preflight, continue, and execution
+- [x] Fixture helpers are reusable across preflight, continue, and execution
   tests.
-- [ ] Tests use Bun APIs and do not introduce Jest, Vitest, Node-only runners,
+- [x] Tests use Bun APIs and do not introduce Jest, Vitest, Node-only runners,
   or npm/pnpm scripts.
-- [ ] Existing verifier behavior remains green.
+- [x] Existing verifier behavior remains green.
 
 ## Baseline Evidence
 
@@ -62,16 +62,32 @@ Current baseline expected result:
 
 | Date | Evidence | Result | Notes |
 | --- | --- | --- | --- |
+| 2026-06-23 | `bun run verify:skill-trials` before conversion | pass | Existing verifier behavior was green with 9 checks. |
+| 2026-06-23 | `bun test` | pass | 9 named tests passed across `tests/skill-trials.test.ts`. |
+| 2026-06-23 | `bun run verify:skill-trials` | pass | Compatibility wrapper delegates to `bun test tests/skill-trials.test.ts`; 9 tests passed. |
+| 2026-06-23 | Required review trigger check | skipped | Verifier behavior changed; subagent review tooling requires explicit user-requested delegation, so substituted direct wrapper/test inspection plus both verification commands. |
+
+## Files Changed
+
+- `tests/skill-trials.test.ts` - moved verifier behavior into named Bun tests with reusable fixture helpers.
+- `scripts/verify-skill-trials.ts` - replaced custom verifier loop with a compatibility wrapper that runs the Bun test suite.
+- `planning/sprints/001-workflow-backbone-foundation.md` - marks task 002 complete.
+- `planning/tasks/002-convert-verifier-to-bun-tests.md` - records evidence and completion state.
+
+## Verification Summary
+
+- `bun test` - pass, 9 tests.
+- `bun run verify:skill-trials` - pass, wrapper ran the same 9 tests.
 
 ## Learning Notes
 
-- Proved: pending
-- Simulated: pending
-- Test next: whether helper decision logic needs importable modules after CLI-level tests exist
+- Proved: current verifier coverage can run as real Bun tests while preserving the `verify:skill-trials` entrypoint.
+- Simulated: helper decision logic is still exercised through CLI fixtures rather than direct imports.
+- Test next: whether helper decision logic needs importable modules after CLI-level tests exist.
 
 ## Blockers
 
-- None yet.
+- None.
 
 ## Follow-Ups
 

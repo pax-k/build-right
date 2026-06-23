@@ -46,7 +46,7 @@ Excluded:
 | ID | Title | Status | Evidence |
 | --- | --- | --- | --- |
 | 001 | Define the workflow backbone contract | complete | planning/tasks/001-define-workflow-backbone-contract.md |
-| 002 | Convert verifier coverage to Bun tests | ready | planning/tasks/002-convert-verifier-to-bun-tests.md |
+| 002 | Convert verifier coverage to Bun tests | complete | planning/tasks/002-convert-verifier-to-bun-tests.md |
 | 003 | Expand the script and Markdown testing matrix | ready | planning/tasks/003-expand-testing-matrix.md |
 | 004 | Tighten decision log and lean state contracts | ready | planning/tasks/004-tighten-decision-log-and-state-contracts.md |
 | 005 | Add optional foundation preflight task templates | ready | planning/tasks/005-add-foundation-preflight-task-templates.md |
