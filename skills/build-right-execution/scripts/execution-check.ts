@@ -212,9 +212,9 @@ function openConflictReasons(text: string): string[] {
     .filter((line) => line.startsWith("|") && line.endsWith("|"))
     .map((line) => line.replace(/^\|/, "").replace(/\|$/, "").split("|").map((cell) => cell.trim()))
     .filter((cells) => cells.length >= 5)
-    .filter((cells) => cells[0] !== "Conflict" && !cells[0].includes("<"))
+    .filter((cells) => (cells[0] ?? "") !== "Conflict" && !(cells[0] ?? "").includes("<"))
     .filter((cells) => !["resolved", "closed", "complete", "done", "none"].includes(cells[4]?.toLowerCase() ?? ""))
-    .map((cells) => `open conflict: ${cells[0]}`);
+    .map((cells) => `open conflict: ${cells[0] ?? "unknown conflict"}`);
 }
 
 async function gateReasons(cwd: string, selectedTask: TaskInfo | null, taskText: string): Promise<string[]> {

@@ -63,7 +63,7 @@ const failureLogPath = argValue("--failure-log", defaultFailureLogPath) ?? defau
 const failureSummaryPath =
   argValue("--summary-output", defaultFailureSummaryPath) ?? defaultFailureSummaryPath;
 const e2eReportPath = argValue("--report", defaultE2eReportPath) ?? defaultE2eReportPath;
-const skillNames = ["build-right-preflight", "build-right-execution"];
+const skillNames = ["build-right-preflight", "build-right-feature-planning", "build-right-execution"];
 
 function trialTempRoot(label: string): string {
   return `${defaultTarget}-${label}-${Date.now()}-${process.pid}-${crypto.randomUUID()}`;
@@ -1118,18 +1118,30 @@ async function failureRecords(): Promise<FailureRecord[]> {
     if (cells.length < 10) {
       continue;
     }
+    const [
+      date = "",
+      task = "",
+      phase = "",
+      command = "",
+      expected = "",
+      actual = "",
+      failureClass = "",
+      artifact = "",
+      followUp = "",
+      status = "",
+    ] = cells;
     records.push({
       index,
-      date: cells[0],
-      task: cells[1],
-      phase: cells[2],
-      command: cells[3],
-      expected: cells[4],
-      actual: cells[5],
-      failureClass: cells[6],
-      artifact: cells[7],
-      followUp: cells[8],
-      status: cells[9],
+      date,
+      task,
+      phase,
+      command,
+      expected,
+      actual,
+      failureClass,
+      artifact,
+      followUp,
+      status,
     });
     index += 1;
   }
@@ -1340,12 +1352,17 @@ async function statusAudit(): Promise<void> {
       problems.push(`expected one task file for ${idText}, found ${matches.length}`);
       continue;
     }
-    const taskText = await readText(join(auditRoot, matches[0]));
+    const taskPath = matches[0];
+    if (!taskPath) {
+      problems.push(`expected one task file for ${idText}, found 0`);
+      continue;
+    }
+    const taskText = await readText(join(auditRoot, taskPath));
     if (!/^Status:\s*complete$/m.test(taskText)) {
-      problems.push(`${matches[0]} is not complete`);
+      problems.push(`${taskPath} is not complete`);
     }
     if (/- \[ \]/.test(taskText)) {
-      problems.push(`${matches[0]} has unchecked acceptance criteria`);
+      problems.push(`${taskPath} has unchecked acceptance criteria`);
     }
   }
 
@@ -1614,7 +1631,7 @@ async function e2eReport(executionTarget: string, preflightTarget: string): Prom
     "",
     `Run label: ${runLabel}`,
     `Timestamp: ${timestamp}`,
-    "Source under test: repo-local `skills/build-right-preflight` and `skills/build-right-execution`",
+    "Source under test: repo-local `skills/build-right-preflight`, `skills/build-right-feature-planning`, and `skills/build-right-execution`",
     `Preflight target: ${preflightTarget}`,
     `Execution target: ${executionTarget}`,
     `Replay mode: ${replayMode}`,
@@ -1944,12 +1961,15 @@ async function concurrencyCheck(): Promise<void> {
   ];
   for (const command of commands) {
     const logPath = command[command.length - 1];
+    if (!logPath) {
+      throw new Error(`missing failure log path for ${command.join(" ")}`);
+    }
     await Bun.write(logPath, failureLogTemplate());
   }
 
   const results = await Promise.all(commands.map((command) => run(command)));
   const failures = results
-    .map((result, index) => ({ result, command: commands[index].join(" ") }))
+    .map((result, index) => ({ result, command: commands[index]?.join(" ") ?? "unknown command" }))
     .filter(({ result }) => result.exitCode !== 0);
   if (failures.length > 0) {
     await appendFailure({

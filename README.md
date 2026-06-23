@@ -3,12 +3,17 @@
 Build Right is a small Agent Skills repository for turning early product work
 into evidence-backed execution.
 
-It contains two skills:
+It contains three skills:
 
 - `build-right-preflight`: guides founder/product preflight before AI
   implementation. It captures founder intent, separates assumptions from
   evidence, supports targeted public research, creates operating docs, and
   prepares Sprint 0 plus the first executable task.
+- `build-right-feature-planning`: maintains feature planning after preflight.
+  It explores new feature requests, runs bounded research or review when
+  needed, updates decision/evidence/conflict docs, grooms backlog and sprint
+  trackers, and creates execution-ready task files without implementing product
+  code.
 - `build-right-execution`: executes one bounded task at a time with baseline
   evidence, narrow changes, layered verification, evidence capture, tracker
   updates, stop/ask gates, and trigger-based subagent review.
@@ -31,6 +36,7 @@ Install one skill explicitly:
 
 ```sh
 bunx skills add pax-k/build-right --skill build-right-preflight
+bunx skills add pax-k/build-right --skill build-right-feature-planning
 bunx skills add pax-k/build-right --skill build-right-execution
 ```
 
@@ -45,6 +51,13 @@ Bootstrap this existing project for evidence-driven AI execution.
 ```
 
 ```text
+$build-right-feature-planning
+
+Explore this feature request, update the project sprint/task plan, and stop
+before implementation.
+```
+
+```text
 $build-right-execution
 
 Take the next ready task and complete it with evidence.
@@ -54,6 +67,7 @@ Some agents may also expose installed skills as slash commands:
 
 ```text
 /build-right-preflight
+/build-right-feature-planning
 /build-right-execution
 ```
 
@@ -70,6 +84,17 @@ skills/
       artifact-contract.md
     scripts/
       preflight-check.ts
+    assets/templates/
+
+  build-right-feature-planning/
+    SKILL.md
+    references/
+      workflow.md
+      gates.md
+      research-and-delegation.md
+      planning-contract.md
+    scripts/
+      feature-planning-check.ts
     assets/templates/
 
   build-right-execution/
@@ -109,6 +134,7 @@ Run deterministic helper smoke checks:
 
 ```sh
 bun skills/build-right-execution/scripts/continue-check.ts --cwd . --format markdown --strict
+bun skills/build-right-feature-planning/scripts/feature-planning-check.ts --cwd . --feature "Example feature" --format markdown
 bun skills/build-right-preflight/scripts/preflight-check.ts --cwd . --mode all --format markdown
 bun skills/build-right-execution/scripts/execution-check.ts --cwd . --mode next-task --format markdown
 ```
@@ -123,6 +149,7 @@ Expected skills:
 
 ```text
 build-right-preflight
+build-right-feature-planning
 build-right-execution
 ```
 
@@ -144,6 +171,13 @@ The preflight helper returns one decision: `delegate-inventory`, `ask-founder`,
 `blocked`. Agents should report the decision, confidence, project type, next
 action, missing artifacts, readiness warnings, and founder input gaps before
 writing or claiming readiness.
+
+The feature-planning helper returns one decision: `route-preflight`,
+`ask-founder`, `run-research`, `delegate-review`, `update-roadmap`,
+`update-sprint`, `create-ready-tasks`, or `blocked`. Agents should report the
+decision, confidence, feature request, recommended destination, blocking gates,
+founder questions, research triggers, ready task candidates, and next action
+before updating backlog, sprint, evidence, or task files.
 
 The main skill files stay concise. Core workflows live in `workflow.md`; gates,
 research/delegation, and evidence contracts are separate one-hop references

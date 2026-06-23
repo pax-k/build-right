@@ -2,7 +2,7 @@
 
 Run label: sprint-004-e2e-2026-06-24
 Timestamp: 2026-06-23T22:34:21.938Z
-Source under test: repo-local `skills/build-right-preflight` and `skills/build-right-execution`
+Source under test: repo-local `skills/build-right-preflight`, `skills/build-right-feature-planning`, and `skills/build-right-execution`
 Preflight target: /tmp/build-right-todo-trial-preflight
 Execution target: /tmp/build-right-todo-trial
 Replay mode: direct-or-replayed-fixture

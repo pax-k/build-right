@@ -217,7 +217,11 @@ function parseTable(sectionText: string): Record<string, string>[] {
     return [];
   }
 
-  const headers = splitTableLine(lines[0]);
+  const headerLine = lines[0];
+  if (!headerLine) {
+    return [];
+  }
+  const headers = splitTableLine(headerLine);
   return lines.slice(2).map((line) => {
     const values = splitTableLine(line);
     const row: Record<string, string> = {};
@@ -618,24 +622,30 @@ async function resolveState(args: Args): Promise<ContinueResult> {
 
   if (invalidGates.length > 0) {
     decision = "invalid-state";
-    nextAction = invalidGates[0].reason;
+    nextAction = invalidGates[0]?.reason ?? "Resolve invalid state.";
   } else if (founderGates.length > 0) {
     decision = "ask-founder";
-    nextAction = founderGates[0].reason;
+    nextAction = founderGates[0]?.reason ?? "Resolve founder-owned gate.";
   } else if (externalFollowUps.length > 0) {
     decision = "wait-external";
-    nextAction = externalFollowUps[0].reason;
+    nextAction = externalFollowUps[0]?.reason ?? "Wait for external follow-up.";
   } else if (aiBlockingGates.length > 0) {
     decision = "create-blocker";
-    nextAction = aiBlockingGates[0].reason;
+    nextAction = aiBlockingGates[0]?.reason ?? "Create the smallest AI-owned blocker.";
   } else if (executableActiveTasks.length > 0) {
     decision = "continue-active-task";
-    nextTask = executableActiveTasks[0];
-    nextAction = `Continue active task ${nextTask.id}: ${nextTask.path || nextTask.title}`;
+    const activeTask = executableActiveTasks[0];
+    nextTask = activeTask ?? null;
+    nextAction = activeTask
+      ? `Continue active task ${activeTask.id}: ${activeTask.path || activeTask.title}`
+      : "Continue active task.";
   } else if (executableReadyTasks.length > 0) {
     decision = "execute-task";
-    nextTask = executableReadyTasks[0];
-    nextAction = `Execute ready task ${nextTask.id}: ${nextTask.path || nextTask.title}`;
+    const readyTask = executableReadyTasks[0];
+    nextTask = readyTask ?? null;
+    nextAction = readyTask
+      ? `Execute ready task ${readyTask.id}: ${readyTask.path || readyTask.title}`
+      : "Execute ready task.";
   } else if (missingExecutionSurface) {
     decision = "create-blocker";
     nextAction = "Create the smallest Sprint 0 blocker to establish execution rules and task tracking.";

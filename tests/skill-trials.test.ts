@@ -39,10 +39,11 @@ function frontmatter(markdown: string, path: string): Record<string, string> {
   }
 
   const data: Record<string, string> = {};
-  for (const line of match[1].split("\n")) {
+  for (const line of (match[1] ?? "").split("\n")) {
     const pair = line.match(/^([A-Za-z0-9_-]+):\s*(.*)$/);
-    if (pair) {
-      data[pair[1]] = pair[2].trim();
+    const key = pair?.[1];
+    if (key) {
+      data[key] = (pair[2] ?? "").trim();
     }
   }
   return data;
@@ -527,6 +528,33 @@ async function preflightDecisionForFixture(files: Record<string, string>): Promi
   return JSON.parse(output);
 }
 
+async function featurePlanningDecisionForFixture(
+  files: Record<string, string>,
+  feature: string,
+): Promise<{
+  decision?: string;
+  confidence?: string;
+  recommendedDestination?: string;
+  blockingGates?: Array<{ type?: string; source?: string; reason?: string }>;
+  founderQuestions?: string[];
+  researchTriggers?: string[];
+  readyTaskCandidates?: Array<{ id?: string; path?: string; owner?: string }>;
+  nextAction?: string;
+}> {
+  const root = await createFixture("feature-planning", files);
+  const output = await runCommand([
+    "bun",
+    "skills/build-right-feature-planning/scripts/feature-planning-check.ts",
+    "--cwd",
+    root,
+    "--feature",
+    feature,
+    "--format",
+    "json",
+  ]);
+  return JSON.parse(output);
+}
+
 async function executionCheckForFixture(
   files: Record<string, string>,
   args: string[],
@@ -557,6 +585,15 @@ const checks: Check[] = [
       const skills = await manifestSkills();
       if (skills.length === 0) {
         throw new Error("skills.sh.json does not list any skills");
+      }
+      for (const expected of [
+        "build-right-preflight",
+        "build-right-feature-planning",
+        "build-right-execution",
+      ]) {
+        if (!skills.includes(expected)) {
+          throw new Error(`skills.sh.json is missing ${expected}`);
+        }
       }
 
       for (const skill of skills) {
@@ -609,6 +646,10 @@ const checks: Check[] = [
         "skills/build-right-preflight/references/founder-gates.md",
         "skills/build-right-preflight/references/research-and-delegation.md",
         "skills/build-right-preflight/scripts/preflight-check.ts",
+        "skills/build-right-feature-planning/references/gates.md",
+        "skills/build-right-feature-planning/references/research-and-delegation.md",
+        "skills/build-right-feature-planning/references/planning-contract.md",
+        "skills/build-right-feature-planning/scripts/feature-planning-check.ts",
         "skills/build-right-execution/references/gates.md",
         "skills/build-right-execution/references/review-and-delegation.md",
         "skills/build-right-execution/scripts/continue-check.ts",
@@ -625,6 +666,57 @@ const checks: Check[] = [
         "references/research-and-delegation.md",
         "scripts/preflight-check.ts",
         "Preflight decision:",
+      ]);
+      const featureSkill = await read("skills/build-right-feature-planning/SKILL.md");
+      if (featureSkill.includes("TODO")) {
+        throw new Error("feature planning skill still contains TODO placeholder text");
+      }
+      await assertIncludes("skills/build-right-feature-planning/SKILL.md", [
+        "references/workflow.md",
+        "references/gates.md",
+        "references/planning-contract.md",
+        "references/research-and-delegation.md",
+        "scripts/feature-planning-check.ts",
+        "Planning decision:",
+        "Ready for execution:",
+        "must not implement the feature",
+      ]);
+      await assertIncludes("skills/build-right-feature-planning/references/workflow.md", [
+        "feature-planning-check.ts",
+        "route-preflight",
+        "create-ready-tasks",
+        "Stop before implementation",
+      ]);
+      await assertIncludes("skills/build-right-feature-planning/references/gates.md", [
+        "Founder-Owned Gates",
+        "Research Gates",
+        "Delegation Gates",
+        "Execution-Readiness Gate",
+      ]);
+      await assertIncludes("skills/build-right-feature-planning/references/planning-contract.md", [
+        "tasks/post-release-backlog.md",
+        "tasks/issues/*.md",
+        "Reuse the execution task contract",
+        "must not edit product implementation files",
+      ]);
+      await assertIncludes("skills/build-right-feature-planning/references/research-and-delegation.md", [
+        "Research Lane",
+        "Delegation Lane",
+        "Subagents may gather, critique, and audit",
+      ]);
+      await assertIncludes("skills/build-right-feature-planning/assets/templates/tasks/feature-task.md", [
+        "Assumption basis:",
+        "Reversibility:",
+        "Learning objective:",
+        "Source under test:",
+        "## Baseline Evidence",
+        "## Verification",
+        "## Evidence Log",
+        "## Learning Notes",
+      ]);
+      await assertIncludes("skills/build-right-feature-planning/assets/templates/tasks/post-release-backlog.md", [
+        "Status: active",
+        "No AI-owned backlog task is ready",
       ]);
       await assertIncludes("skills/build-right-execution/SKILL.md", [
         "references/gates.md",
@@ -723,6 +815,8 @@ const checks: Check[] = [
         "Preflight decision?",
         "Required trigger applies?",
         "Stop/ask gate before next task?",
+        "build-right-feature-planning",
+        "feature-planning-check.ts",
         "Deterministic Helper Lane",
         "Continue State Resolver",
         "preflight-check.ts",
@@ -734,9 +828,12 @@ const checks: Check[] = [
       ]);
       await assertIncludes("README.md", [
         "preflight-check.ts",
+        "feature-planning-check.ts",
         "continue-check.ts",
         "execution-check.ts",
         "read-only Bun scripts",
+        "route-preflight",
+        "create-ready-tasks",
         "continue-active-task",
         "invalid-state",
         "does not commit generated `docs/` or `tasks/`",
@@ -753,6 +850,28 @@ const checks: Check[] = [
       ]);
       if (!preflightHelp.includes("inventory|readiness|all")) {
         throw new Error("preflight helper help output missing mode list");
+      }
+
+      const featurePlanningHelp = await runCommand([
+        "bun",
+        "skills/build-right-feature-planning/scripts/feature-planning-check.ts",
+        "--help",
+      ]);
+      for (const marker of [
+        "--feature",
+        "route-preflight",
+        "ask-founder",
+        "run-research",
+        "delegate-review",
+        "update-roadmap",
+        "update-sprint",
+        "create-ready-tasks",
+        "Planning decision",
+        "Ready task candidates",
+      ]) {
+        if (!featurePlanningHelp.includes(marker)) {
+          throw new Error(`feature planning helper help output missing ${marker}`);
+        }
       }
 
       const executionHelp = await runCommand([
@@ -793,6 +912,28 @@ const checks: Check[] = [
       }
       if (!preflightJson.decision || !preflightJson.nextAction) {
         throw new Error("preflight helper smoke output missing decision or nextAction");
+      }
+
+      const featurePlanningSmoke = await runCommand([
+        "bun",
+        "skills/build-right-feature-planning/scripts/feature-planning-check.ts",
+        "--cwd",
+        ".",
+        "--feature",
+        "Example feature",
+        "--format",
+        "json",
+      ]);
+      const featurePlanningJson = JSON.parse(featurePlanningSmoke) as {
+        decision?: string;
+        nextAction?: string;
+        recommendedDestination?: string;
+      };
+      if (!featurePlanningJson.decision || !featurePlanningJson.nextAction) {
+        throw new Error("feature planning helper smoke output missing decision or nextAction");
+      }
+      if (!featurePlanningJson.recommendedDestination) {
+        throw new Error("feature planning helper smoke output missing recommendedDestination");
       }
 
       const executionSmoke = await runCommand([
@@ -1345,6 +1486,7 @@ Status: complete
 
       const compareRoot = await createFixture("parity-mismatch", {});
       await runCommand(["cp", "-R", "skills/build-right-preflight", `${compareRoot}/build-right-preflight`]);
+      await runCommand(["cp", "-R", "skills/build-right-feature-planning", `${compareRoot}/build-right-feature-planning`]);
       await runCommand(["cp", "-R", "skills/build-right-execution", `${compareRoot}/build-right-execution`]);
       await Bun.write(
         `${compareRoot}/build-right-preflight/SKILL.md`,
@@ -1545,6 +1687,120 @@ Primary workflow: Evidence-driven execution
         if (withEvidence.decision !== "ready-for-execution") {
           throw new Error(`${mode} with public evidence returned ${withEvidence.decision}`);
         }
+      }
+    },
+  },
+  {
+    name: "feature planning helper covers planning decision matrix",
+    run: async () => {
+      const basePlanning = {
+        "docs/blueprint-status.md": readyBlueprint(),
+        "docs/mvp-scope.md": `# MVP Scope
+
+Status: ready
+
+## Included
+
+- Todo app feature iteration.
+`,
+        "docs/execution-rules.md": "# Execution Rules\n",
+        "docs/conflicts.md": `# Conflicts
+
+Status: ready
+
+## Conflicts
+
+| Conflict | Sources | Severity | Owner | Status | Resolution |
+| --- | --- | --- | --- | --- | --- |
+| None | n/a | low | AI | resolved | n/a |
+`,
+      };
+
+      const missingPreflight = await featurePlanningDecisionForFixture({}, "Add recurring todos");
+      if (missingPreflight.decision !== "route-preflight") {
+        throw new Error(`missing preflight fixture returned ${missingPreflight.decision}`);
+      }
+
+      const founderGate = await featurePlanningDecisionForFixture(
+        {
+          ...basePlanning,
+          "docs/open-questions.md": "# Open Questions\n\nStatus: active\n\n## Questions\n\n- Confirm MVP priority.\n",
+          "tasks/sprint-0.md": tracker(""),
+        },
+        "Add recurring todos",
+      );
+      if (founderGate.decision !== "ask-founder" || (founderGate.founderQuestions ?? []).length === 0) {
+        throw new Error(`founder gate fixture returned ${founderGate.decision}`);
+      }
+
+      const conflict = await featurePlanningDecisionForFixture(
+        {
+          ...basePlanning,
+          "docs/conflicts.md": `# Conflicts
+
+Status: active
+
+## Conflicts
+
+| Conflict | Sources | Severity | Owner | Status | Resolution |
+| --- | --- | --- | --- | --- | --- |
+| Recurring reminders conflict with MVP boundary | docs/mvp-scope.md | high | founder | open |  |
+`,
+          "tasks/sprint-0.md": tracker(""),
+        },
+        "Add recurring todos",
+      );
+      if (conflict.decision !== "blocked" || conflict.blockingGates?.[0]?.type !== "open-conflict") {
+        throw new Error(`conflict fixture returned ${conflict.decision}`);
+      }
+
+      const research = await featurePlanningDecisionForFixture(
+        {
+          ...basePlanning,
+          "tasks/sprint-0.md": tracker(""),
+        },
+        "Compare competitor pricing for paid reminders",
+      );
+      if (research.decision !== "run-research" || (research.researchTriggers ?? []).length === 0) {
+        throw new Error(`research fixture returned ${research.decision}`);
+      }
+
+      const backlog = await featurePlanningDecisionForFixture(
+        {
+          ...basePlanning,
+          "tasks/sprint-0.md": tracker(""),
+          "tasks/post-release-backlog.md": tracker(""),
+        },
+        "Defer dark mode to the post-release backlog",
+      );
+      if (backlog.decision !== "update-roadmap" || backlog.recommendedDestination !== "tasks/post-release-backlog.md") {
+        throw new Error(`backlog fixture returned ${backlog.decision}`);
+      }
+
+      const sprint = await featurePlanningDecisionForFixture(
+        {
+          ...basePlanning,
+          "tasks/sprint-0.md": tracker(""),
+        },
+        "Add due dates to todos",
+      );
+      if (sprint.decision !== "update-sprint" || sprint.recommendedDestination !== "tasks/sprint-0.md") {
+        throw new Error(`sprint fixture returned ${sprint.decision}`);
+      }
+
+      const ready = await featurePlanningDecisionForFixture(
+        {
+          ...basePlanning,
+          "tasks/sprint-0.md": tracker("| 002 | Add due dates | ready | tasks/issues/002-add-due-dates.md |"),
+          "tasks/issues/002-add-due-dates.md": taskFile("002", "ready"),
+        },
+        "Add due dates to todos",
+      );
+      if (
+        ready.decision !== "create-ready-tasks" ||
+        ready.readyTaskCandidates?.[0]?.path !== "tasks/issues/002-add-due-dates.md"
+      ) {
+        throw new Error(`ready fixture returned ${ready.decision}`);
       }
     },
   },

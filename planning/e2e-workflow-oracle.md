@@ -3,7 +3,7 @@
 Status: active
 Owner: AI
 Created: 2026-06-24
-Source under test: repo-local `skills/build-right-preflight` and `skills/build-right-execution`
+Source under test: repo-local `skills/build-right-preflight`, `skills/build-right-feature-planning`, and `skills/build-right-execution`
 
 ## Purpose
 

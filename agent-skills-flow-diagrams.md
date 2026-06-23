@@ -3,11 +3,20 @@
 This document visualizes the implemented flows for:
 
 - `skills/build-right-preflight`
+- `skills/build-right-feature-planning`
 - `skills/build-right-execution`
 
 The diagrams are intentionally operational: they show what the main agent does,
 where founder input is required, where web research or subagents may help, and
 where files are created or updated.
+
+## Build Right Skill Flow
+
+```mermaid
+flowchart LR
+  A["build-right-preflight"] --> B["build-right-feature-planning"]
+  B --> C["build-right-execution"]
+```
 
 ## Build Right Preflight
 
@@ -221,6 +230,38 @@ flowchart TD
   V2 --> Y
   X --> Z["Closeout with what was proved and next task"]
   Y --> Z
+```
+
+## Build Right Feature Planning
+
+```mermaid
+flowchart TD
+  A["Invoke skill: /build-right-feature-planning or $build-right-feature-planning"] --> B["Read workflow, gates, planning contract, and routed references"]
+  B --> C["Inspect Build Right docs, sprint trackers, backlog, tasks, conflicts, and evidence"]
+  C --> D["Run feature-planning-check.ts helper"]
+  D --> E["Report decision, confidence, feature request, recommended destination, gates, questions, research triggers, ready task candidates, and next action"]
+  E --> F{"Planning decision?"}
+  F -->|"route-preflight"| G["Route to build-right-preflight"]
+  F -->|"ask-founder"| H["Ask focused founder question batch"]
+  F -->|"run-research"| I["Run bounded public research and record evidence"]
+  F -->|"delegate-review"| J["Run narrow subagent feasibility or conflict review"]
+  F -->|"update-roadmap"| K["Update roadmap or post-release backlog"]
+  F -->|"update-sprint"| L["Update active sprint and draft task split"]
+  F -->|"create-ready-tasks"| M["Create or confirm execution-ready task files"]
+  F -->|"blocked"| N["Record or report blocking gate"]
+  H --> O["Update decisions, evidence, conflicts, sprint, backlog, or tasks"]
+  I --> O
+  J --> O
+  K --> O
+  L --> O
+  M --> O
+  O --> P["Re-run feature-planning-check.ts"]
+  P --> Q["Run continue-check --strict if a task should be ready"]
+  Q --> R{"Execution-ready?"}
+  R -->|"Yes"| S["Ready for execution: task path"]
+  R -->|"No"| T["Close with founder, research, backlog, sprint, or blocker state"]
+  G --> T
+  N --> T
 ```
 
 ## Manual Trial Release Gate
