@@ -1019,10 +1019,15 @@ Status: draft
     name: "templates expose required matrix markers",
     run: async () => {
       await assertIncludes("skills/build-right-preflight/assets/templates/docs/decision-log.md", [
-        "Decision",
-        "Owner",
-        "Evidence",
-        "Consequence",
+        "MVP boundary",
+        "source mode",
+        "architecture choice",
+        "deployment choice",
+        "workflow customization",
+        "stop-gate decisions",
+        "routine command results",
+        "transient implementation notes",
+        "every file edit",
       ]);
       await assertIncludes("skills/build-right-preflight/assets/templates/docs/release-gates.md", [
         "Validation baseline",
@@ -1043,9 +1048,13 @@ Status: draft
         "## Stop/Ask Gates",
       ]);
       await assertIncludes("skills/build-right-preflight/assets/templates/docs/blueprint-status.md", [
+        "Current phase",
         "Project state",
         "Source mode",
         "Prototype confidence",
+        "Active task",
+        "Current gate",
+        "Last evidence",
         "## Next Action",
       ]);
       await assertIncludes("skills/build-right-preflight/assets/templates/tasks/issue-template.md", [
@@ -1057,6 +1066,13 @@ Status: draft
         "## Acceptance Criteria",
         "## Verification Summary",
         "## Blockers",
+      ]);
+      await assertIncludes("skills/build-right-preflight/references/artifact-contract.md", [
+        "Use `docs/blueprint-status.md` as the lean state and resume file.",
+        "a second mandatory master state file",
+        "## Decision Log Contract",
+        "MVP boundary",
+        "routine command results",
       ]);
     },
   },

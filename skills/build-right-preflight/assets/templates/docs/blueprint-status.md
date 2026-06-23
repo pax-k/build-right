@@ -1,9 +1,13 @@
 # Blueprint Status
 
 Status: collecting-context
+Current phase: preflight
 Project state: blank/new
 Source mode: founder-fed
 Prototype confidence: n/a
+Active task: n/a
+Current gate: founder intent captured
+Last evidence: n/a
 Last updated: YYYY-MM-DD
 
 ## Readiness

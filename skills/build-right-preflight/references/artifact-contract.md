@@ -73,14 +73,38 @@ forcing these exact paths.
 `docs/blueprint-status.md` or the project-local equivalent must include:
 
 - status
+- current phase
 - project state
 - source mode
 - prototype confidence
+- active task
+- current gate
+- last evidence
 - readiness gates with evidence
 - current file plan
 - next action
 
 Gate statuses: `missing`, `draft`, `needs-validation`, `blocked`, `ready`.
+
+Use `docs/blueprint-status.md` as the lean state and resume file. Do not create
+a second mandatory master state file unless the target project already has an
+established equivalent that should be adapted.
+
+## Decision Log Contract
+
+Use `docs/decision-log.md` for durable decisions that future agents or
+collaborators must respect:
+
+- MVP boundary
+- source mode
+- architecture choice
+- deployment choice
+- workflow customization
+- stop-gate decisions
+
+Do not use the decision log for routine command results, transient
+implementation notes, every file edit, or evidence that belongs in a task
+evidence log.
 
 ## Required Evidence Sections
 
