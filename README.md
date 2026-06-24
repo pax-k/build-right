@@ -1,6 +1,6 @@
 # Build Right
 
-![Build Right](build-right.png)
+<img src="build-right.png" alt="Build Right" width="480" />
 
 Agent-agnostic skills that turn a fuzzy app idea into evidence-backed AI
 execution.
