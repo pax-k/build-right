@@ -1,5 +1,7 @@
 # Build Right
 
+![Build Right](build-right.png)
+
 Agent-agnostic skills that turn a fuzzy app idea into evidence-backed AI
 execution.
 
