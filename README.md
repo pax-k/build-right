@@ -57,11 +57,15 @@ This installs 3 skills: `build-right-preflight`, `build-right-feature-planning` 
 
 Then invoke the skill for the phase you are in:
 
+**:mag_right: Preflight**
+
 ```text
 $build-right-preflight
 
 Bootstrap this existing project for evidence-driven AI execution.
 ```
+
+**:memo: Feature planning**
 
 ```text
 $build-right-feature-planning
@@ -69,6 +73,8 @@ $build-right-feature-planning
 Explore this feature request, update the project sprint/task plan, and stop
 before implementation.
 ```
+
+**:white_check_mark: Execution**
 
 ```text
 $build-right-execution
