@@ -1,54 +1,46 @@
 # Build Right
 
-Build Right is a small, agent-agnostic skills repository for turning an app idea
-into evidence-backed execution.
+Agent-agnostic skills that turn a fuzzy app idea into evidence-backed AI
+execution.
 
-## TL;DR: App Lifecycle
-
-Build Right stops agents from guessing what to build:
+Build Right gives AI agents a product workflow before they write code: capture
+founder intent, separate evidence from assumptions, plan repo-native work, and
+execute one bounded proven task at a time.
 
 ```text
 Research once. Plan continuously. Execute one proven task at a time.
 ```
 
-1. `build-right-preflight` - research / preflight, once.
-   It captures what the founder wants, checks what already exists, separates
-   facts from assumptions, defines the MVP, writes the operating docs, and
-   creates the first sprint/task.
-2. `build-right-feature-planning` - plan, next and repeatedly.
-   It takes a new feature idea, asks only the questions that matter, does
-   bounded research/review when needed, updates backlog/sprint/docs, and turns
-   the idea into ready tasks.
-3. `build-right-execution` - execute, next and repeatedly.
-   It picks one ready task, proves the starting state, makes the smallest
-   useful change, verifies it, records evidence, updates the tracker, and stops
-   at the next decision point.
+```mermaid
+flowchart LR
+  A["Idea or existing repo"] --> B["Preflight: product truth and MVP scope"]
+  B --> C["Feature planning: backlog, sprint, ready tasks"]
+  C --> D["Execution: one task, evidence, verification"]
+  D --> C
+```
 
-## Install
+## Why This Exists
 
-Install from GitHub with the skills CLI:
+AI agents can move quickly, but speed is not enough when the starting point is a
+half-formed product idea, stale repo state, or unvalidated assumptions. Build
+Right is for founders and product engineers who want agents to work from
+explicit product truth, current evidence, and small verifiable tasks instead of
+guessing what to build next.
+
+The goal is not more process. The goal is to make the next agent action obvious,
+bounded, and checkable.
+
+## Quickstart
+
+Install all Build Right skills from GitHub:
 
 ```sh
 bunx skills add pax-k/build-right
 ```
 
-List available skills without installing:
+This installs 3 skills: `build-right-preflight`, `build-right-feature-planning` and `build-right-execution`.
 
-```sh
-bunx skills add pax-k/build-right --list
-```
-
-Install one skill explicitly:
-
-```sh
-bunx skills add pax-k/build-right --skill build-right-preflight
-bunx skills add pax-k/build-right --skill build-right-feature-planning
-bunx skills add pax-k/build-right --skill build-right-execution
-```
-
-## Use
-
-Invoke the skill for the phase you are in:
+Then invoke the skill for the phase you are in:
 
 ```text
 $build-right-preflight
@@ -77,96 +69,59 @@ Some agents may also expose installed skills as slash commands:
 /build-right-execution
 ```
 
-## Repository Layout
+## Use Cases
 
-```text
-skills/
-  build-right-preflight/
-    SKILL.md
-    references/
-      workflow.md
-      founder-gates.md
-      research-and-delegation.md
-      artifact-contract.md
-    scripts/
-      preflight-check.ts
-    assets/templates/
+Use Build Right when you need to:
 
-  build-right-feature-planning/
-    SKILL.md
-    references/
-      workflow.md
-      gates.md
-      research-and-delegation.md
-      planning-contract.md
-    scripts/
-      feature-planning-check.ts
-    assets/templates/
+- turn a founder brain dump into MVP scope, release gates, and first tasks;
+- add a feature to an existing repo without skipping planning and tradeoff work;
+- keep AI implementation focused on one ready task at a time;
+- require evidence, tests, and tracker updates before closing work;
+- preserve project decisions in repo files instead of chat history.
 
-  build-right-execution/
-    SKILL.md
-    references/
-      workflow.md
-      gates.md
-      review-and-delegation.md
-      evidence-contract.md
-    scripts/
-      continue-check.ts
-      execution-check.ts
-    assets/templates/
+This is probably not a fit if you need:
 
-skills.sh.json
-```
+- a no-code app generator;
+- one-shot prompting with no repo artifacts;
+- hosted project management software;
+- customer validation done by public web research alone;
+- provider-specific agent wiring instead of portable skill instructions.
 
-This repository intentionally does not commit generated `docs/` or `tasks/`
-output from its own skills. Use an external test repository to run manual trials
-and review generated artifacts.
+## Lifecycle
 
-## Validate
+Build Right is a three-skill lifecycle.
 
-Check local discovery:
+| Phase | Skill | When to use it | Result |
+| --- | --- | --- | --- |
+| Preflight | `build-right-preflight` | Once, when the project or idea needs product grounding. | Founder intent, assumptions, MVP scope, operating docs, and first execution-ready work. |
+| Feature planning | `build-right-feature-planning` | Repeatedly, when a new feature or product change needs shaping. | Updated backlog, sprint/docs changes, and ready task files. |
+| Execution | `build-right-execution` | Repeatedly, after there is a ready task. | One implemented task with baseline evidence, verification, tracker updates, and closeout. |
 
-```sh
-bunx skills add . --list
-```
+## Features
 
-Run the repository verifier:
+- **Evidence-backed product setup** - separates founder truth, public research,
+  assumptions, conflicts, and MVP decisions before implementation starts.
+- **Continuous planning loop** - turns feature ideas into bounded research,
+  backlog updates, sprint changes, and ready tasks without leaking into code.
+- **One-task execution discipline** - verifies the starting state, implements the
+  smallest useful change, records evidence, and stops at the next decision point.
+- **Agent-agnostic instructions** - uses portable `SKILL.md` workflows,
+  references, and templates instead of provider-specific metadata.
+- **Deterministic gates** - read-only Bun helpers report project state and next
+  actions so humans and agents can inspect the same decision surface.
+- **Repo-native artifacts** - writes durable docs and task files in the target
+  project instead of treating chat as the source of truth.
 
-```sh
-bun run verify:skill-trials
-```
+## How It Works
 
-Run deterministic helper smoke checks:
+Each skill is instruction-first:
 
-```sh
-bun skills/build-right-preflight/scripts/preflight-check.ts --cwd . --mode all --format markdown
-bun skills/build-right-feature-planning/scripts/feature-planning-check.ts --cwd . --feature "Example feature" --format markdown
-bun skills/build-right-execution/scripts/continue-check.ts --cwd . --format markdown --strict
-bun skills/build-right-execution/scripts/execution-check.ts --cwd . --mode next-task --format markdown
-```
+1. `SKILL.md` defines the phase workflow.
+2. `references/` carries deeper gates, contracts, and delegation rules.
+3. `assets/templates/` provides reusable Markdown artifacts for target repos.
+4. read-only Bun scripts surface deterministic state and next-action signals.
 
-Check GitHub discovery after pushing:
-
-```sh
-bunx skills add pax-k/build-right --list
-```
-
-Expected skills:
-
-```text
-build-right-preflight
-build-right-feature-planning
-build-right-execution
-```
-
-## Notes
-
-The skills are instruction-first. `SKILL.md` carries the phase workflow,
-`references/` carries deeper rules, `assets/templates/` carries reusable
-Markdown artifacts, and read-only Bun scripts surface deterministic gate
-signals.
-
-The stable safety model is in [`workflow-backbone.md`](workflow-backbone.md):
+The stable safety model is in [`workflow-backbone.md`](docs/workflow-backbone.md):
 observe state, classify it, choose one next action, run gates, act, verify,
 record, then stop or continue.
 
@@ -184,3 +139,9 @@ Founder input remains the source of product truth. Public research can support
 prototype assumptions or public evidence, but it does not become customer
 validation. Subagents may gather, draft, critique, and audit; the main agent
 still decides, writes, updates trackers, and closes gates.
+
+See [`agent-skills-flow-diagrams.md`](docs/agent-skills-flow-diagrams.md) to understand the flows.
+
+## License
+
+[MIT](LICENSE)

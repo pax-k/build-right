@@ -87,6 +87,22 @@ docs/evidence/manual-trials.md
 When helpers run, also keep their stdout/stderr or summarize their exit codes in
 the native proof and manual-trial packet.
 
+`docs/evidence/manual-trials.md` must include this exact packet field schema:
+
+```text
+Run label:
+Agent/tool surface:
+Skill source:
+Target:
+Commands:
+Artifacts:
+Result:
+Proved:
+Simulated:
+Unproven:
+Follow-ups:
+```
+
 ## JSONL Judgment Rule
 
 Codex's final reply is evidence, not authority. The outer Bun runner must parse

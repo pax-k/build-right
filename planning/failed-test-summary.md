@@ -4,27 +4,27 @@ Generated: 2026-06-24
 
 ## Totals
 
-- Total rows: 84
-- Actionable open rows: 11
-- Historical open rows with resolution: 23
+- Total rows: 95
+- Actionable open rows: 0
+- Historical open rows with resolution: 34
 - Expected/control rows: 27
-- Resolved rows: 23
+- Resolved rows: 34
 
 ## Groups
 
 | Class | Phase | Count | Actionable Open | Historical Resolved | Expected/Control | Related Task |
 | --- | --- | --- | --- | --- | --- | --- |
-| agent-instruction | codex-native-step-048 | 1 | 1 | 0 | 0 | planning/tasks/073-run-native-preflight-step-trials.md |
-| agent-instruction | codex-native-step-050 | 1 | 1 | 0 | 0 | planning/tasks/074-run-native-feature-planning-step-trials.md |
-| agent-instruction | codex-native-step-051 | 1 | 1 | 0 | 0 | planning/tasks/074-run-native-feature-planning-step-trials.md |
-| agent-instruction | codex-native-step-052 | 1 | 1 | 0 | 0 | planning/tasks/074-run-native-feature-planning-step-trials.md |
-| agent-instruction | codex-native-step-053 | 1 | 1 | 0 | 0 | planning/tasks/074-run-native-feature-planning-step-trials.md |
-| agent-instruction | codex-native-step-054 | 1 | 1 | 0 | 0 | planning/tasks/074-run-native-feature-planning-step-trials.md |
-| agent-instruction | codex-native-step-055 | 1 | 1 | 0 | 0 | planning/tasks/074-run-native-feature-planning-step-trials.md |
-| agent-instruction | codex-native-step-056 | 1 | 1 | 0 | 0 | planning/tasks/074-run-native-feature-planning-step-trials.md |
-| agent-instruction | codex-native-step-057 | 1 | 1 | 0 | 0 | planning/tasks/074-run-native-feature-planning-step-trials.md |
-| agent-instruction | codex-native-step-064 | 1 | 1 | 0 | 0 | planning/tasks/076-run-native-execution-implementation-step-trials.md |
-| agent-instruction | codex-native-step-065 | 1 | 1 | 0 | 0 | planning/tasks/076-run-native-execution-implementation-step-trials.md |
+| agent-instruction | codex-native-step-048 | 2 | 0 | 1 | 0 | planning/tasks/073-run-native-preflight-step-trials.md<br>planning/tasks/079-fix-native-manual-trial-packet-contract.md |
+| agent-instruction | codex-native-step-050 | 2 | 0 | 1 | 0 | planning/tasks/074-run-native-feature-planning-step-trials.md<br>planning/tasks/079-fix-native-manual-trial-packet-contract.md |
+| agent-instruction | codex-native-step-051 | 2 | 0 | 1 | 0 | planning/tasks/074-run-native-feature-planning-step-trials.md<br>planning/tasks/079-fix-native-manual-trial-packet-contract.md |
+| agent-instruction | codex-native-step-052 | 2 | 0 | 1 | 0 | planning/tasks/074-run-native-feature-planning-step-trials.md<br>planning/tasks/079-fix-native-manual-trial-packet-contract.md |
+| agent-instruction | codex-native-step-053 | 2 | 0 | 1 | 0 | planning/tasks/074-run-native-feature-planning-step-trials.md<br>planning/tasks/079-fix-native-manual-trial-packet-contract.md |
+| agent-instruction | codex-native-step-054 | 2 | 0 | 1 | 0 | planning/tasks/074-run-native-feature-planning-step-trials.md<br>planning/tasks/079-fix-native-manual-trial-packet-contract.md |
+| agent-instruction | codex-native-step-055 | 2 | 0 | 1 | 0 | planning/tasks/074-run-native-feature-planning-step-trials.md<br>planning/tasks/079-fix-native-manual-trial-packet-contract.md |
+| agent-instruction | codex-native-step-056 | 2 | 0 | 1 | 0 | planning/tasks/074-run-native-feature-planning-step-trials.md<br>planning/tasks/079-fix-native-manual-trial-packet-contract.md |
+| agent-instruction | codex-native-step-057 | 2 | 0 | 1 | 0 | planning/tasks/074-run-native-feature-planning-step-trials.md<br>planning/tasks/079-fix-native-manual-trial-packet-contract.md |
+| agent-instruction | codex-native-step-064 | 2 | 0 | 1 | 0 | planning/tasks/076-run-native-execution-implementation-step-trials.md<br>planning/tasks/079-fix-native-manual-trial-packet-contract.md |
+| agent-instruction | codex-native-step-065 | 2 | 0 | 1 | 0 | planning/tasks/076-run-native-execution-implementation-step-trials.md<br>planning/tasks/079-fix-native-manual-trial-packet-contract.md |
 | agent-instruction | verify-transcripts | 2 | 0 | 1 | 0 | planning/tasks/035-automate-agentic-transcript-evidence-checks.md |
 | environment | final-verification | 2 | 0 | 1 | 0 | planning/tasks/026-test-source-parity-remediation.md |
 | environment | status-audit | 3 | 0 | 1 | 0 | planning/tasks/014-add-failed-test-log-feedback-loop.md<br>planning/tasks/040-run-full-e2e-workflow-verification.md |
@@ -50,17 +50,7 @@ Generated: 2026-06-24
 
 ## Candidate Improvements
 
-- agent-instruction/codex-native-step-048: 1 rows, 1 actionable. Candidate follow-up: planning/tasks/073-run-native-preflight-step-trials.md.
-- agent-instruction/codex-native-step-050: 1 rows, 1 actionable. Candidate follow-up: planning/tasks/074-run-native-feature-planning-step-trials.md.
-- agent-instruction/codex-native-step-051: 1 rows, 1 actionable. Candidate follow-up: planning/tasks/074-run-native-feature-planning-step-trials.md.
-- agent-instruction/codex-native-step-052: 1 rows, 1 actionable. Candidate follow-up: planning/tasks/074-run-native-feature-planning-step-trials.md.
-- agent-instruction/codex-native-step-053: 1 rows, 1 actionable. Candidate follow-up: planning/tasks/074-run-native-feature-planning-step-trials.md.
-- agent-instruction/codex-native-step-054: 1 rows, 1 actionable. Candidate follow-up: planning/tasks/074-run-native-feature-planning-step-trials.md.
-- agent-instruction/codex-native-step-055: 1 rows, 1 actionable. Candidate follow-up: planning/tasks/074-run-native-feature-planning-step-trials.md.
-- agent-instruction/codex-native-step-056: 1 rows, 1 actionable. Candidate follow-up: planning/tasks/074-run-native-feature-planning-step-trials.md.
-- agent-instruction/codex-native-step-057: 1 rows, 1 actionable. Candidate follow-up: planning/tasks/074-run-native-feature-planning-step-trials.md.
-- agent-instruction/codex-native-step-064: 1 rows, 1 actionable. Candidate follow-up: planning/tasks/076-run-native-execution-implementation-step-trials.md.
-- agent-instruction/codex-native-step-065: 1 rows, 1 actionable. Candidate follow-up: planning/tasks/076-run-native-execution-implementation-step-trials.md.
+- No actionable failure groups remain.
 
 ## Closed And Control Inventory
 
@@ -86,3 +76,14 @@ Generated: 2026-06-24
 - source-under-test/failure-injection-source-parity: 0 closed, 2 expected/control.
 - agent-instruction/verify-transcripts: 2 closed, 0 expected/control.
 - gate/execution-stop-gates: 20 closed, 0 expected/control.
+- agent-instruction/codex-native-step-048: 2 closed, 0 expected/control.
+- agent-instruction/codex-native-step-050: 2 closed, 0 expected/control.
+- agent-instruction/codex-native-step-051: 2 closed, 0 expected/control.
+- agent-instruction/codex-native-step-052: 2 closed, 0 expected/control.
+- agent-instruction/codex-native-step-053: 2 closed, 0 expected/control.
+- agent-instruction/codex-native-step-054: 2 closed, 0 expected/control.
+- agent-instruction/codex-native-step-055: 2 closed, 0 expected/control.
+- agent-instruction/codex-native-step-056: 2 closed, 0 expected/control.
+- agent-instruction/codex-native-step-057: 2 closed, 0 expected/control.
+- agent-instruction/codex-native-step-064: 2 closed, 0 expected/control.
+- agent-instruction/codex-native-step-065: 2 closed, 0 expected/control.

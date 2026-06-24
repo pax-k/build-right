@@ -4,6 +4,8 @@
   "type": "module",
   "private": true,
   "scripts": {
+    "evals:codex": "bunx promptfoo eval -c evals/build-right-codex/promptfooconfig.yaml --no-cache",
+    "evals:codex:view": "bunx promptfoo view",
     "todo-trial": "bun scripts/todo-trial.ts",
     "verify:skill-trials": "bun scripts/verify-skill-trials.ts"
   },

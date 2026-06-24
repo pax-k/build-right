@@ -55,17 +55,19 @@ depend on a chat transcript or agent-specific conversation handle.
 
 Required fields:
 
-- run label
-- agent/tool surface
-- skill source
-- target
-- commands
-- artifacts
-- result
-- proved
-- simulated
-- unproven
-- follow-ups
+```text
+Run label:
+Agent/tool surface:
+Skill source:
+Target:
+Commands:
+Artifacts:
+Result:
+Proved:
+Simulated:
+Unproven:
+Follow-ups:
+```
 
 Existing task evidence may hold command output and detailed notes; the manual
 trial evidence document should keep the durable summary and links to task

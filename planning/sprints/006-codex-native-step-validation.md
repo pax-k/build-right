@@ -1,6 +1,6 @@
 # Sprint 006: Codex Native Step Validation
 
-Status: failures-logged
+Status: complete
 Owner: AI
 Created: 2026-06-24
 
@@ -51,12 +51,13 @@ Excluded:
 | 076 | Run native execution implementation and closeout step trials | complete | planning/tasks/076-run-native-execution-implementation-step-trials.md |
 | 077 | Add native step summary and failure feedback loop | complete | planning/tasks/077-add-native-step-summary-and-failure-feedback.md |
 | 078 | Close native step validation sprint | complete | planning/tasks/078-close-native-step-validation-sprint.md |
+| 079 | Fix native manual-trial packet contract | complete | planning/tasks/079-fix-native-manual-trial-packet-contract.md |
 
 ## Gate
 
 Do not mark Sprint 006 complete until:
 
-- every task 070-078 is complete with evidence,
+- every task 070-079 is complete with evidence,
 - every native step 041-067 has a scratch target and JSONL evidence,
 - every failure is appended to `planning/failed-tests.md`,
 - `planning/failed-test-summary.md` reports no actionable open rows unless the
@@ -77,16 +78,17 @@ Do not mark Sprint 006 complete until:
 | 2026-06-24 | `scripts/codex-native-step-trials.ts --start 063 --end 067 --continue-on-failure` | task-076-complete | Native execution steps 063, 066, and 067 passed; steps 064 and 065 logged missing manual-trial packet marker failures. |
 | 2026-06-24 | `scripts/codex-native-step-trials.ts --status-audit` | task-077-complete | Native summary now reports all 27 steps with evidence paths and follow-up routing. |
 | 2026-06-24 | Final verification suite | task-078-complete | `git diff --check`, `bun test`, `bun run verify:skill-trials`, `failure-summary`, native `--summary`, and native `--status-audit` passed. Sprint closes as `failures-logged` with eleven actionable native rows. |
+| 2026-06-24 | `planning/tasks/079-fix-native-manual-trial-packet-contract.md` | task-079-complete | Manual-trial packet contract fixed; affected native steps 048, 050-057, and 064-065 reran and passed; failure summary reports 0 actionable open rows. |
+| 2026-06-24 | Final remediation verification | pass | `git diff --check`, `git diff --cached --check`, `bun test`, `bun run verify:skill-trials`, `failure-summary`, native `--summary`, native `--status-audit`, and Sprint 006 `status-audit` passed. |
 
 ## Closeout
 
-Sprint 006 produced native Codex evidence for all steps 041-067.
+Sprint 006 produced native Codex evidence for all steps 041-067 and completed
+remediation for the manual-trial packet failure class.
 
-- Passed: 041-047, 049, 058-063, 066-067.
-- Failed and logged: 048, 050-057, 064-065.
+- Passed: 041-067.
+- Failed and logged: historical rows for 048, 050-057, and 064-065 are resolved
+  by task 079 resolution rows.
 - Partial or blocked: none.
-- Open blocker: eleven actionable `agent-instruction` rows for missing
-  manual-trial packet markers before native judgment.
-- Next fix task: make native Build Right skill runs consistently write
-  manual-trial packets with `Run label:` and `Unproven:` markers, then rerun
-  affected steps.
+- Open blocker: none.
+- Next fix task: none for native step validation.

@@ -61,6 +61,23 @@ Record planning evidence where future agents will find it:
 
 Do not mark a claim as customer-evidence-backed without direct customer evidence.
 
+For Build Right manual trials, write `docs/evidence/manual-trials.md` with these
+exact field labels:
+
+```text
+Run label:
+Agent/tool surface:
+Skill source:
+Target:
+Commands:
+Artifacts:
+Result:
+Proved:
+Simulated:
+Unproven:
+Follow-ups:
+```
+
 ## Implementation Boundary
 
 This skill may create and update planning artifacts. It must not edit product implementation files.

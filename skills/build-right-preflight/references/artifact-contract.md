@@ -131,10 +131,24 @@ repository proof in task evidence logs, release gates, source index entries, or
 repository evidence sections.
 
 For Build Right manual trials, use the agent-agnostic packet shape in
-`docs/evidence/manual-trials.md`: run label, agent/tool surface, skill source,
-target, commands, artifacts, result, proved, simulated, unproven, and
-follow-ups. Trial evidence must stand on durable artifacts, not an
-agent-specific conversation handle.
+`docs/evidence/manual-trials.md` with these exact field labels:
+
+```text
+Run label:
+Agent/tool surface:
+Skill source:
+Target:
+Commands:
+Artifacts:
+Result:
+Proved:
+Simulated:
+Unproven:
+Follow-ups:
+```
+
+Trial evidence must stand on durable artifacts, not an agent-specific
+conversation handle.
 
 ## Required Task Fields
 

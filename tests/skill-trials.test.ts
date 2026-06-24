@@ -1,6 +1,13 @@
 import { dirname } from "node:path";
 import { test } from "bun:test";
-import { helperCommands, judgeNativeStepResult, parseCodexEvents, refsFor, steps as nativeSteps } from "../scripts/codex-native-step-trials";
+import {
+  helperCommands,
+  judgeNativeStepResult,
+  manualTrialPacketMarkers,
+  parseCodexEvents,
+  refsFor,
+  steps as nativeSteps,
+} from "../scripts/codex-native-step-trials";
 
 type Check = {
   name: string;
@@ -13,6 +20,14 @@ async function read(path: string): Promise<string> {
   const file = Bun.file(path);
   if (!(await file.exists())) {
     throw new Error(`missing file: ${path}`);
+  }
+  return file.text();
+}
+
+async function readOptional(path: string): Promise<string> {
+  const file = Bun.file(path);
+  if (!(await file.exists())) {
+    return "";
   }
   return file.text();
 }
@@ -167,6 +182,7 @@ function nativeStep(id: string) {
 async function nativeJudgeFixture(options: {
   omitSkillRead?: boolean;
   omitHelperCommand?: boolean;
+  omitManualField?: boolean;
   productFile?: boolean;
 } = {}) {
   const step = nativeStep("041");
@@ -226,24 +242,17 @@ Simulated: Codex execution
 Unproven: live native behavior
 Result: pass
 `;
+  const manualTrialPacket = `# Manual Trials
+
+${(options.omitManualField ? manualTrialPacketMarkers.filter((marker) => marker !== "Unproven:") : manualTrialPacketMarkers)
+  .map((marker) => `${marker} ${marker === "Commands:" ? `\`${helper}\`` : "fixture"}`)
+  .join("\n")}
+`;
   const root = await createFixture("native-judge", {
     "docs/evidence/codex-events.jsonl": `${events}\n`,
     "docs/evidence/codex-last-message.txt": `CODEX_NATIVE_STEP=${step.id}\nCODEX_NATIVE_SKILL=${step.skill}\nPROOF_FILE=docs/evidence/codex-native-step-proof.md\nRESULT=pass\n`,
     "docs/evidence/codex-native-step-proof.md": proof,
-    "docs/evidence/manual-trials.md": `# Manual Trials
-
-- Run label: fixture
-- Agent/tool surface: codex exec --ephemeral --json
-- Skill source: ${skillPath}
-- Target: fixture
-- Commands: \`${helper}\`
-- Artifacts: docs/evidence/codex-events.jsonl
-- Result: pass
-- Proved: fixture
-- Simulated: live Codex
-- Unproven: none
-- Follow-ups: none
-`,
+    "docs/evidence/manual-trials.md": manualTrialPacket,
   });
   if (options.productFile) {
     await writeFixtureFile(root, "package.json", "{\"type\":\"module\"}\n");
@@ -763,6 +772,148 @@ const checks: Check[] = [
       });
       if (!forbiddenWriteResult.failures.some((failure) => failure.includes("planning-only step created product implementation files"))) {
         throw new Error(`expected forbidden write failure, got ${forbiddenWriteResult.failures.join("; ")}`);
+      }
+
+      const missingManual = await nativeJudgeFixture({ omitManualField: true });
+      const missingManualResult = await judgeNativeStepResult({
+        step: missingManual.step,
+        target: missingManual.root,
+        eventsPath: missingManual.eventsPath,
+        lastMessagePath: missingManual.lastMessagePath,
+        proofPath: missingManual.proofPath,
+        codexExitCode: 0,
+        helperResults: [{ command: missingManual.helper, exitCode: 0, stdout: "", stderr: "" }],
+      });
+      if (!missingManualResult.failures.some((failure) => failure.includes("manual-trials.md missing manual trial packet markers"))) {
+        throw new Error(`expected missing manual packet failure, got ${missingManualResult.failures.join("; ")}`);
+      }
+    },
+  },
+  {
+    name: "native manual trial packet schema is explicit in runner, protocol, and skills",
+    run: async () => {
+      const markers = [...manualTrialPacketMarkers];
+      await assertIncludes("scripts/codex-native-step-trials.ts", [
+        "The manual-trials file must contain these exact fields and values:",
+        ...markers,
+      ]);
+      await assertIncludes("planning/codex-native-step-trial-protocol.md", markers);
+      await assertIncludes("skills/build-right-preflight/references/artifact-contract.md", markers);
+      await assertIncludes("skills/build-right-feature-planning/references/planning-contract.md", markers);
+      await assertIncludes("skills/build-right-execution/references/evidence-contract.md", markers);
+    },
+  },
+  {
+    name: "codex native runner json output is single-step eval-safe shape",
+    run: async () => {
+      const output = await runCommand([
+        "bun",
+        "scripts/codex-native-step-trials.ts",
+        "--task",
+        "048",
+        "--dry-run",
+        "--json-output",
+        "--no-planning-writes",
+      ]);
+      const result = JSON.parse(output) as {
+        status?: string;
+        step?: string;
+        skill?: string;
+        target?: string;
+        eventsPath?: string;
+        proofPath?: string;
+        lastMessagePath?: string;
+        failures?: string[];
+        checks?: Record<string, boolean>;
+      };
+      if (result.status !== "dry-run" || result.step !== "048" || result.skill !== "build-right-preflight") {
+        throw new Error(`unexpected json result identity: ${output}`);
+      }
+      for (const key of ["target", "eventsPath", "proofPath", "lastMessagePath"]) {
+        if (typeof result[key as keyof typeof result] !== "string" || !(result[key as keyof typeof result] as string).startsWith("/tmp/")) {
+          throw new Error(`json result missing scratch path ${key}: ${output}`);
+        }
+      }
+      for (const key of [
+        "skillRead",
+        "referenceReads",
+        "helperObserved",
+        "proofMarkers",
+        "manualPacket",
+        "forbiddenWrites",
+      ]) {
+        if (typeof result.checks?.[key] !== "boolean") {
+          throw new Error(`json result missing boolean check ${key}: ${output}`);
+        }
+      }
+      if (!Array.isArray(result.failures)) {
+        throw new Error(`json result failures is not an array: ${output}`);
+      }
+    },
+  },
+  {
+    name: "codex native eval-safe negative fixtures do not write planning failures",
+    run: async () => {
+      const failureLog = "planning/failed-tests.md";
+      const before = await readOptional(failureLog);
+      const cases: Array<{ fixture: string; failure: string; check: string }> = [
+        {
+          fixture: "missing-manual-trial-packet",
+          failure: "manual-trials.md missing manual trial packet markers",
+          check: "manualPacket",
+        },
+        {
+          fixture: "missing-skill-read",
+          failure: "command stream missing selected skill read",
+          check: "skillRead",
+        },
+        {
+          fixture: "missing-reference-read",
+          failure: "command stream missing reference read",
+          check: "referenceReads",
+        },
+        {
+          fixture: "planning-product-file",
+          failure: "planning-only step created product implementation files",
+          check: "forbiddenWrites",
+        },
+      ];
+      for (const item of cases) {
+        const result = await runCommandResult([
+          "bun",
+          "scripts/codex-native-step-trials.ts",
+          "--task",
+          "048",
+          "--negative-fixture",
+          item.fixture,
+          "--json-output",
+          "--no-planning-writes",
+        ]);
+        if (result.exitCode !== 0) {
+          throw new Error(`negative fixture ${item.fixture} exited ${result.exitCode}: ${result.output}`);
+        }
+        const parsed = JSON.parse(result.output) as {
+          status?: string;
+          failures?: string[];
+          checks?: Record<string, boolean>;
+          proofPath?: string;
+        };
+        if (parsed.status !== "failures-logged") {
+          throw new Error(`negative fixture ${item.fixture} status was ${parsed.status}: ${result.output}`);
+        }
+        if (!parsed.failures?.some((failure) => failure.includes(item.failure))) {
+          throw new Error(`negative fixture ${item.fixture} missing expected failure: ${result.output}`);
+        }
+        if (parsed.checks?.[item.check] !== false) {
+          throw new Error(`negative fixture ${item.fixture} did not flip ${item.check}: ${result.output}`);
+        }
+        if (!parsed.proofPath || !(await exists(parsed.proofPath))) {
+          throw new Error(`negative fixture ${item.fixture} missing scratch proof path: ${result.output}`);
+        }
+      }
+      const after = await readOptional(failureLog);
+      if (after !== before) {
+        throw new Error(`${failureLog} changed during --no-planning-writes eval-safe fixtures`);
       }
     },
   },

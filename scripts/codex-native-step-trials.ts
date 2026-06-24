@@ -3,6 +3,7 @@ import { dirname, join } from "node:path";
 
 type SkillName = "build-right-preflight" | "build-right-feature-planning" | "build-right-execution";
 type StepStatus = "pass" | "partial-needs-rerun" | "failures-logged" | "blocked" | "dry-run";
+type NegativeFixture = "missing-manual-trial-packet" | "missing-skill-read" | "missing-reference-read" | "planning-product-file";
 
 type Step = {
   id: string;
@@ -18,8 +19,11 @@ type Args = {
   task?: string;
   start?: string;
   end?: string;
+  negativeFixture?: NegativeFixture;
   continueOnFailure: boolean;
   dryRun: boolean;
+  jsonOutput: boolean;
+  noPlanningWrites: boolean;
   summary: boolean;
   statusAudit: boolean;
   help: boolean;
@@ -53,6 +57,21 @@ type JudgeInput = {
 type JudgeResult = {
   status: StepStatus;
   failures: string[];
+  checks: EvalChecks;
+};
+
+type EvalChecks = {
+  codexExitZero: boolean;
+  validJsonl: boolean;
+  turnCompleted: boolean;
+  skillRead: boolean;
+  referenceReads: boolean;
+  helperObserved: boolean;
+  helpersPassed: boolean;
+  finalMarkers: boolean;
+  proofMarkers: boolean;
+  manualPacket: boolean;
+  forbiddenWrites: boolean;
 };
 
 type StepResult = {
@@ -66,7 +85,29 @@ type StepResult = {
   manualTrialPath: string;
   helperResults: CommandResult[];
   failures: string[];
+  checks: EvalChecks;
 };
+
+export const manualTrialPacketMarkers = [
+  "Run label:",
+  "Agent/tool surface:",
+  "Skill source:",
+  "Target:",
+  "Commands:",
+  "Artifacts:",
+  "Result:",
+  "Proved:",
+  "Simulated:",
+  "Unproven:",
+  "Follow-ups:",
+] as const;
+
+const negativeFixtures = [
+  "missing-manual-trial-packet",
+  "missing-skill-read",
+  "missing-reference-read",
+  "planning-product-file",
+] as const;
 
 const repoRoot = join(import.meta.dir, "..");
 const scratchRoot = "/tmp/build-right-native-step-trials";
@@ -303,7 +344,7 @@ export const steps: Step[] = [
 ];
 
 function usage(): string {
-  return `Usage: bun scripts/codex-native-step-trials.ts [--task <id> | --start <id> --end <id>] [--continue-on-failure] [--dry-run] [--summary] [--status-audit]
+  return `Usage: bun scripts/codex-native-step-trials.ts [--task <id> | --start <id> --end <id>] [--continue-on-failure] [--dry-run] [--json-output] [--no-planning-writes] [--negative-fixture <name>] [--summary] [--status-audit]
 
 Runs native Codex step trials for Build Right workflow steps 041-067.`;
 }
@@ -312,6 +353,8 @@ function parseArgs(argv: string[]): Args {
   const args: Args = {
     continueOnFailure: false,
     dryRun: false,
+    jsonOutput: false,
+    noPlanningWrites: false,
     summary: false,
     statusAudit: false,
     help: false,
@@ -331,12 +374,32 @@ function parseArgs(argv: string[]): Args {
       args.dryRun = true;
       continue;
     }
+    if (arg === "--json-output") {
+      args.jsonOutput = true;
+      continue;
+    }
+    if (arg === "--no-planning-writes") {
+      args.noPlanningWrites = true;
+      continue;
+    }
     if (arg === "--summary") {
       args.summary = true;
       continue;
     }
     if (arg === "--status-audit") {
       args.statusAudit = true;
+      continue;
+    }
+    if (arg === "--negative-fixture") {
+      const value = argv[index + 1];
+      if (!value) {
+        throw new Error(`${arg} requires a value`);
+      }
+      if (!negativeFixtures.includes(value as NegativeFixture)) {
+        throw new Error(`unknown negative fixture: ${value}`);
+      }
+      args.negativeFixture = value as NegativeFixture;
+      index += 1;
       continue;
     }
     if (arg === "--task" || arg === "--start" || arg === "--end") {
@@ -359,6 +422,15 @@ function parseArgs(argv: string[]): Args {
 
   if (args.task && (args.start || args.end)) {
     throw new Error("use either --task or --start/--end, not both");
+  }
+  if (args.dryRun && args.negativeFixture) {
+    throw new Error("use either --dry-run or --negative-fixture, not both");
+  }
+  if (args.noPlanningWrites && (args.summary || args.statusAudit)) {
+    throw new Error("--no-planning-writes cannot be used with --summary or --status-audit");
+  }
+  if (args.jsonOutput && (args.summary || args.statusAudit)) {
+    throw new Error("--json-output cannot be used with --summary or --status-audit");
   }
   return args;
 }
@@ -767,7 +839,22 @@ async function seedScratch(target: string, step: Step): Promise<void> {
   }
 }
 
-function promptFor(step: Step): string {
+function manualTrialPacketForPrompt(step: Step, target: string): string {
+  const helpers = helperCommands(step).map((command) => `\`${command}\``).join(", ");
+  return `Run label: Sprint 006 native step ${step.id}
+Agent/tool surface: codex exec --ephemeral --json
+Skill source: ${installedSkillPath(step.skill)}
+Target: ${target}
+Commands: ${helpers || "none"}
+Artifacts: docs/evidence/codex-prompt.txt, docs/evidence/codex-events.jsonl, docs/evidence/codex-last-message.txt, docs/evidence/codex-native-step-proof.md
+Result: pass
+Proved: native Codex read the required workflow instructions, ran helpers, and wrote scratch evidence
+Simulated: none
+Unproven: none
+Follow-ups: none`;
+}
+
+function promptFor(step: Step, target: string): string {
   const skillPath = installedSkillPath(step.skill);
   const refs = refsFor(step).map((ref) => `${skillPath}/references/${ref}`);
   const helpers = helperCommands(step);
@@ -787,7 +874,7 @@ ${refs.map((ref) => `  - ${ref}`).join("\n")}
 - Run these helper commands with Bun from the scratch repo:
 ${helpers.map((command) => `  - ${command}`).join("\n")}
 - Create docs/evidence/codex-native-step-proof.md.
-- Create or update docs/evidence/manual-trials.md.
+- Create or update docs/evidence/manual-trials.md with the exact Manual Trial Evidence Packet below before the final response.
 - Keep generated product files inside this scratch repo only.
 - Treat this as native evidence for exactly step ${step.id}; do not combine multiple Sprint 006 steps.
 
@@ -804,6 +891,9 @@ Simulated: none
 Unproven: none
 Result: pass
 
+The manual-trials file must contain these exact fields and values:
+${manualTrialPacketForPrompt(step, target)}
+
 Final response must include:
 CODEX_NATIVE_STEP=${step.id}
 CODEX_NATIVE_SKILL=${step.skill}
@@ -814,23 +904,25 @@ RESULT=pass
 
 async function writeManualPacket(target: string, step: Step, status: StepStatus): Promise<string> {
   const path = join(target, "docs/evidence/manual-trials.md");
-  const text = `# Manual Trials
+  const existing = await readIfExists(path);
+  const header = existing.trim().length > 0 ? existing.trimEnd() : "# Manual Trials";
+  const text = `${header}
 
-Status: ${status}
+---
 
-## Native Step ${step.id}
+## Runner Judgment: Native Step ${step.id}
 
-- Run label: Sprint 006 native step ${step.id}
-- Agent/tool surface: codex exec --ephemeral --json
-- Skill source: ${installedSkillPath(step.skill)}
-- Target: ${target}
-- Commands: ${helperCommands(step).map((command) => `\`${command}\``).join(", ")}
-- Artifacts: docs/evidence/codex-prompt.txt, docs/evidence/codex-events.jsonl, docs/evidence/codex-last-message.txt, docs/evidence/codex-native-step-proof.md
-- Result: ${status}
-- Proved: ${status === "dry-run" ? "scratch setup and prompt generation only" : "pending judge"}
-- Simulated: none for native invocation; dry-run mode does not invoke Codex
-- Unproven: ${status === "dry-run" ? "native Codex execution" : "step-specific judge"}
-- Follow-ups: ${status === "dry-run" ? "run without --dry-run" : "run event judge"}
+Run label: Sprint 006 native step ${step.id}
+Agent/tool surface: codex exec --ephemeral --json
+Skill source: ${installedSkillPath(step.skill)}
+Target: ${target}
+Commands: ${helperCommands(step).map((command) => `\`${command}\``).join(", ") || "none"}
+Artifacts: docs/evidence/codex-prompt.txt, docs/evidence/codex-events.jsonl, docs/evidence/codex-last-message.txt, docs/evidence/codex-native-step-proof.md
+Result: ${status}
+Proved: ${status === "dry-run" ? "scratch setup and prompt generation only" : "runner judged native evidence"}
+Simulated: none for native invocation; dry-run mode does not invoke Codex
+Unproven: ${status === "dry-run" ? "native Codex execution" : "none when result is pass; see failure rows for non-pass results"}
+Follow-ups: ${status === "dry-run" ? "run without --dry-run" : status === "pass" ? "none" : "see planning/failed-tests.md"}
 `;
   await writeFile(path, text);
   return path;
@@ -911,6 +1003,38 @@ async function runPostHelpers(target: string, step: Step): Promise<CommandResult
   return results;
 }
 
+function blockedChecks(): EvalChecks {
+  return {
+    codexExitZero: false,
+    validJsonl: false,
+    turnCompleted: false,
+    skillRead: false,
+    referenceReads: false,
+    helperObserved: false,
+    helpersPassed: false,
+    finalMarkers: false,
+    proofMarkers: false,
+    manualPacket: false,
+    forbiddenWrites: false,
+  };
+}
+
+function dryRunChecks(): EvalChecks {
+  return {
+    codexExitZero: true,
+    validJsonl: true,
+    turnCompleted: false,
+    skillRead: false,
+    referenceReads: false,
+    helperObserved: false,
+    helpersPassed: true,
+    finalMarkers: false,
+    proofMarkers: false,
+    manualPacket: true,
+    forbiddenWrites: true,
+  };
+}
+
 export async function judgeNativeStepResult(input: JudgeInput): Promise<JudgeResult> {
   const failures: string[] = [];
   const eventsText = await readIfExists(input.eventsPath);
@@ -919,28 +1043,43 @@ export async function judgeNativeStepResult(input: JudgeInput): Promise<JudgeRes
   const manualTrials = await readIfExists(join(input.target, "docs/evidence/manual-trials.md"));
   const scan = parseCodexEvents(eventsText);
   const skillPath = installedSkillPath(input.step.skill);
+  const checks: EvalChecks = {
+    codexExitZero: input.codexExitCode === 0,
+    validJsonl: scan.invalidLines.length === 0,
+    turnCompleted: scan.hasTurnCompleted,
+    skillRead: scan.commandText.includes(`${skillPath}/SKILL.md`),
+    referenceReads: true,
+    helperObserved: true,
+    helpersPassed: input.helperResults.every((result) => result.exitCode === 0),
+    finalMarkers: true,
+    proofMarkers: true,
+    manualPacket: true,
+    forbiddenWrites: true,
+  };
 
-  if (input.codexExitCode !== 0) {
+  if (!checks.codexExitZero) {
     failures.push(`codex exec exited ${input.codexExitCode}`);
   }
-  if (scan.invalidLines.length > 0) {
+  if (!checks.validJsonl) {
     failures.push(`codex-events.jsonl has ${scan.invalidLines.length} invalid JSONL line(s)`);
   }
-  if (!scan.hasTurnCompleted) {
+  if (!checks.turnCompleted) {
     failures.push("codex-events.jsonl missing turn.completed event");
   }
-  if (!scan.commandText.includes(`${skillPath}/SKILL.md`)) {
+  if (!checks.skillRead) {
     failures.push(`command stream missing selected skill read: ${skillPath}/SKILL.md`);
   }
   for (const ref of refsFor(input.step)) {
     const refPath = `${skillPath}/references/${ref}`;
     if (!scan.commandText.includes(refPath)) {
+      checks.referenceReads = false;
       failures.push(`command stream missing reference read: ${refPath}`);
     }
   }
   for (const markers of helperEventMarkers(input.step)) {
     const missing = markers.filter((marker) => marker && !scan.commandText.includes(marker));
     if (missing.length > 0) {
+      checks.helperObserved = false;
       failures.push(`helper command not observed in native command stream: ${markers.join(" ")}`);
     }
   }
@@ -956,6 +1095,7 @@ export async function judgeNativeStepResult(input: JudgeInput): Promise<JudgeRes
     "RESULT=pass",
   ]) {
     if (!lastMessage.includes(marker) && !scan.agentText.includes(marker)) {
+      checks.finalMarkers = false;
       failures.push(`final response missing marker: ${marker}`);
     }
   }
@@ -972,18 +1112,23 @@ export async function judgeNativeStepResult(input: JudgeInput): Promise<JudgeRes
     "Result: pass",
   ]) {
     if (!proof.includes(marker)) {
+      checks.proofMarkers = false;
       failures.push(`proof missing marker: ${marker}`);
     }
   }
-  if (!manualTrials.includes("Run label:") || !manualTrials.includes("Unproven:")) {
-    failures.push("manual-trials.md missing manual trial packet markers");
+  const missingManualMarkers = manualTrialPacketMarkers.filter((marker) => !manualTrials.includes(marker));
+  if (missingManualMarkers.length > 0) {
+    checks.manualPacket = false;
+    failures.push(`manual-trials.md missing manual trial packet markers: ${missingManualMarkers.join(", ")}`);
   }
   if (scan.commandText.includes(repoRoot)) {
+    checks.forbiddenWrites = false;
     failures.push(`native command stream references source repo path: ${repoRoot}`);
   }
   if (input.step.skill !== "build-right-execution") {
     const productFiles = await existingProductFiles(input.target);
     if (productFiles.length > 0) {
+      checks.forbiddenWrites = false;
       failures.push(`planning-only step created product implementation files: ${productFiles.join(", ")}`);
     }
   }
@@ -991,7 +1136,95 @@ export async function judgeNativeStepResult(input: JudgeInput): Promise<JudgeRes
   return {
     status: failures.length > 0 ? "failures-logged" : "pass",
     failures,
+    checks,
   };
+}
+
+async function writeNegativeFixtureEvidence(input: {
+  step: Step;
+  target: string;
+  eventsPath: string;
+  lastMessagePath: string;
+  proofPath: string;
+  negativeFixture: NegativeFixture;
+}): Promise<CommandResult[]> {
+  const { step, target, eventsPath, lastMessagePath, proofPath, negativeFixture } = input;
+  const skillPath = installedSkillPath(step.skill);
+  const refs = refsFor(step).map((ref) => `${skillPath}/references/${ref}`);
+  const readTargets = [
+    ...(negativeFixture === "missing-skill-read" ? [] : [`${skillPath}/SKILL.md`]),
+    ...refs.filter((_ref, index) => !(negativeFixture === "missing-reference-read" && index === 0)),
+  ];
+  const readCommand = readTargets.length > 0
+    ? `/bin/zsh -lc "sed -n '1,220p' ${readTargets.join(" ")}"`
+    : "/bin/zsh -lc \"printf 'fixture omitted required reads'\"";
+  const helperEvents = helperCommands(step).map((command, index) => ({
+    type: "item.completed",
+    item: {
+      id: `fixture_helper_${index + 1}`,
+      type: "command_execution",
+      command: `/bin/zsh -lc ${JSON.stringify(command)}`,
+      exit_code: 0,
+      status: "completed",
+    },
+  }));
+  const finalMessage = `CODEX_NATIVE_STEP=${step.id}
+CODEX_NATIVE_SKILL=${step.skill}
+PROOF_FILE=docs/evidence/codex-native-step-proof.md
+RESULT=pass
+`;
+  const events = [
+    { type: "thread.started", thread_id: `fixture-${step.id}` },
+    { type: "turn.started" },
+    {
+      type: "item.completed",
+      item: {
+        id: "fixture_reads",
+        type: "command_execution",
+        command: readCommand,
+        exit_code: 0,
+        status: "completed",
+      },
+    },
+    ...helperEvents,
+    {
+      type: "item.completed",
+      item: {
+        id: "fixture_final",
+        type: "agent_message",
+        text: finalMessage,
+      },
+    },
+    { type: "turn.completed", usage: { input_tokens: 1, output_tokens: 1 } },
+  ];
+  await writeFile(eventsPath, `${events.map((event) => JSON.stringify(event)).join("\n")}\n`);
+  await writeFile(lastMessagePath, finalMessage);
+  await writeFile(
+    proofPath,
+    `# Codex Native Step Proof
+
+Native step: ${step.id}
+Native skill: ${step.skill}
+Codex native invocation: yes
+Installed skill source: ${skillPath}
+Repo-local parity: pass
+Step under test: ${step.stepUnderTest}
+Helper commands run: ${helperCommands(step).length}
+Proved: native Codex read the required workflow instructions, ran helpers, and wrote scratch evidence
+Simulated: synthetic negative fixture for Promptfoo and unit tests
+Unproven: live native behavior for this fixture
+Result: pass
+`,
+  );
+  const manualTrialPath = join(target, "docs/evidence/manual-trials.md");
+  const manualTrialText = negativeFixture === "missing-manual-trial-packet"
+    ? "# Manual Trials\n\nFixture intentionally omits the required packet markers.\n"
+    : `# Manual Trials\n\n${manualTrialPacketForPrompt(step, target)}\n`;
+  await writeFile(manualTrialPath, manualTrialText);
+  if (negativeFixture === "planning-product-file") {
+    await writeFile(join(target, "package.json"), JSON.stringify({ name: "forbidden-planning-write", type: "module" }, null, 2));
+  }
+  return runPostHelpers(target, step);
 }
 
 async function runNativeStep(step: Step, args: Args): Promise<StepResult> {
@@ -1003,7 +1236,40 @@ async function runNativeStep(step: Step, args: Args): Promise<StepResult> {
   const lastMessagePath = join(target, "docs/evidence/codex-last-message.txt");
   const proofPath = join(target, "docs/evidence/codex-native-step-proof.md");
   const stderrPath = join(target, "docs/evidence/codex-stderr.log");
-  await writeFile(promptPath, promptFor(step));
+  await writeFile(promptPath, promptFor(step, target));
+
+  if (args.negativeFixture) {
+    const helperResults = await writeNegativeFixtureEvidence({
+      step,
+      target,
+      eventsPath,
+      lastMessagePath,
+      proofPath,
+      negativeFixture: args.negativeFixture,
+    });
+    const judged = await judgeNativeStepResult({
+      step,
+      target,
+      eventsPath,
+      lastMessagePath,
+      proofPath,
+      codexExitCode: 0,
+      helperResults,
+    });
+    return {
+      step,
+      target,
+      status: judged.status,
+      eventsPath,
+      lastMessagePath,
+      proofPath,
+      promptPath,
+      manualTrialPath: join(target, "docs/evidence/manual-trials.md"),
+      helperResults,
+      failures: judged.failures,
+      checks: judged.checks,
+    };
+  }
 
   if (args.dryRun) {
     await writeFile(eventsPath, "");
@@ -1037,6 +1303,7 @@ Result: dry-run
       manualTrialPath,
       helperResults: [],
       failures: [],
+      checks: dryRunChecks(),
     };
   }
 
@@ -1087,6 +1354,7 @@ Result: dry-run
     manualTrialPath,
     helperResults,
     failures: judged.failures,
+    checks: judged.checks,
   };
 }
 
@@ -1247,6 +1515,27 @@ async function statusAudit(): Promise<void> {
   console.log(`native status audit: pass (${steps.length} steps)`);
 }
 
+function stepResultForJson(result: StepResult): Record<string, unknown> {
+  return {
+    status: result.status,
+    step: result.step.id,
+    skill: result.step.skill,
+    title: result.step.title,
+    target: result.target,
+    eventsPath: result.eventsPath,
+    proofPath: result.proofPath,
+    lastMessagePath: result.lastMessagePath,
+    promptPath: result.promptPath,
+    manualTrialPath: result.manualTrialPath,
+    failures: result.failures,
+    checks: result.checks,
+    helperResults: result.helperResults.map((helper) => ({
+      command: helper.command,
+      exitCode: helper.exitCode,
+    })),
+  };
+}
+
 async function main(): Promise<void> {
   const args = parseArgs(Bun.argv.slice(2));
   if (args.help) {
@@ -1262,14 +1551,25 @@ async function main(): Promise<void> {
     return;
   }
 
+  const selected = selectedSteps(args);
+  if (args.jsonOutput && selected.length !== 1) {
+    throw new Error("--json-output requires exactly one selected step");
+  }
+
   const results: StepResult[] = [];
-  for (const step of selectedSteps(args)) {
-    console.log(`native step ${step.id}: ${args.dryRun ? "dry-run" : "codex exec"}`);
+  for (const step of selected) {
+    if (!args.jsonOutput) {
+      console.log(`native step ${step.id}: ${args.dryRun ? "dry-run" : args.negativeFixture ? args.negativeFixture : "codex exec"}`);
+    }
     try {
       const result = await runNativeStep(step, args);
       results.push(result);
-      await appendFailure(result);
-      console.log(`${step.id}: ${result.status} ${result.target}`);
+      if (!args.noPlanningWrites) {
+        await appendFailure(result);
+      }
+      if (!args.jsonOutput) {
+        console.log(`${step.id}: ${result.status} ${result.target}`);
+      }
       if (result.failures.length > 0 && !args.continueOnFailure) {
         break;
       }
@@ -1286,16 +1586,27 @@ async function main(): Promise<void> {
         manualTrialPath: join(target, "docs/evidence/manual-trials.md"),
         helperResults: [],
         failures: [error instanceof Error ? error.message : String(error)],
+        checks: blockedChecks(),
       };
       results.push(result);
-      await appendFailure(result);
-      console.error(`${step.id}: blocked ${result.failures.join("; ")}`);
+      if (!args.noPlanningWrites) {
+        await appendFailure(result);
+      }
+      if (!args.jsonOutput) {
+        console.error(`${step.id}: blocked ${result.failures.join("; ")}`);
+      }
       if (!args.continueOnFailure) {
         break;
       }
     }
   }
-  await writeSummary(results);
+  if (args.jsonOutput) {
+    console.log(JSON.stringify(stepResultForJson(results[0] as StepResult), null, 2));
+    return;
+  }
+  if (!args.noPlanningWrites) {
+    await writeSummary(results);
+  }
   const failed = results.filter((result) => result.status === "failures-logged" || result.status === "blocked");
   if (failed.length > 0) {
     throw new Error(`native step runner stopped with ${failed.length} failed/blocked step(s)`);
