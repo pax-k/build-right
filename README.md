@@ -97,6 +97,42 @@ Build Right is a three-skill lifecycle.
 | Feature planning | `build-right-feature-planning` | Repeatedly, when a new feature or product change needs shaping. | Updated backlog, sprint/docs changes, and ready task files. |
 | Execution | `build-right-execution` | Repeatedly, after there is a ready task. | One implemented task with baseline evidence, verification, tracker updates, and closeout. |
 
+## Skill Flows
+
+These are the high-level paths. The full operational diagrams, including
+helper lanes, research, delegation, evidence states, and stop gates, live in
+[`docs/agent-skills-flow-diagrams.md`](docs/agent-skills-flow-diagrams.md).
+
+### Preflight
+
+```mermaid
+flowchart LR
+  A["Founder idea or existing repo"] --> B["Inspect project state"]
+  B --> C["Capture founder truth and evidence"]
+  C --> D["Create product docs and release gates"]
+  D --> E["Prepare Sprint 0 and first ready task"]
+```
+
+### Feature Planning
+
+```mermaid
+flowchart LR
+  A["Feature request"] --> B["Read docs, sprint, backlog, and evidence"]
+  B --> C["Classify destination"]
+  C --> D["Research, review, ask, or update plan"]
+  D --> E["Create or confirm execution-ready task"]
+```
+
+### Execution
+
+```mermaid
+flowchart LR
+  A["Ready task"] --> B["Verify baseline and task boundary"]
+  B --> C["Implement smallest useful change"]
+  C --> D["Run verification and review gates"]
+  D --> E["Record evidence, update tracker, stop or hand off"]
+```
+
 ## Features
 
 - **Evidence-backed product setup** - separates founder truth, public research,
@@ -139,8 +175,6 @@ Founder input remains the source of product truth. Public research can support
 prototype assumptions or public evidence, but it does not become customer
 validation. Subagents may gather, draft, critique, and audit; the main agent
 still decides, writes, updates trackers, and closes gates.
-
-See [`agent-skills-flow-diagrams.md`](docs/agent-skills-flow-diagrams.md) to understand the flows.
 
 ## License
 
