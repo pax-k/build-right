@@ -1335,11 +1335,18 @@ async function statusAudit(): Promise<void> {
   ) ?? "planning/sprints/004-end-to-end-workflow-test-matrix.md";
   const start = Number(argValue("--task-start", "027") ?? "027");
   const end = Number(argValue("--task-end", "040") ?? "040");
+  const allowedStatuses = new Set(
+    (argValue("--allowed-statuses", "complete") ?? "complete")
+      .split(",")
+      .map((status) => status.trim())
+      .filter(Boolean),
+  );
   const problems: string[] = [];
 
   const sprintText = await readText(join(auditRoot, sprintPath));
-  if (!/^Status:\s*complete$/m.test(sprintText)) {
-    problems.push(`${sprintPath} is not complete`);
+  const sprintStatus = sprintText.match(/^Status:\s*(.+)$/m)?.[1]?.trim() ?? "missing";
+  if (!allowedStatuses.has(sprintStatus)) {
+    problems.push(`${sprintPath} is not complete (status is ${sprintStatus}, expected ${[...allowedStatuses].join(" or ")})`);
   }
   for (let id = start; id <= end; id += 1) {
     const idText = String(id).padStart(3, "0");
@@ -1358,8 +1365,9 @@ async function statusAudit(): Promise<void> {
       continue;
     }
     const taskText = await readText(join(auditRoot, taskPath));
-    if (!/^Status:\s*complete$/m.test(taskText)) {
-      problems.push(`${taskPath} is not complete`);
+    const taskStatus = taskText.match(/^Status:\s*(.+)$/m)?.[1]?.trim() ?? "missing";
+    if (!allowedStatuses.has(taskStatus)) {
+      problems.push(`${taskPath} is not complete (status is ${taskStatus}, expected ${[...allowedStatuses].join(" or ")})`);
     }
     if (/- \[ \]/.test(taskText)) {
       problems.push(`${taskPath} has unchecked acceptance criteria`);
@@ -2024,7 +2032,7 @@ Commands:
   verify-e2e-report    Verify the E2E report artifact shape.
   scan-runtime         Verify Bun-only runtime source scan scope.
   baseline-check       Classify baseline or final bun test results.
-  status-audit         Audit Sprint 004 task completion without shell globs.
+  status-audit         Audit sprint task terminal status without shell globs.
   failure-summary      Group failed-tests log rows into follow-up candidates.
   failure-log-smoke    Append a forced failure and resolution row, then summarize.
 
@@ -2041,6 +2049,8 @@ Options:
   --summary-output <path>
                        Failure summary output path for fixtures.
   --audit-root <path>  Root path for status-audit fixtures.
+  --allowed-statuses <csv>
+                       Accepted Status values for status-audit. Defaults to complete.
   --phase <baseline|final>
 `);
 }

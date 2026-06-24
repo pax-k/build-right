@@ -1,5 +1,6 @@
 import { dirname } from "node:path";
 import { test } from "bun:test";
+import { helperCommands, judgeNativeStepResult, parseCodexEvents, refsFor, steps as nativeSteps } from "../scripts/codex-native-step-trials";
 
 type Check = {
   name: string;
@@ -149,6 +150,112 @@ async function createFixture(name: string, files: Record<string, string>): Promi
     await writeFixtureFile(root, path, text);
   }
   return root;
+}
+
+function installedSkillPathForTest(skill: string): string {
+  return `${Bun.env.CODEX_HOME ?? `${Bun.env.HOME}/.codex`}/skills/${skill}`;
+}
+
+function nativeStep(id: string) {
+  const step = nativeSteps.find((item) => item.id === id);
+  if (!step) {
+    throw new Error(`missing native step fixture: ${id}`);
+  }
+  return step;
+}
+
+async function nativeJudgeFixture(options: {
+  omitSkillRead?: boolean;
+  omitHelperCommand?: boolean;
+  productFile?: boolean;
+} = {}) {
+  const step = nativeStep("041");
+  const skillPath = installedSkillPathForTest(step.skill);
+  const refs = refsFor(step).map((ref) => `${skillPath}/references/${ref}`);
+  const readTargets = [...(options.omitSkillRead ? [] : [`${skillPath}/SKILL.md`]), ...refs];
+  const helper = helperCommands(step)[0] ?? "";
+  const events = [
+    { type: "thread.started", thread_id: "fixture" },
+    { type: "turn.started" },
+    { type: "warning", message: "fixture non-agent event" },
+    {
+      type: "item.completed",
+      item: {
+        id: "item_read",
+        type: "command_execution",
+        command: `/bin/zsh -lc "sed -n '1,220p' ${readTargets.join(" ")}"`,
+        exit_code: 0,
+        status: "completed",
+      },
+    },
+    ...(options.omitHelperCommand
+      ? []
+      : [
+          {
+            type: "item.completed",
+            item: {
+              id: "item_helper",
+              type: "command_execution",
+              command: `/bin/zsh -lc "${helper}"`,
+              exit_code: 0,
+              status: "completed",
+            },
+          },
+        ]),
+    {
+      type: "item.completed",
+      item: {
+        id: "item_agent",
+        type: "agent_message",
+        text: `CODEX_NATIVE_STEP=${step.id}\nCODEX_NATIVE_SKILL=${step.skill}\nPROOF_FILE=docs/evidence/codex-native-step-proof.md\nRESULT=pass`,
+      },
+    },
+    { type: "turn.completed", usage: { input_tokens: 1, output_tokens: 1 } },
+  ].map((event) => JSON.stringify(event)).join("\n");
+  const proof = `# Codex Native Step Proof
+
+Native step: ${step.id}
+Native skill: ${step.skill}
+Codex native invocation: yes
+Installed skill source: ${skillPath}
+Repo-local parity: pass
+Step under test: ${step.stepUnderTest}
+Helper commands run: 1
+Proved: fixture proves judge pass path
+Simulated: Codex execution
+Unproven: live native behavior
+Result: pass
+`;
+  const root = await createFixture("native-judge", {
+    "docs/evidence/codex-events.jsonl": `${events}\n`,
+    "docs/evidence/codex-last-message.txt": `CODEX_NATIVE_STEP=${step.id}\nCODEX_NATIVE_SKILL=${step.skill}\nPROOF_FILE=docs/evidence/codex-native-step-proof.md\nRESULT=pass\n`,
+    "docs/evidence/codex-native-step-proof.md": proof,
+    "docs/evidence/manual-trials.md": `# Manual Trials
+
+- Run label: fixture
+- Agent/tool surface: codex exec --ephemeral --json
+- Skill source: ${skillPath}
+- Target: fixture
+- Commands: \`${helper}\`
+- Artifacts: docs/evidence/codex-events.jsonl
+- Result: pass
+- Proved: fixture
+- Simulated: live Codex
+- Unproven: none
+- Follow-ups: none
+`,
+  });
+  if (options.productFile) {
+    await writeFixtureFile(root, "package.json", "{\"type\":\"module\"}\n");
+  }
+  return {
+    step,
+    root,
+    helper,
+    eventsPath: `${root}/docs/evidence/codex-events.jsonl`,
+    lastMessagePath: `${root}/docs/evidence/codex-last-message.txt`,
+    proofPath: `${root}/docs/evidence/codex-native-step-proof.md`,
+  };
 }
 
 function failureLogFixture(rows: string): string {
@@ -579,6 +686,86 @@ async function executionCheckForFixture(
 }
 
 const checks: Check[] = [
+  {
+    name: "codex native event parser tolerates warning and non-agent events",
+    run: async () => {
+      const scan = parseCodexEvents([
+        JSON.stringify({ type: "thread.started", thread_id: "fixture" }),
+        JSON.stringify({ type: "warning", message: "non-agent fixture event" }),
+        JSON.stringify({ type: "item.completed", item: { type: "agent_message", text: "done" } }),
+        JSON.stringify({ type: "turn.completed" }),
+      ].join("\n"));
+      if (scan.invalidLines.length !== 0) {
+        throw new Error(`expected no invalid lines, got ${scan.invalidLines.length}`);
+      }
+      if (!scan.hasTurnCompleted) {
+        throw new Error("expected turn.completed to be detected");
+      }
+      if (!scan.agentText.includes("done")) {
+        throw new Error("expected agent text to be collected");
+      }
+    },
+  },
+  {
+    name: "codex native judge covers pass, missing reads, missing helpers, and forbidden writes",
+    run: async () => {
+      const pass = await nativeJudgeFixture();
+      const passResult = await judgeNativeStepResult({
+        step: pass.step,
+        target: pass.root,
+        eventsPath: pass.eventsPath,
+        lastMessagePath: pass.lastMessagePath,
+        proofPath: pass.proofPath,
+        codexExitCode: 0,
+        helperResults: [{ command: pass.helper, exitCode: 0, stdout: "", stderr: "" }],
+      });
+      if (passResult.status !== "pass" || passResult.failures.length !== 0) {
+        throw new Error(`expected pass fixture to pass, got ${passResult.failures.join("; ")}`);
+      }
+
+      const missingSkill = await nativeJudgeFixture({ omitSkillRead: true });
+      const missingSkillResult = await judgeNativeStepResult({
+        step: missingSkill.step,
+        target: missingSkill.root,
+        eventsPath: missingSkill.eventsPath,
+        lastMessagePath: missingSkill.lastMessagePath,
+        proofPath: missingSkill.proofPath,
+        codexExitCode: 0,
+        helperResults: [{ command: missingSkill.helper, exitCode: 0, stdout: "", stderr: "" }],
+      });
+      if (!missingSkillResult.failures.some((failure) => failure.includes("missing selected skill read"))) {
+        throw new Error(`expected missing skill read failure, got ${missingSkillResult.failures.join("; ")}`);
+      }
+
+      const missingHelper = await nativeJudgeFixture({ omitHelperCommand: true });
+      const missingHelperResult = await judgeNativeStepResult({
+        step: missingHelper.step,
+        target: missingHelper.root,
+        eventsPath: missingHelper.eventsPath,
+        lastMessagePath: missingHelper.lastMessagePath,
+        proofPath: missingHelper.proofPath,
+        codexExitCode: 0,
+        helperResults: [{ command: missingHelper.helper, exitCode: 0, stdout: "", stderr: "" }],
+      });
+      if (!missingHelperResult.failures.some((failure) => failure.includes("helper command not observed"))) {
+        throw new Error(`expected missing helper failure, got ${missingHelperResult.failures.join("; ")}`);
+      }
+
+      const forbiddenWrite = await nativeJudgeFixture({ productFile: true });
+      const forbiddenWriteResult = await judgeNativeStepResult({
+        step: forbiddenWrite.step,
+        target: forbiddenWrite.root,
+        eventsPath: forbiddenWrite.eventsPath,
+        lastMessagePath: forbiddenWrite.lastMessagePath,
+        proofPath: forbiddenWrite.proofPath,
+        codexExitCode: 0,
+        helperResults: [{ command: forbiddenWrite.helper, exitCode: 0, stdout: "", stderr: "" }],
+      });
+      if (!forbiddenWriteResult.failures.some((failure) => failure.includes("planning-only step created product implementation files"))) {
+        throw new Error(`expected forbidden write failure, got ${forbiddenWriteResult.failures.join("; ")}`);
+      }
+    },
+  },
   {
     name: "skills.sh.json parses and manifest skill paths exist",
     run: async () => {
@@ -1765,6 +1952,17 @@ Status: active
         throw new Error(`research fixture returned ${research.decision}`);
       }
 
+      const delegated = await featurePlanningDecisionForFixture(
+        {
+          ...basePlanning,
+          "tasks/sprint-0.md": tracker(""),
+        },
+        "Plan an authentication architecture migration across many modules",
+      );
+      if (delegated.decision !== "delegate-review") {
+        throw new Error(`delegate-review fixture returned ${delegated.decision}`);
+      }
+
       const backlog = await featurePlanningDecisionForFixture(
         {
           ...basePlanning,
@@ -2030,6 +2228,42 @@ Exercise task contract reporting.
         if (!(stopped.gateReasons ?? []).some((reason) => reason.includes(expected))) {
           throw new Error(`stop-gates output missing expected reason ${expected}`);
         }
+      }
+
+      const resolvedConflicts = await executionCheckForFixture({
+        "docs/blueprint-status.md": readyBlueprint(),
+        "docs/execution-rules.md": "# Execution Rules\n",
+        "docs/release-gates.md": releaseGates(),
+        "docs/conflicts.md": `# Conflicts
+
+## Conflicts
+
+| Conflict | Sources | Severity | Owner | Status | Resolution |
+| --- | --- | --- | --- | --- | --- |
+| None | n/a | low | AI | resolved | n/a |
+`,
+        "tasks/issues/001-task.md": taskFile("001", "ready"),
+      }, ["--mode", "stop-gates", "--task", "tasks/issues/001-task.md"]);
+      if ((resolvedConflicts.gateReasons ?? []).some((reason) => reason.includes("open conflict"))) {
+        throw new Error(`resolved conflicts fixture reported gate reasons ${resolvedConflicts.gateReasons?.join(", ")}`);
+      }
+
+      const openConflict = await executionCheckForFixture({
+        "docs/blueprint-status.md": readyBlueprint(),
+        "docs/execution-rules.md": "# Execution Rules\n",
+        "docs/release-gates.md": releaseGates(),
+        "docs/conflicts.md": `# Conflicts
+
+## Conflicts
+
+| Conflict | Sources | Severity | Owner | Status | Resolution |
+| --- | --- | --- | --- | --- | --- |
+| Customer definition conflicts | docs/a.md, docs/b.md | high | founder | open |  |
+`,
+        "tasks/issues/001-task.md": taskFile("001", "ready"),
+      }, ["--mode", "stop-gates", "--task", "tasks/issues/001-task.md"]);
+      if (!(openConflict.gateReasons ?? []).includes("open conflict: Customer definition conflicts")) {
+        throw new Error(`open conflict fixture returned gate reasons ${openConflict.gateReasons?.join(", ")}`);
       }
     },
   },

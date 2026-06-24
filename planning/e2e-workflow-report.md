@@ -1,7 +1,7 @@
 # E2E Workflow Report
 
 Run label: sprint-004-e2e-2026-06-24
-Timestamp: 2026-06-23T22:34:21.938Z
+Timestamp: 2026-06-23T23:23:43.618Z
 Source under test: repo-local `skills/build-right-preflight`, `skills/build-right-feature-planning`, and `skills/build-right-execution`
 Preflight target: /tmp/build-right-todo-trial-preflight
 Execution target: /tmp/build-right-todo-trial
@@ -45,14 +45,14 @@ Replay mode: direct-or-replayed-fixture
 
 ## Negative Controls
 
-- Expected/control rows: 16
+- Expected/control rows: 27
 - Missing preflight artifact, preflight app file, corrupted browser proof, malformed conflict, forbidden runtime source, and source parity mismatch are expected controls.
 
 ## Agentic Replay
 
 - Replay mode: direct-or-replayed-fixture
 - Transcript checks prove helper reports, founder questions, file plans, task intake, baseline evidence, implementation, verification, and stop-gate ordering.
-- Provider-native conversation export remains simulated unless an external agent transcript is attached.
+- Sprint 004 transcript export remains fixture-based; task 069 adds native `codex exec --ephemeral --json` skill-loading proof for all three Build Right skills.
 
 ## Artifacts
 
@@ -63,29 +63,31 @@ Replay mode: direct-or-replayed-fixture
 - `/tmp/build-right-todo-trial/docs/evidence/browser-proof.md`
 - `/tmp/build-right-todo-trial/docs/evidence/browser-proof.png`
 - `/tmp/build-right-todo-trial/tasks/issues/001-build-bun-react-todo-app.md`
+- `planning/codex-native-skill-replay.md`
 
 ## Failure Summary
 
-- Total rows: 41
+- Total rows: 53
 - Actionable open rows: 0
-- Expected/control rows: 16
-- Resolved rows: 12
+- Expected/control rows: 27
+- Resolved rows: 13
 - Summary: planning/failed-test-summary.md
 
 ## Proved
 
 - Oracle, helper commands, transcript markers, artifact contracts, negative controls, failure grouping, and status audit are machine-checkable.
 - The canonical scratch execution target contains Bun app files, tests, browser proof, and task evidence.
+- Native `codex exec` runs load and follow `build-right-preflight`, `build-right-feature-planning`, and `build-right-execution` once each, with JSONL event proof.
 
 ## Simulated
 
-- Provider-native chat export is represented by durable transcript artifacts.
+- Exhaustive per-step provider-native chat export is represented by durable transcript artifacts.
 - Fresh replay can copy and reverify canonical scratch artifacts without invoking another autonomous agent.
 
 ## Unproven
 
 - No deployment or external user validation is attempted.
-- Live agent behavior beyond the captured transcripts needs a separate provider transcript export if required.
+- Native replay proves one bounded run per skill, not one native run per documented step.
 
 ## Follow-Ups
 

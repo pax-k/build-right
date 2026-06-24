@@ -205,16 +205,59 @@ function isAiOwned(owner?: string): boolean {
   return ["ai", "agent", "codex"].includes((owner ?? "").trim().toLowerCase());
 }
 
-function openConflictReasons(text: string): string[] {
-  return text
+function splitTableLine(line: string): string[] {
+  return line
+    .trim()
+    .replace(/^\|/, "")
+    .replace(/\|$/, "")
+    .split("|")
+    .map((cell) => cell.trim());
+}
+
+function isTableSeparator(cells: string[]): boolean {
+  return cells.length > 0 && cells.every((cell) => /^:?-{3,}:?$/.test(cell));
+}
+
+function parseTable(sectionText: string): Record<string, string>[] {
+  const lines = sectionText
     .split("\n")
     .map((line) => line.trim())
-    .filter((line) => line.startsWith("|") && line.endsWith("|"))
-    .map((line) => line.replace(/^\|/, "").replace(/\|$/, "").split("|").map((cell) => cell.trim()))
-    .filter((cells) => cells.length >= 5)
-    .filter((cells) => (cells[0] ?? "") !== "Conflict" && !(cells[0] ?? "").includes("<"))
-    .filter((cells) => !["resolved", "closed", "complete", "done", "none"].includes(cells[4]?.toLowerCase() ?? ""))
-    .map((cells) => `open conflict: ${cells[0] ?? "unknown conflict"}`);
+    .filter((line) => line.startsWith("|") && line.endsWith("|"));
+  if (lines.length < 2) {
+    return [];
+  }
+
+  const headers = splitTableLine(lines[0]);
+  if (!headers.includes("Conflict") || !headers.includes("Status")) {
+    return [];
+  }
+
+  return lines
+    .slice(1)
+    .map(splitTableLine)
+    .filter((cells) => !isTableSeparator(cells))
+    .map((cells) => {
+      const row: Record<string, string> = {};
+      headers.forEach((header, index) => {
+        row[header] = cells[index] ?? "";
+      });
+      return row;
+    });
+}
+
+function openConflictReasons(text: string): string[] {
+  return parseTable(blockText(text, "## Conflicts"))
+    .filter((row) => {
+      const conflict = (row.Conflict ?? "").trim();
+      const status = (row.Status ?? "").trim().toLowerCase();
+      return (
+        conflict &&
+        conflict !== "None" &&
+        !conflict.includes("<") &&
+        !["resolved", "closed", "complete", "done", "none"].includes(status)
+      );
+    })
+    .map((row) => `open conflict: ${row.Conflict ?? "unknown conflict"}`);
 }
 
 async function gateReasons(cwd: string, selectedTask: TaskInfo | null, taskText: string): Promise<string[]> {
