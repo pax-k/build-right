@@ -32,6 +32,19 @@ guessing what to build next.
 The goal is not more process. The goal is to make the next agent action obvious,
 bounded, and checkable.
 
+## Motivation
+
+Build Right came out of the startup-builder loop described in
+["All roads led to Markdown"](https://paxdynamics.com/blog/build-right): idea
+triage led to app-factory thinking, app-factory thinking led to AI control
+planes, control planes led to agent governance, and the useful part that kept
+surviving each layer was a lightweight harness around the work.
+
+That harness did not need to start as another platform. It could start as
+Markdown skills: explicit workflows, inputs, outputs, stop gates, evidence
+contracts, and review points that make agent work inspectable before it becomes
+infrastructure.
+
 ## Quickstart
 
 Install all Build Right skills from GitHub:
