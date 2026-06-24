@@ -45,7 +45,7 @@ Markdown skills: explicit workflows, inputs, outputs, stop gates, evidence
 contracts, and review points that make agent work inspectable before it becomes
 infrastructure.
 
-## Quickstart
+## :rocket: Quickstart
 
 Install all Build Right skills from GitHub:
 
@@ -84,7 +84,7 @@ Some agents may also expose installed skills as slash commands:
 /build-right-execution
 ```
 
-## Running With Agentic Loops
+## :repeat: Running With Agentic Loops
 
 `build-right-execution` is designed to be run inside an outer agent loop. The
 skill still executes one bounded task at a time; the agent loop decides whether
@@ -135,17 +135,17 @@ This is probably not a fit if you need:
 - customer validation done by public web research alone;
 - provider-specific agent wiring instead of portable skill instructions.
 
-## Lifecycle
+## :compass: Lifecycle
 
 Build Right is a three-skill lifecycle.
 
 | Phase | Skill | When to use it | Result |
 | --- | --- | --- | --- |
-| Preflight | `build-right-preflight` | Once, when the project or idea needs product grounding. | Founder intent, assumptions, MVP scope, operating docs, and first execution-ready work. |
-| Feature planning | `build-right-feature-planning` | Repeatedly, when a new feature or product change needs shaping. | Updated backlog, sprint/docs changes, and ready task files. |
-| Execution | `build-right-execution` | Repeatedly, after there is a ready task. | One implemented task with baseline evidence, verification, tracker updates, and closeout. |
+| :mag_right: Preflight | `build-right-preflight` | Once, when the project or idea needs product grounding. | Founder intent, assumptions, MVP scope, operating docs, and first execution-ready work. |
+| :memo: Feature planning | `build-right-feature-planning` | Repeatedly, when a new feature or product change needs shaping. | Updated backlog, sprint/docs changes, and ready task files. |
+| :white_check_mark: Execution | `build-right-execution` | Repeatedly, after there is a ready task. | One implemented task with baseline evidence, verification, tracker updates, and closeout. |
 
-## Skill Flows
+## :world_map: Skill Flows
 
 These are the high-level paths. The full operational diagrams, including
 helper lanes, research, delegation, evidence states, and stop gates, live in
@@ -181,7 +181,7 @@ flowchart LR
   D --> E["Record evidence, update tracker, stop or hand off"]
 ```
 
-## Features
+## :sparkles: Features
 
 - **Evidence-backed product setup** - separates founder truth, public research,
   assumptions, conflicts, and MVP decisions before implementation starts.
@@ -196,7 +196,7 @@ flowchart LR
 - **Repo-native artifacts** - writes durable docs and task files in the target
   project instead of treating chat as the source of truth.
 
-## How It Works
+## :gear: How It Works
 
 Each skill is instruction-first:
 
