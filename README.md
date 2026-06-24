@@ -225,6 +225,12 @@ Helper decisions are intentionally small and explicit:
 - execution can return `execute-task`, `continue-active-task`, `ask-founder`,
   `wait-external`, `create-blocker`, `no-ready-task`, or `invalid-state`.
 
+The deterministic helper files are `preflight-check.ts`,
+`feature-planning-check.ts`, `continue-check.ts`, and `execution-check.ts`.
+Release checks run through `bun test` and `bun run verify:skill-trials`.
+Generated target-project artifacts belong in the target repo; Build Right source
+does not commit generated `docs/` or `tasks/`.
+
 Founder input remains the source of product truth. Public research can support
 prototype assumptions or public evidence, but it does not become customer
 validation. Subagents may gather, draft, critique, and audit; the main agent
