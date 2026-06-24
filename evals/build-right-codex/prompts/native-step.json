@@ -1,8 +1,0 @@
-{
-  "caseId": "{{caseId}}",
-  "mode": "{{mode}}",
-  "step": "{{step}}",
-  "expectedStatus": "{{expectedStatus}}",
-  "negativeFixture": "{{negativeFixture}}",
-  "expectedFailureIncludes": "{{expectedFailureIncludes}}"
-}
