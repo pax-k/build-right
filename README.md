@@ -84,6 +84,39 @@ Some agents may also expose installed skills as slash commands:
 /build-right-execution
 ```
 
+## Running With Agentic Loops
+
+`build-right-execution` is designed to be run inside an outer agent loop. The
+skill still executes one bounded task at a time; the agent loop decides whether
+it is safe to advance to the next task.
+
+Use a goal or driver prompt like this:
+
+```text
+Use $build-right-execution.
+
+Objective: execute ready AI-owned tasks in <target repo> one at a time until
+blocked or human input is required.
+
+Loop rules:
+- Before selecting each task, run continue-check.ts --strict and report its
+  decision.
+- Continue only when the resolver returns execute-task or
+  continue-active-task.
+- Complete exactly one bounded task per iteration with baseline evidence,
+  verification, evidence log, and tracker updates.
+- After each task, rerun continue-check.ts --strict and the stop-gates check.
+- Continue only if the next task is ready, AI-owned, evidence-backed, and has no
+  stop/ask gate.
+- Stop and report the exact gate when founder input, external state, failed
+  verification, stale or ambiguous evidence, source mismatch, open conflict,
+  non-AI ownership, release-claim risk, or unavailable required review appears.
+```
+
+The loop belongs to the agent runner, not inside the skill. `build-right-execution`
+provides the checkpoint contract: resolve state, execute one task, verify,
+record evidence, update the tracker, then resolve state again before advancing.
+
 ## Use Cases
 
 Use Build Right when you need to:
