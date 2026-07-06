@@ -12,9 +12,9 @@ contracts, adapters, implementation review, tests, observability, security, or
 enforceable engineering policy are in scope.
 
 Every Build Right skill response ends with one user-visible status badge such
-as `🟢 :green_circle: Status: ALL GREEN`,
-`🟡 :yellow_circle: Status: NEEDS INPUT`, or
-`🔴 :red_circle: Status: BLOCKED`.
+as `🟢 [GREEN] Status: ALL GREEN`,
+`🟡 [YELLOW] Status: NEEDS INPUT`, or
+`🔴 [RED] Status: BLOCKED`.
 
 The diagrams are intentionally operational: they show what the main agent does,
 where founder input is required, where web research or subagents may help, and

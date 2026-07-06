@@ -45,7 +45,7 @@ Markdown skills: explicit workflows, inputs, outputs, stop gates, evidence
 contracts, and review points that make agent work inspectable before it becomes
 infrastructure.
 
-## :rocket: Quickstart
+## Quickstart
 
 Install all Build Right skills from GitHub:
 
@@ -59,7 +59,7 @@ engineering standard (`build-right-engineering-principles`).
 
 Then invoke the skill for the phase you are in:
 
-**:mag_right: Preflight**
+**Preflight**
 
 ```text
 $build-right-preflight
@@ -67,7 +67,7 @@ $build-right-preflight
 Bootstrap this existing project for evidence-driven AI execution.
 ```
 
-**:memo: Feature planning**
+**Feature planning**
 
 ```text
 $build-right-feature-planning
@@ -76,7 +76,7 @@ Explore this feature request, update the project sprint/task plan, and stop
 before implementation.
 ```
 
-**:white_check_mark: Execution**
+**Execution**
 
 ```text
 $build-right-execution
@@ -93,7 +93,7 @@ Some agents may also expose installed skills as slash commands:
 /build-right-engineering-principles
 ```
 
-## :repeat: Running With Agentic Loops
+## Running With Agentic Loops
 
 `build-right-execution` is designed to be run inside an outer agent loop. The
 skill still executes one bounded task at a time; the agent loop decides whether
@@ -144,22 +144,22 @@ This is probably not a fit if you need:
 - customer validation done by public web research alone;
 - provider-specific agent wiring instead of portable skill instructions.
 
-## :compass: Lifecycle
+## Lifecycle
 
 Build Right is a three-skill lifecycle.
 
 | Phase | Skill | When to use it | Result |
 | --- | --- | --- | --- |
-| :mag_right: Preflight | `build-right-preflight` | Once, when the project or idea needs product grounding. | Founder intent, assumptions, MVP scope, operating docs, and first execution-ready work. |
-| :memo: Feature planning | `build-right-feature-planning` | Repeatedly, when a new feature or product change needs shaping. | Updated backlog, sprint/docs changes, and ready task files. |
-| :white_check_mark: Execution | `build-right-execution` | Repeatedly, after there is a ready task. | One implemented task with baseline evidence, verification, tracker updates, and closeout. |
+| Preflight | `build-right-preflight` | Once, when the project or idea needs product grounding. | Founder intent, assumptions, MVP scope, operating docs, and first execution-ready work. |
+| Feature planning | `build-right-feature-planning` | Repeatedly, when a new feature or product change needs shaping. | Updated backlog, sprint/docs changes, and ready task files. |
+| Execution | `build-right-execution` | Repeatedly, after there is a ready task. | One implemented task with baseline evidence, verification, tracker updates, and closeout. |
 
 `build-right-engineering-principles` is not a lifecycle phase. It is a
 cross-cutting standard the workflow skills may load for architecture,
 contracts, provider boundaries, implementation review, tests, observability,
 security, and enforceable engineering-policy decisions.
 
-## :world_map: Skill Flows
+## Skill Flows
 
 These are the high-level paths. The full operational diagrams, including
 helper lanes, research, delegation, evidence states, and stop gates, live in
@@ -195,7 +195,7 @@ flowchart LR
   D --> E["Record evidence, update tracker, stop or hand off"]
 ```
 
-## :sparkles: Features
+## Features
 
 - **Evidence-backed product setup** - separates founder truth, public research,
   assumptions, conflicts, and MVP decisions before implementation starts.
@@ -213,11 +213,11 @@ flowchart LR
   cross-cutting review lens for boundaries, contracts, adapters, effects,
   errors, tests, observability, and security.
 - **Visible closeout badges** - ends skill responses with a restrained status
-  badge such as `🟢 :green_circle: Status: ALL GREEN`,
-  `🟡 :yellow_circle: Status: NEEDS INPUT`, or
-  `🔴 :red_circle: Status: BLOCKED`.
+  badge such as `🟢 [GREEN] Status: ALL GREEN`,
+  `🟡 [YELLOW] Status: NEEDS INPUT`, or
+  `🔴 [RED] Status: BLOCKED`.
 
-## :gear: How It Works
+## How It Works
 
 Each skill is instruction-first:
 
