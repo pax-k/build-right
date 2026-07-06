@@ -136,5 +136,32 @@ First blocker: <task path>
 First executable AI task: <task path>
 ```
 
+## User-Visible Status Badge
+
+End every final response with exactly one status badge block:
+
+```text
+🟢 :green_circle: Status: ALL GREEN
+Decision: <decision/result>
+Next action: <next action or none>
+Needs user input: <none | concise ask>
+Blocked by: <none | blocker>
+```
+
+Use this status map:
+
+- `🟢 :green_circle: Status: ALL GREEN` for `ready-for-execution`,
+  `Go for Sprint 0`, `Go for prototype`, or first executable task ready.
+- `🟡 :yellow_circle: Status: NEEDS INPUT` for `ask-founder` or
+  `Needs founder/customer validation before product commitment`.
+- `🟠 :orange_circle: Status: NEEDS WORK` for `delegate-inventory`,
+  `run-research`, `write-artifacts`, or `create-sprint0`.
+- `🔵 :blue_circle: Status: WAITING EXTERNAL` for missing external proof,
+  publishing, indexing, credentials, paid services, production access, or
+  third-party state.
+- `🔴 :red_circle: Status: BLOCKED` for `blocked`, `No-go for product
+  features`, open conflicts, failed verification, stale/source mismatch, or
+  invalid state.
+
 Do not claim product-feature readiness until product truth, MVP scope, evidence,
 operating rules, and at least one bounded executable task exist.

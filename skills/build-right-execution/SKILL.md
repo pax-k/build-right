@@ -146,3 +146,30 @@ and ask or report the blocker when the next step requires:
 
 Continuing through a prepared queue is allowed only while every next task is
 ready, AI-owned, evidence-backed, and not blocked by one of these gates.
+
+## User-Visible Status Badge
+
+End every final response with exactly one status badge block:
+
+```text
+✅ :white_check_mark: Status: DONE
+Decision: <decision/result>
+Next action: <next action or none>
+Needs user input: <none | concise ask>
+Blocked by: <none | blocker>
+```
+
+Use this status map:
+
+- `✅ :white_check_mark: Status: DONE` for a completed task with evidence,
+  verification, and tracker updates.
+- `🟢 :green_circle: Status: ALL GREEN` for `execute-task` or
+  `continue-active-task` before implementation starts.
+- `🟡 :yellow_circle: Status: NEEDS INPUT` for `ask-founder`.
+- `🟠 :orange_circle: Status: NEEDS WORK` for AI-owned follow-up work that is
+  not yet a ready execution task.
+- `🔵 :blue_circle: Status: WAITING EXTERNAL` for `wait-external`, publishing,
+  indexing, credentials, paid services, production access, or third-party state.
+- `🔴 :red_circle: Status: BLOCKED` for `create-blocker`, `no-ready-task`,
+  `invalid-state`, open conflicts, failed verification, stale/source mismatch,
+  non-AI-owned task ownership, or skipped required review without substitute.

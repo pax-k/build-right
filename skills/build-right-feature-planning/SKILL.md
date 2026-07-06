@@ -142,3 +142,29 @@ Needs research before planning: <topic>
 Blocked: <reason>
 Route to preflight: <missing artifact or gate>
 ```
+
+## User-Visible Status Badge
+
+End every final response with exactly one status badge block:
+
+```text
+🟢 :green_circle: Status: ALL GREEN
+Decision: <decision/result>
+Next action: <next action or none>
+Needs user input: <none | concise ask>
+Blocked by: <none | blocker>
+```
+
+Use this status map:
+
+- `🟢 :green_circle: Status: ALL GREEN` for `Ready for execution`.
+- `🟡 :yellow_circle: Status: NEEDS INPUT` for `ask-founder` or
+  `Needs founder decision`.
+- `🟠 :orange_circle: Status: NEEDS WORK` for `Needs research before planning`,
+  `route-preflight`, `delegate-review`, `run-research`, `update-roadmap`,
+  `update-sprint`, `create-ready-tasks`, `Updated sprint`, `Updated backlog`,
+  or `Route to preflight`.
+- `🔵 :blue_circle: Status: WAITING EXTERNAL` for external proof, publishing,
+  indexing, credentials, paid services, production access, or third-party state.
+- `🔴 :red_circle: Status: BLOCKED` for `Blocked`, open conflicts, route
+  failures, failed verification, stale/source mismatch, or invalid state.

@@ -45,3 +45,30 @@ Required changes: <none | concise list>
 Enforcement gap: <none | check/test/schema/policy/docs evidence needed>
 Residual risk: <none | concise risk>
 ```
+
+## User-Visible Status Badge
+
+End every final response with exactly one status badge block:
+
+```text
+✅ :white_check_mark: Status: DONE
+Decision: <decision/result>
+Next action: <next action or none>
+Needs user input: <none | concise ask>
+Blocked by: <none | blocker>
+```
+
+Use this status map:
+
+- `✅ :white_check_mark: Status: DONE` when there are no required changes and
+  no enforcement gap.
+- `🟢 :green_circle: Status: ALL GREEN` when the reviewed direction is safe to
+  continue but implementation is not complete.
+- `🟡 :yellow_circle: Status: NEEDS INPUT` when a user or owner architecture,
+  contract, security, or policy decision is needed.
+- `🟠 :orange_circle: Status: NEEDS WORK` when AI-owned corrections, tests,
+  docs, or enforcement work remain.
+- `🔵 :blue_circle: Status: WAITING EXTERNAL` for external proof, credentials,
+  production access, publishing, indexing, or third-party state.
+- `🔴 :red_circle: Status: BLOCKED` for unresolved conflicts, failed
+  validation, source mismatch, invalid state, or enforcement blockers.

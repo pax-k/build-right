@@ -212,6 +212,10 @@ flowchart LR
 - **Engineering standards** - applies `build-right-engineering-principles` as a
   cross-cutting review lens for boundaries, contracts, adapters, effects,
   errors, tests, observability, and security.
+- **Visible closeout badges** - ends skill responses with a restrained status
+  badge such as `🟢 :green_circle: Status: ALL GREEN`,
+  `🟡 :yellow_circle: Status: NEEDS INPUT`, or
+  `🔴 :red_circle: Status: BLOCKED`.
 
 ## :gear: How It Works
 
@@ -224,6 +228,11 @@ Each skill is instruction-first:
 
 The engineering-principles skill is reference-first: its `SKILL.md` explains
 when to use it, and `references/principles.md` carries the reusable standard.
+
+Every skill response should close with exactly one visible status badge. Raw
+emoji provide quick scanning, and GitHub-style shortcodes remain visible when a
+renderer does not display emoji glyphs. Helper scripts stay emoji-free so their
+deterministic output remains easy to parse.
 
 The stable safety model is in [`workflow-backbone.md`](docs/workflow-backbone.md):
 observe state, classify it, choose one next action, run gates, act, verify,
