@@ -53,7 +53,9 @@ Install all Build Right skills from GitHub:
 bunx skills add pax-k/build-right
 ```
 
-This installs 3 skills: `build-right-preflight`, `build-right-feature-planning` and `build-right-execution`.
+This installs 3 lifecycle skills (`build-right-preflight`,
+`build-right-feature-planning`, `build-right-execution`) plus 1 cross-cutting
+engineering standard (`build-right-engineering-principles`).
 
 Then invoke the skill for the phase you are in:
 
@@ -88,6 +90,7 @@ Some agents may also expose installed skills as slash commands:
 /build-right-preflight
 /build-right-feature-planning
 /build-right-execution
+/build-right-engineering-principles
 ```
 
 ## :repeat: Running With Agentic Loops
@@ -151,6 +154,11 @@ Build Right is a three-skill lifecycle.
 | :memo: Feature planning | `build-right-feature-planning` | Repeatedly, when a new feature or product change needs shaping. | Updated backlog, sprint/docs changes, and ready task files. |
 | :white_check_mark: Execution | `build-right-execution` | Repeatedly, after there is a ready task. | One implemented task with baseline evidence, verification, tracker updates, and closeout. |
 
+`build-right-engineering-principles` is not a lifecycle phase. It is a
+cross-cutting standard the workflow skills may load for architecture,
+contracts, provider boundaries, implementation review, tests, observability,
+security, and enforceable engineering-policy decisions.
+
 ## :world_map: Skill Flows
 
 These are the high-level paths. The full operational diagrams, including
@@ -201,6 +209,9 @@ flowchart LR
   actions so humans and agents can inspect the same decision surface.
 - **Repo-native artifacts** - writes durable docs and task files in the target
   project instead of treating chat as the source of truth.
+- **Engineering standards** - applies `build-right-engineering-principles` as a
+  cross-cutting review lens for boundaries, contracts, adapters, effects,
+  errors, tests, observability, and security.
 
 ## :gear: How It Works
 
@@ -210,6 +221,9 @@ Each skill is instruction-first:
 2. `references/` carries deeper gates, contracts, and delegation rules.
 3. `assets/templates/` provides reusable Markdown artifacts for target repos.
 4. read-only Bun scripts surface deterministic state and next-action signals.
+
+The engineering-principles skill is reference-first: its `SKILL.md` explains
+when to use it, and `references/principles.md` carries the reusable standard.
 
 The stable safety model is in [`workflow-backbone.md`](docs/workflow-backbone.md):
 observe state, classify it, choose one next action, run gates, act, verify,

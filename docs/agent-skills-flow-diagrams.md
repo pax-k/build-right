@@ -6,6 +6,11 @@ This document visualizes the implemented flows for:
 - `skills/build-right-feature-planning`
 - `skills/build-right-execution`
 
+`skills/build-right-engineering-principles` is a cross-cutting standards skill,
+not a lifecycle phase. The workflow skills load it only when architecture,
+contracts, adapters, implementation review, tests, observability, security, or
+enforceable engineering policy are in scope.
+
 The diagrams are intentionally operational: they show what the main agent does,
 where founder input is required, where web research or subagents may help, and
 where files are created or updated.

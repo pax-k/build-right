@@ -10,6 +10,13 @@
         "build-right-feature-planning",
         "build-right-execution"
       ]
+    },
+    {
+      "title": "Standards",
+      "description": "Cross-cutting engineering standards for Build Right-guided work.",
+      "skills": [
+        "build-right-engineering-principles"
+      ]
     }
   ]
 }

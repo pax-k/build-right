@@ -27,6 +27,10 @@ Only then AI executes.
   subagent delegation triggers apply.
 - Read `references/artifact-contract.md` before creating or updating docs or
   tasks.
+- Read `../build-right-engineering-principles/references/principles.md` when
+  creating or changing architecture boundaries, execution rules, package
+  ownership, provider boundaries, generated-code rules, or enforceable
+  engineering policy.
 - Use files in `assets/templates/` as starting points when creating artifacts.
 - Use bundled `scripts/preflight-check.ts` for deterministic inventory,
   readiness signals, and one preflight decision. Treat script output as input

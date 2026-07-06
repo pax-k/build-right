@@ -28,6 +28,10 @@ Then move to the next task.
 - Read `references/review-and-delegation.md` only when review triggers apply,
   subagent review is useful, or broad evidence/tracker changes are touched.
 - Read `references/evidence-contract.md` before completing or updating a task.
+- Read `../build-right-engineering-principles/references/principles.md` before
+  implementation or review when a task touches architecture boundaries, public
+  APIs, package ownership, provider adapters, generated code, error semantics,
+  tests, observability, security, or enforceable policy.
 - Use `assets/templates/task-template.md` when creating a missing task or
   splitting an overbroad task.
 - Use bundled `scripts/continue-check.ts --strict` before selecting a task or

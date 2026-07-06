@@ -28,6 +28,10 @@ Stop before implementation.
 - Read `references/research-and-delegation.md` only when web research,
   public-evidence claims, technical feasibility review, conflict review, or
   subagent delegation triggers apply.
+- Read `../build-right-engineering-principles/references/principles.md` when
+  splitting features into implementation tasks, planning architecture or
+  package changes, designing contracts, changing provider boundaries, or
+  planning security, reliability, observability, or test strategy.
 - Use `assets/templates/tasks/feature-task.md` when creating a new execution
   task.
 - Use `assets/templates/tasks/post-release-backlog.md` when creating a missing
