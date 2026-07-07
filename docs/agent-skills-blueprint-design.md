@@ -280,7 +280,7 @@ description: Execute one bounded task using baseline evidence, narrow implementa
 
 When activated, the skill should:
 
-1. Run `continue-check.ts --strict` before selecting or advancing work.
+1. Run the full Bun state resolver command before selecting or advancing work.
 2. Report the resolver decision, confidence, next action, next task, blocking
    gates, and external follow-ups.
 3. Stop, ask, wait, or create a blocker for non-executable resolver decisions.

@@ -382,9 +382,10 @@ reconcile that output with founder input, repo evidence, web research, and
 subagent findings.
 
 Before an execution agent continues through a queue, it should run
-`scripts/continue-check.ts --strict`, report the decision, confidence, next
-action, next task, blocking gates, and external follow-ups, then reconcile that
-output with repo evidence and any subagent findings.
+`bun <skill-path>/scripts/continue-check.ts --cwd <project> --format markdown --strict`,
+report the decision, confidence, next action, next task, blocking gates, and
+external follow-ups, then reconcile that output with repo evidence and any
+subagent findings.
 
 ## Guardrails
 

@@ -188,7 +188,7 @@ flowchart TD
 ```mermaid
 flowchart TD
   A["Invoke skill: /build-right-execution or $build-right-execution"] --> B["Read workflow, gates, evidence contract, and routed references"]
-  B --> B0["Run continue-check --strict state resolver"]
+  B --> B0["Run full Bun state resolver command"]
   B0 --> B00["Report decision, confidence, next action, next task, blocking gates, and external follow-ups"]
   B00 --> B1{"Resolver decision?"}
   B1 -->|"ask-founder, wait-external, invalid-state, no-ready-task"| B2["Ask, report blocker, or stop"]
@@ -229,7 +229,7 @@ flowchart TD
 
   Q --> U["Record evidence, learning notes, files changed, blockers, follow-ups"]
   U --> V["Update only relevant tracker and docs"]
-  V --> V0["Run continue-check --strict state resolver"]
+  V --> V0["Run full Bun state resolver command"]
   V0 --> V01["Report resolver findings before selecting more work"]
   V01 --> V00["Run execution-check stop-gates helper"]
   V00 --> V1{"Stop/ask gate before next task?"}
@@ -266,7 +266,7 @@ flowchart TD
   L --> O
   M --> O
   O --> P["Re-run feature-planning-check.ts"]
-  P --> Q["Run continue-check --strict if a task should be ready"]
+  P --> Q["Run full Bun state resolver command if a task should be ready"]
   Q --> R{"Execution-ready?"}
   R -->|"Yes"| S["Ready for execution: task path"]
   R -->|"No"| T["Close with founder, research, backlog, sprint, or blocker state"]
@@ -334,7 +334,7 @@ flowchart TD
   A["Main agent reaches an inventory, task, contract, or gate checkpoint"] --> B{"Which helper applies?"}
 
   B -->|"Preflight inventory/readiness"| C["Run preflight-check.ts"]
-  B -->|"Execution continuation decision"| D["Run continue-check.ts --strict"]
+  B -->|"Execution continuation decision"| D["Run full Bun state resolver command"]
   B -->|"Execution task contract or stop gates"| D1["Run execution-check.ts"]
 
   C --> E["Helper returns read-only decision, next action, signals, missing artifacts, warnings, recommendation"]
@@ -352,7 +352,7 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-  A["Run continue-check.ts --strict"] --> B["Parse markdown status lines, task tables, gate tables, readiness table, conflicts, next-action block, issue files"]
+  A["Run full Bun state resolver command"] --> B["Parse markdown status lines, task tables, gate tables, readiness table, conflicts, next-action block, issue files"]
   B --> C["Build execution state: AI-owned active/ready, completed, blocking gates, external follow-ups"]
   C --> D{"Highest-priority decision"}
 

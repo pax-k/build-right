@@ -34,11 +34,13 @@ Then move to the next task.
   tests, observability, security, or enforceable policy.
 - Use `assets/templates/task-template.md` when creating a missing task or
   splitting an overbroad task.
-- Use bundled `scripts/continue-check.ts --strict` before selecting a task or
-  advancing through a queue. Report and reconcile its decision before
-  continuing.
-- Use bundled `scripts/execution-check.ts` for deterministic task, contract,
-  and gate signals. Treat script output as input to judgment, not authority.
+- Use bundled helper scripts only through the full Bun command form shown
+  below. Do not rely on PATH aliases or invoke short names such as
+  `continue-check` as shell commands.
+- Use the state resolver before selecting a task or advancing through a queue.
+  Report and reconcile its decision before continuing.
+- Use the execution helper for deterministic task, contract, and gate signals.
+  Treat script output as input to judgment, not authority.
 
 ## Operating Mode
 
@@ -102,8 +104,8 @@ Then move to the next task.
    substitute verification before closing.
 13. Record evidence before marking the task complete.
 14. Update only the relevant tracker/docs.
-15. Run `continue-check.ts --strict` and the execution helper in `stop-gates` mode before
-    selecting another task.
+15. Run the full Bun state resolver command and the execution helper in
+    `stop-gates` mode before selecting another task.
 16. Report the resolver findings again before deciding whether another task is
     safe to select.
 17. Stop at any founder, external-state, failed-verification, stale-task, source

@@ -104,7 +104,8 @@ Stop before implementation.
 10. Record durable scope, priority, architecture, or workflow choices in the
     decision log. Record unresolved contradictions in conflicts.
 11. Run the planning helper again after updates when available, then run the
-    execution resolver if a task is expected to be ready:
+    execution resolver if a task is expected to be ready. Use the full Bun
+    command; do not rely on a PATH alias or short helper name:
 
     ```sh
     bun <build-right-execution-path>/scripts/continue-check.ts --cwd <project> --format markdown --strict

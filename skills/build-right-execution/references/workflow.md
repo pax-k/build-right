@@ -9,8 +9,10 @@ Use this workflow for one bounded task with evidence.
   independent review would improve confidence.
 - Read `evidence-contract.md` before completing or updating a task.
 - Use templates in `assets/templates/` when creating a missing or split task.
-- Run `scripts/continue-check.ts --strict` before selecting a task or advancing
+- Run the full Bun state resolver command before selecting a task or advancing
   through a queue.
+- When recording evidence or final summaries, write the exact command that ran.
+  Do not shorten bundled helper invocations to PATH-style aliases.
 
 ## 1. Task Selection
 

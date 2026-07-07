@@ -108,13 +108,14 @@ Objective: execute ready AI-owned tasks in <target repo> one at a time until
 blocked or human input is required.
 
 Loop rules:
-- Before selecting each task, run continue-check.ts --strict and report its
-  decision.
+- Before selecting each task, run
+  `bun <build-right-execution-path>/scripts/continue-check.ts --cwd <target repo> --format markdown --strict`
+  and report its decision.
 - Continue only when the resolver returns execute-task or
   continue-active-task.
 - Complete exactly one bounded task per iteration with baseline evidence,
   verification, evidence log, and tracker updates.
-- After each task, rerun continue-check.ts --strict and the stop-gates check.
+- After each task, rerun the full Bun resolver command and the stop-gates check.
 - Continue only if the next task is ready, AI-owned, evidence-backed, and has no
   stop/ask gate.
 - Stop and report the exact gate when founder input, external state, failed

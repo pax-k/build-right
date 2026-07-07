@@ -11,6 +11,9 @@ Before selecting work or continuing through a prepared queue, run:
 bun <skill-path>/scripts/continue-check.ts --cwd <project> --format markdown --strict
 ```
 
+Use this full Bun command form. Do not rely on a shell alias or global binary
+for the resolver.
+
 Report the resolver decision, confidence, next action, next task, blocking
 gates, and external follow-ups before acting.
 
