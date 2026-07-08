@@ -45,6 +45,8 @@ Stop when:
 
 - preflight artifacts are missing or contradictory
 - `docs/conflicts.md` has an unresolved material conflict
+- a sprint or milestone is being marked complete while any row remains
+  non-terminal
 - the only next action is external-state work
 - the feature would require product implementation before planning evidence
 - task files cannot satisfy the execution task contract
@@ -52,6 +54,25 @@ Stop when:
 
 Record the gate in the relevant artifact when writing is safe. Otherwise report
 the blocker and stop.
+
+## Sprint Closure Gate
+
+Before marking a sprint complete or moving the project state to the next sprint,
+scan every row in the closing sprint tracker.
+
+Allowed terminal row statuses are:
+
+- `complete`
+- `deferred`
+- `moved`
+- `canceled`
+- `split`
+- `superseded`
+
+Any `planned`, `draft`, `ready`, `active`, `in_progress`, `blocked`,
+`needs-founder`, or external-wait row blocks closure. Either finish the work or
+make a deliberate defer/move/cancel/split/supersede decision with destination,
+owner, and approval gate recorded.
 
 ## Execution-Readiness Gate
 

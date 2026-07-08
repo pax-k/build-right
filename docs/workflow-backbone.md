@@ -25,6 +25,9 @@ Workflow customization must not bypass these invariants:
 - Capture baseline evidence before changing behavior.
 - Verify with evidence appropriate to the task type.
 - Record evidence before marking a task, gate, sprint, or release complete.
+- Do not mark a sprint or phase complete while its tracker still contains
+  non-terminal task rows; finish, defer, move, cancel, split, or supersede them
+  explicitly.
 - Create follow-up tasks for unrelated discoveries instead of widening scope.
 
 These are product safety rules, not defaults. A project-local workflow may make

@@ -19,7 +19,7 @@ type Args = {
 };
 
 type Gate = {
-  type: "missing-preflight" | "founder-owned" | "open-conflict" | "external-state" | "invalid-task";
+  type: "missing-preflight" | "founder-owned" | "open-conflict" | "external-state" | "invalid-task" | "sprint-closure";
   source: string;
   reason: string;
 };
@@ -49,6 +49,18 @@ type PlanningResult = {
 
 const validFormats = new Set<OutputFormat>(["markdown", "json"]);
 const terminalStatuses = new Set(["resolved", "closed", "complete", "done", "none", "n/a"]);
+const completedTrackerStatuses = new Set(["complete", "completed", "done"]);
+const terminalTaskStatuses = new Set([
+  "complete",
+  "completed",
+  "done",
+  "deferred",
+  "moved",
+  "canceled",
+  "cancelled",
+  "split",
+  "superseded",
+]);
 const readyStatuses = new Set(["ready", "active"]);
 
 function parseArgs(argv: string[]): Args {
@@ -199,6 +211,14 @@ function isAiOwned(owner: string): boolean {
   return ["ai", "agent", "codex"].includes(normalize(owner));
 }
 
+function isCompleteTrackerStatus(status: string): boolean {
+  return completedTrackerStatuses.has(normalize(status));
+}
+
+function isTerminalTaskStatus(status: string): boolean {
+  return terminalTaskStatuses.has(normalize(status));
+}
+
 async function loadTrackerTasks(cwd: string, trackers: string[]): Promise<TaskCandidate[]> {
   const tasks: TaskCandidate[] = [];
   for (const tracker of trackers) {
@@ -233,6 +253,29 @@ function conflictGates(conflicts: string): Gate[] {
       source: "docs/conflicts.md",
       reason: conflict,
     });
+  }
+  return gates;
+}
+
+async function sprintClosureGates(cwd: string, sprintTrackers: string[]): Promise<Gate[]> {
+  const gates: Gate[] = [];
+  for (const tracker of sprintTrackers) {
+    const trackerText = await readIfExists(cwd, tracker);
+    if (!isCompleteTrackerStatus(statusLine(trackerText))) {
+      continue;
+    }
+    for (const row of parseTable(section(trackerText, "Tasks"))) {
+      const status = normalize(row.Status);
+      if (isTerminalTaskStatus(status)) {
+        continue;
+      }
+      const taskId = row.ID ?? row.Id ?? row.id ?? row.Title ?? "unknown task";
+      gates.push({
+        type: "sprint-closure",
+        source: tracker,
+        reason: `${tracker} is complete but ${taskId} is ${row.Status || "missing"}; complete, defer, move, cancel, split, or supersede it before advancing.`,
+      });
+    }
   }
   return gates;
 }
@@ -308,7 +351,9 @@ async function resolvePlanning(args: Args): Promise<PlanningResult> {
   }
 
   const conflictBlocks = conflictGates(conflicts);
+  const sprintClosureBlocks = await sprintClosureGates(args.cwd, sprintTrackers);
   blockingGates.push(...conflictBlocks);
+  blockingGates.push(...sprintClosureBlocks);
 
   const invalidTasks = tasks.filter(
     (task) => readyStatuses.has(task.status) && (!task.path || !task.owner || !isAiOwned(task.owner)),
@@ -337,7 +382,7 @@ async function resolvePlanning(args: Args): Promise<PlanningResult> {
     recommendedDestination = "build-right-preflight";
     nextAction = `Route to build-right-preflight before feature planning: ${missing.join(", ")}`;
     confidence = "high";
-  } else if (conflictBlocks.length > 0 || invalidTasks.length > 0) {
+  } else if (conflictBlocks.length > 0 || sprintClosureBlocks.length > 0 || invalidTasks.length > 0) {
     decision = "blocked";
     recommendedDestination = blockingGates[0]?.source ?? "docs/conflicts.md";
     nextAction = blockingGates[0]?.reason ?? "Resolve blocking planning gate.";

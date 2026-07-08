@@ -64,10 +64,23 @@ Stop or ask when:
 - installed skill source differs from repo-local source for a skill trial
 - required subagent review was skipped without an equivalent substitute
 - release or directory-discovery claims would advance without durable evidence
+- a completed sprint or milestone still contains non-terminal task rows
 
 When a stop/ask gate fires, do not continue to the next task. Record the gate,
 ask the user when a user answer is required, or create the smallest blocker
 task when the blocker is AI-owned and evidence-backed.
+
+## Sprint Closure Gate
+
+Under `--strict`, a sprint tracker marked `complete` is valid only when every
+task row is terminal: `complete`, `deferred`, `moved`, `canceled`, `split`, or
+`superseded`.
+
+Do not treat `no-ready-task` as permission to advance to the next sprint when
+the closing sprint still contains `planned`, `draft`, `ready`, `active`,
+`in_progress`, `blocked`, `needs-founder`, or external-wait rows. Report
+`invalid-state` and reconcile the tracker: finish the row, or explicitly defer,
+move, cancel, split, or supersede it with destination and gate evidence.
 
 ## Source Under Test Gate
 

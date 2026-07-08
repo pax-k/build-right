@@ -25,6 +25,17 @@ Use `planned` or `draft` for work that still needs splitting, validation, or
 founder input. Use `blocked` when a gate prevents progress. Use `complete` only
 after execution evidence exists.
 
+A sprint tracker may be marked `complete` only when every task row has a
+terminal disposition: `complete`, `deferred`, `moved`, `canceled`, `split`, or
+`superseded`. Do not advance `docs/blueprint-status.md` or the roadmap to the
+next sprint while the closing sprint still contains `planned`, `draft`, `ready`,
+`active`, `in_progress`, `blocked`, `needs-founder`, or external-wait rows.
+
+Deferring unfinished work is allowed, but it must be explicit: update the row to
+`deferred`, `moved`, `canceled`, `split`, or `superseded`, record the
+destination or reason in the tracker, and preserve any founder/external
+approval gate in the task file, decision log, conflicts file, or backlog.
+
 ## Task Rules
 
 Reuse the execution task contract:

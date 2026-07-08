@@ -111,7 +111,12 @@ Stop before implementation.
     bun <build-right-execution-path>/scripts/continue-check.ts --cwd <project> --format markdown --strict
     ```
 
-12. End with one explicit result:
+12. Before marking a sprint complete or advancing to the next sprint, verify
+    that every row in the closing sprint is `complete`, `deferred`, `moved`,
+    `canceled`, `split`, or `superseded`. If not, finish the work or make an
+    explicit deferral/move/cancel/split/supersede decision with destination and
+    gate evidence.
+13. End with one explicit result:
 
     ```text
     Ready for execution: <task path>

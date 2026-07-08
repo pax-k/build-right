@@ -33,9 +33,12 @@ work, or wants to turn discovery into execution-ready tasks.
    - create or split task files
    - update decision/evidence/conflict docs when the feature changes those
      surfaces
-7. Re-run the planning helper. If a task should be executable, run the execution
+7. Before closing a sprint or advancing the project phase, confirm every row in
+   the closing sprint is `complete`, `deferred`, `moved`, `canceled`, `split`,
+   or `superseded`.
+8. Re-run the planning helper. If a task should be executable, run the execution
    resolver and confirm the task is visible to `build-right-execution`.
-8. Stop before implementation.
+9. Stop before implementation.
 
 ## Planning Decisions
 

@@ -68,7 +68,7 @@ type ContinueResult = {
 };
 
 const validFormats = new Set<OutputFormat>(["markdown", "json"]);
-const trackerPriority = ["tasks/sprint-0.md", "tasks/post-release-backlog.md"];
+const postReleaseTracker = "tasks/post-release-backlog.md";
 const requiredFields = [
   "Status:",
   "Type:",
@@ -236,6 +236,37 @@ function normalizeStatus(status: string): string {
   return status.trim().toLowerCase();
 }
 
+const completedTrackerStatuses = new Set(["complete", "completed", "done"]);
+const terminalTaskStatuses = new Set([
+  "complete",
+  "completed",
+  "done",
+  "deferred",
+  "moved",
+  "canceled",
+  "cancelled",
+  "split",
+  "superseded",
+]);
+
+function compareTrackerPaths(left: string, right: string): number {
+  if (left === postReleaseTracker && right !== postReleaseTracker) {
+    return 1;
+  }
+  if (right === postReleaseTracker && left !== postReleaseTracker) {
+    return -1;
+  }
+  return left.localeCompare(right, undefined, { numeric: true });
+}
+
+function isCompleteTrackerStatus(status: string): boolean {
+  return completedTrackerStatuses.has(normalizeStatus(status));
+}
+
+function isTerminalTaskStatus(status: string): boolean {
+  return terminalTaskStatuses.has(normalizeStatus(status));
+}
+
 function normalizeOwner(owner?: string): string {
   return (owner ?? "").trim().toLowerCase();
 }
@@ -297,11 +328,11 @@ async function loadIssueTasks(cwd: string): Promise<Map<string, TaskSummary>> {
   return tasks;
 }
 
-async function loadTrackerTasks(cwd: string, issues: Map<string, TaskSummary>): Promise<TaskSummary[]> {
+async function loadTrackerTasks(cwd: string, issues: Map<string, TaskSummary>, trackers: string[]): Promise<TaskSummary[]> {
   const tasks: TaskSummary[] = [];
   let order = 0;
 
-  for (const tracker of trackerPriority) {
+  for (const tracker of trackers) {
     const text = await readIfExists(cwd, tracker);
     if (!text) {
       continue;
@@ -546,16 +577,44 @@ async function invalidStateGates(cwd: string, tasks: TaskSummary[], strict: bool
   return gates;
 }
 
+async function sprintClosureGates(cwd: string, sprintTrackers: string[], strict: boolean): Promise<Gate[]> {
+  if (!strict) {
+    return [];
+  }
+  const gates: Gate[] = [];
+  for (const tracker of sprintTrackers) {
+    const trackerText = await readIfExists(cwd, tracker);
+    if (!isCompleteTrackerStatus(statusLine(trackerText))) {
+      continue;
+    }
+    for (const row of parseTable(section(trackerText, "Tasks"))) {
+      const status = normalizeStatus(row.Status ?? "");
+      if (isTerminalTaskStatus(status)) {
+        continue;
+      }
+      const taskId = row.ID || row.Id || row.id || row.Title || "unknown task";
+      gates.push({
+        type: "invalid-state",
+        status: row.Status || "missing",
+        source: tracker,
+        reason: `${tracker} is complete but ${taskId} is ${row.Status || "missing"}; complete, defer, move, cancel, split, or supersede it before advancing.`,
+      });
+    }
+  }
+  return gates;
+}
+
 async function resolveState(args: Args): Promise<ContinueResult> {
   const evidence: EvidenceRef[] = [];
   const blueprint = await readIfExists(args.cwd, "docs/blueprint-status.md");
   const openQuestions = await readIfExists(args.cwd, "docs/open-questions.md");
   const releaseGates = await readIfExists(args.cwd, "docs/release-gates.md");
   const conflicts = await readIfExists(args.cwd, "docs/conflicts.md");
-  const postRelease = await readIfExists(args.cwd, "tasks/post-release-backlog.md");
-  const sprint = await readIfExists(args.cwd, "tasks/sprint-0.md");
+  const postRelease = await readIfExists(args.cwd, postReleaseTracker);
+  const sprintTrackers = await globFiles(args.cwd, "tasks/sprint-*.md");
+  const trackers = [...sprintTrackers, ...(postRelease ? [postReleaseTracker] : [])].sort(compareTrackerPaths);
   const issues = await loadIssueTasks(args.cwd);
-  const tasks = await loadTrackerTasks(args.cwd, issues);
+  const tasks = await loadTrackerTasks(args.cwd, issues, trackers);
 
   if (blueprint) {
     evidence.push({ source: "docs/blueprint-status.md", summary: `status ${statusLine(blueprint)}` });
@@ -569,14 +628,20 @@ async function resolveState(args: Args): Promise<ContinueResult> {
   if (conflicts) {
     evidence.push({ source: "docs/conflicts.md", summary: `status ${statusLine(conflicts)}` });
   }
-  if (sprint) {
-    evidence.push({ source: "tasks/sprint-0.md", summary: `status ${statusLine(sprint)}` });
+  for (const tracker of sprintTrackers.sort(compareTrackerPaths)) {
+    const text = await readIfExists(args.cwd, tracker);
+    if (text) {
+      evidence.push({ source: tracker, summary: `status ${statusLine(text)}` });
+    }
   }
   if (postRelease) {
-    evidence.push({ source: "tasks/post-release-backlog.md", summary: `status ${statusLine(postRelease)}` });
+    evidence.push({ source: postReleaseTracker, summary: `status ${statusLine(postRelease)}` });
   }
 
-  const invalidGates = await invalidStateGates(args.cwd, tasks, args.strict);
+  const invalidGates = [
+    ...(await invalidStateGates(args.cwd, tasks, args.strict)),
+    ...(await sprintClosureGates(args.cwd, sprintTrackers, args.strict)),
+  ];
   const ownerSignals = taskOwnerGates(tasks);
   const conflictSignals = conflictGates(conflicts);
   const founderGates = [
@@ -613,7 +678,7 @@ async function resolveState(args: Args): Promise<ContinueResult> {
   const executableReadyTasks = readyTasks.filter((task) => isAiOwned(task.owner));
   const completedTasks = tasks.filter((task) => task.status === "complete");
   const hasExecutionRules = await exists(args.cwd, "docs/execution-rules.md");
-  const hasTracker = Boolean(sprint || postRelease);
+  const hasTracker = trackers.length > 0;
   const missingExecutionSurface = !hasTracker || !hasExecutionRules || tasks.length === 0;
 
   let decision: Decision = "no-ready-task";
