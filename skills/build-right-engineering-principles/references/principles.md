@@ -21,6 +21,15 @@ Build systems that are easy to change without becoming easy to break:
 - test behavior and boundary contracts
 - record enough evidence to debug and review the work later
 
+## Requirements Fit
+
+- Design against validated user needs, product outcomes, and current constraints.
+- Complexity is justified when a real requirement demands it.
+- Treat capabilities, abstractions, boundaries, and operational machinery without a traceable requirement as speculative complexity.
+- Choose the smallest solution that fully satisfies current requirements while preserving required guarantees.
+- When a design cannot be traced to product truth, evidence, or an explicit assumption, remove it, defer it, or return it to planning.
+- Reconsider the solution when requirements or constraints change.
+
 ## Code Principles
 
 ### Clear Responsibility
@@ -164,6 +173,11 @@ Build systems that are easy to change without becoming easy to break:
 
 Use this checklist for implementation and review:
 
+- Requirements fit: Which requirement or constraint justifies this design?
+- Product fit: Which user and outcome does it serve?
+- Tradeoff: What cost, guarantee, or simplicity does it sacrifice?
+- Speculation: Is any complexity justified only by hypothetical future needs?
+- Sufficiency: Would a smaller solution fully satisfy the same requirements?
 - Responsibility: Does each changed module have a clear owner and reason to change?
 - Boundary: Are package and provider boundaries preserved?
 - Dependency direction: Are imports acyclic and pointed toward stable contracts?

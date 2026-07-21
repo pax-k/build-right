@@ -257,7 +257,7 @@ flowchart TD
   F -->|"delegate-review"| J["Run narrow subagent feasibility or conflict review"]
   F -->|"update-roadmap"| K["Update roadmap or post-release backlog"]
   F -->|"update-sprint"| L["Update active sprint and draft task split"]
-  F -->|"create-ready-tasks"| M["Create or confirm execution-ready task files"]
+  F -->|"create-ready-tasks"| M["Create or confirm tasks with requirement basis"]
   F -->|"blocked"| N["Record or report blocking gate"]
   H --> O["Update decisions, evidence, conflicts, sprint, backlog, or tasks"]
   I --> O
@@ -268,7 +268,7 @@ flowchart TD
   O --> P["Re-run feature-planning-check.ts"]
   P --> Q["Run full Bun state resolver command if a task should be ready"]
   Q --> R{"Execution-ready?"}
-  R -->|"Yes"| S["Ready for execution: task path"]
+  R -->|"Yes"| S["Ready for execution: requirement-traceable task path"]
   R -->|"No"| T["Close with founder, research, backlog, sprint, or blocker state"]
   G --> T
   N --> T

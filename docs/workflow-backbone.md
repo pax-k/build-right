@@ -21,6 +21,10 @@ Workflow customization must not bypass these invariants:
   production access, search indexing, or third-party provider action.
 - Respect task ownership; do not execute a ready or active task owned by a
   non-AI owner.
+- Require every ready or active task to trace its work to an authority path,
+  decision, evidence reference, or explicit assumption.
+- Return missing or contradictory requirements to planning instead of adding
+  speculative capability or silently sacrificing an existing guarantee.
 - Keep source-under-test evidence explicit for skill trials and release claims.
 - Capture baseline evidence before changing behavior.
 - Verify with evidence appropriate to the task type.
@@ -98,6 +102,14 @@ not replace judgment.
 
 When helper output and project-local authority disagree, record the mismatch
 and reconcile it before advancing.
+
+Repo-local verification does not mutate or require installed user-scope skills.
+After an intentional installed-skill sync, release proof can require exact
+parity with:
+
+```sh
+BUILD_RIGHT_REQUIRE_INSTALLED_PARITY=1 bun test
+```
 
 ## Current Scope
 

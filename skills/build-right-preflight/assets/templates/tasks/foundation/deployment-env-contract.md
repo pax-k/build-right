@@ -5,6 +5,7 @@ Type: infrastructure
 Owner: AI
 
 Assumption basis: repo-evidence-backed
+Requirement basis: docs/mvp-scope.md; define only the deployment and environment capabilities required by current delivery constraints
 Reversibility: moderate
 Learning objective: identify deployment, self-hosting, cloud-equivalent, and environment requirements before feature work depends on them
 Source under test: repo-local path
@@ -43,6 +44,14 @@ blockers.
 
 Record existing deploy files, env examples, release gates, and validation
 commands before editing docs.
+
+## Solution-Fit Rationale
+
+- Requirement served: <current delivery or operational requirement>
+- Constraints honored: <hard constraints>
+- Guarantees preserved: <portability, recoverability, security, or other guarantee>
+- Cost accepted: <real tradeoff introduced>
+- Deferred capability: <future flexibility intentionally not implemented>
 
 ## Verification
 

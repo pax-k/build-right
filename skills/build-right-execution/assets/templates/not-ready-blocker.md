@@ -5,6 +5,7 @@ Type: validation
 Owner: AI
 
 Assumption basis: repo-evidence-backed
+Requirement basis: <authority path, decision ID, evidence reference, or explicit assumption>
 Reversibility: easy
 Learning objective: establish the missing execution surface before feature work
 Source under test: repo-local path

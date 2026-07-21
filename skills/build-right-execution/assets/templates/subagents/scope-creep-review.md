@@ -9,7 +9,10 @@ Context to read:
 
 Scope:
 - Include: unrelated changes, hidden product decisions, missing tests, missing
-  follow-up issues, and risky broadened behavior.
+  follow-up issues, risky broadened behavior, speculative extensibility,
+  unnecessary service or package boundaries, duplicated ownership, lost
+  database or type-system guarantees, and operational complexity unrelated to
+  acceptance criteria.
 - Exclude: editing files, final closeout, committing, tracker updates.
 
 Sources:

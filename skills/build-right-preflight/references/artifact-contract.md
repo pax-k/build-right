@@ -110,6 +110,10 @@ collaborators must respect:
 - workflow customization
 - stop-gate decisions
 
+Durable architecture, deployment, storage, integration, framework, service
+boundary, and public-contract decisions must record the requirement basis and
+the tradeoff or guarantee impact.
+
 Do not use the decision log for routine command results, transient
 implementation notes, every file edit, or evidence that belongs in a task
 evidence log.
@@ -158,6 +162,7 @@ Every first executable task should include:
 - type
 - owner
 - assumption basis
+- requirement basis
 - reversibility
 - learning objective
 - `Source under test: <repo-local path | installed path | GitHub source | release tag | n/a>`

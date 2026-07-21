@@ -25,7 +25,8 @@ work, or wants to turn discovery into execution-ready tasks.
    - review/delegation candidate
    - blocked or contradictory candidate
 4. Ask only the founder questions that change priority, scope, user promise,
-   product truth, or acceptance criteria.
+   product truth, requirements, constraints, required guarantees, or acceptance
+   criteria.
 5. Use research or subagents only when the claim cannot be safely decided from
    founder input and repo evidence.
 6. Write planning artifacts:
@@ -68,8 +69,28 @@ Prefer a thin sequence:
 5. release or monitoring task when relevant
 
 Each task needs one goal, explicit non-goals, assumption basis, reversibility,
-learning objective, baseline evidence, and verification. If those fields cannot
-be written truthfully, do not mark the task ready.
+requirement basis, learning objective, baseline evidence, and verification. If
+those fields cannot be written truthfully, do not mark the task ready. Missing
+or contradictory requirement basis routes back to preflight or remains in
+planning.
+
+## Solution-Fit Rationale
+
+When a task selects or changes architecture, persistence, integration,
+deployment, framework, service boundaries, or a public contract, record:
+
+```md
+## Solution-Fit Rationale
+
+- Requirement served: <current requirement>
+- Constraints honored: <hard constraints>
+- Guarantees preserved: <integrity, simplicity, isolation, or other guarantee>
+- Cost accepted: <real tradeoff introduced>
+- Deferred capability: <future flexibility intentionally not implemented>
+```
+
+Do not invent this rationale. If product truth, evidence, or an explicit
+reversible assumption cannot support it, keep the task out of `ready`.
 
 ## Handoff
 

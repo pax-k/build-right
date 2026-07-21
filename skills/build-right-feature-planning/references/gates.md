@@ -82,8 +82,10 @@ A task is ready for `build-right-execution` only when:
 - its task file exists
 - `Status:` is `ready`
 - `Owner:` is `AI`, `agent`, or `Codex`
-- assumption basis, reversibility, learning objective, and source under test are
-  explicit
+- assumption basis, requirement basis, reversibility, learning objective, and
+  source under test are explicit
 - acceptance criteria, baseline evidence, verification, blockers, and follow-ups
   are present
+- the requirement basis does not contradict current product truth, constraints,
+  or required guarantees
 - no founder, external, conflict, or failed-verification gate blocks it

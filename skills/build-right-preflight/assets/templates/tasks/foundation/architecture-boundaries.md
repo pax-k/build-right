@@ -5,6 +5,7 @@ Type: architecture
 Owner: AI
 
 Assumption basis: repo-evidence-backed
+Requirement basis: docs/mvp-scope.md; document boundaries needed to deliver the current product scope without speculative separation
 Reversibility: easy
 Learning objective: identify clean module, component, and ownership boundaries before feature work expands coupling
 Source under test: repo-local path
@@ -40,6 +41,14 @@ risks.
 
 Record current directories, packages, entrypoints, and architecture docs before
 writing.
+
+## Solution-Fit Rationale
+
+- Requirement served: <current product or operational requirement>
+- Constraints honored: <hard constraints>
+- Guarantees preserved: <integrity, simplicity, isolation, or other guarantee>
+- Cost accepted: <real tradeoff introduced>
+- Deferred capability: <future flexibility intentionally not implemented>
 
 ## Verification
 

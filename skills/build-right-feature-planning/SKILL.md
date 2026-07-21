@@ -29,8 +29,9 @@ Stop before implementation.
   public-evidence claims, technical feasibility review, conflict review, or
   subagent delegation triggers apply.
 - Read `../build-right-engineering-principles/references/principles.md` when
-  splitting features into implementation tasks, planning architecture or
-  package changes, designing contracts, changing provider boundaries, or
+  splitting features into implementation tasks, selecting technologies,
+  planning architecture, storage, integration, deployment, service-boundary,
+  or package changes, designing contracts, changing provider boundaries, or
   planning security, reliability, observability, or test strategy.
 - Use `assets/templates/tasks/feature-task.md` when creating a new execution
   task.
@@ -97,12 +98,15 @@ Stop before implementation.
 7. Do not modify product implementation files. Create task files and planning
    docs only.
 8. Keep scope bounded. Split large features into sequential tasks with explicit
-   assumptions, reversibility, learning objective, baseline evidence, and
-   verification.
+   assumptions, requirement basis, reversibility, learning objective, baseline
+   evidence, and verification. Do not mark a task ready when its requirement
+   basis is missing or contradicts current product truth; keep it in planning or
+   route it to preflight.
 9. Record research and claim basis in the right evidence file. Public research
    may support public-evidence-backed planning, not customer validation.
 10. Record durable scope, priority, architecture, or workflow choices in the
-    decision log. Record unresolved contradictions in conflicts.
+    decision log with their requirement basis and tradeoff or guarantee impact.
+    Record unresolved contradictions in conflicts.
 11. Run the planning helper again after updates when available, then run the
     execution resolver if a task is expected to be ready. Use the full Bun
     command; do not rely on a PATH alias or short helper name:

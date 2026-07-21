@@ -15,6 +15,9 @@ Last updated: YYYY-MM-DD
 | What would make the product must-have? |  | founder-claimed |  |
 | What promise can we make without lying? |  | founder-claimed |  |
 | What is the smallest sellable product? |  | founder-claimed |  |
+| Which requirements must the solution satisfy? |  | founder-claimed |  |
+| Which constraints rule solutions out, and which are preferences? |  | founder-claimed |  |
+| Which guarantees must the solution preserve? |  | founder-claimed |  |
 | Which assumptions have no evidence yet? |  | unknown |  |
 
 ## Follow-Up Questions

@@ -38,7 +38,7 @@ Execution is ready only when these exist or have clear local equivalents:
 - execution rules
 - release or validation gates
 - task tracker
-- selected task with acceptance criteria
+- selected task with acceptance criteria and a traceable requirement basis
 - known evidence destination
 
 Prototype execution may proceed from `prototype-assumption` when the task is
@@ -61,6 +61,8 @@ Stop or ask when:
 - verification failed or could not run
 - task evidence is stale, duplicated, ambiguous, or contradicted by current
   files
+- requirement basis is missing or contradicts current product truth,
+  constraints, or required guarantees
 - installed skill source differs from repo-local source for a skill trial
 - required subagent review was skipped without an equivalent substitute
 - release or directory-discovery claims would advance without durable evidence

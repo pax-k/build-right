@@ -16,6 +16,7 @@ Active task: <task id or path>
 Done means: <observable completion criteria>
 Non-goals: <explicit exclusions>
 Assumption basis: <founder-claimed | ai-inferred | prototype-assumption | repo-evidence-backed | public-evidence-backed | customer-evidence-backed>
+Requirement basis: <authority path, decision ID, evidence reference, or explicit assumption>
 Reversibility: <easy | moderate | hard>
 Learning hook: <how this task will produce evidence>
 Source under test: <repo-local path | installed path | GitHub source | release tag | n/a>

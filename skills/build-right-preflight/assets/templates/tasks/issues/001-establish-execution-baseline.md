@@ -5,6 +5,7 @@ Type: validation
 Owner: AI
 
 Assumption basis: repo-evidence-backed
+Requirement basis: docs/execution-rules.md; establish the validation baseline required before feature execution
 Reversibility: easy
 Learning objective: establish the smallest evidence-backed execution surface
 Source under test: repo-local path

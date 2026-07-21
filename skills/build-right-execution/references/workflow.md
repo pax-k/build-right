@@ -68,6 +68,7 @@ Active task: <task id or path>
 Done means: <observable completion criteria>
 Non-goals: <explicit exclusions>
 Assumption basis: <founder-claimed | ai-inferred | prototype-assumption | repo-evidence-backed | public-evidence-backed | customer-evidence-backed>
+Requirement basis: <authority path, decision ID, evidence reference, or explicit assumption>
 Reversibility: <easy | moderate | hard>
 Learning hook: <how this task will produce evidence>
 Source under test: <repo-local path | installed path | GitHub source | release tag | n/a>
@@ -129,6 +130,13 @@ For skill trials, which exact skill source produced the behavior?
 
 Classify the gap, name the likely files/modules, identify checks that should
 prove the work, record the evidence destination, and define the stop condition.
+Answer:
+
+```text
+What requirement justifies this change?
+Which proposed elements are unnecessary to satisfy it?
+Which existing guarantees could the change weaken?
+```
 
 If unrelated work appears, create a follow-up issue. Do not silently expand the
 task.
@@ -140,6 +148,11 @@ Make the smallest change that satisfies acceptance criteria.
 Rules:
 
 - prefer existing module boundaries and local patterns
+- do not implement capability justified only by hypothetical future requirements
+- do not replace an existing guarantee with operational machinery unless the
+  task explicitly accepts that tradeoff
+- return unstated requirements or product decisions to planning instead of
+  choosing silently
 - preserve public contracts unless the task changes them
 - avoid activating future-scope features while fixing scaffolding or validation
 - when assumption basis is `prototype-assumption`, prefer reversible UI, manual
@@ -171,8 +184,8 @@ For Build Right skill trials, check the current contract markers that apply:
 
 - preflight output: `Source mode`, `Prototype confidence`, `Prototype
   assumptions labeled`
-- task output: `Assumption basis`, `Reversibility`, `Learning objective`,
-  `Learning Notes`
+- task output: `Assumption basis`, `Requirement basis`, `Reversibility`,
+  `Learning objective`, `Learning Notes`
 - release evidence: source under test, scratch path or target task, generated
   files, what was proved, what was only simulated
 

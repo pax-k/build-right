@@ -5,6 +5,7 @@ Type: architecture
 Owner: AI
 
 Assumption basis: repo-evidence-backed
+Requirement basis: docs/mvp-scope.md; choose the runtime and stack that fit current requirements and constraints
 Reversibility: easy
 Learning objective: clarify runtime and stack choices before they become hard-to-reverse implementation assumptions
 Source under test: repo-local path
@@ -41,6 +42,14 @@ commands, adapting to existing project constraints.
 
 Record manifests, lockfiles, scripts, local agent instructions, and current
 validation command output before changing docs.
+
+## Solution-Fit Rationale
+
+- Requirement served: <current product or operational requirement>
+- Constraints honored: <hard constraints>
+- Guarantees preserved: <portability, performance, simplicity, or other guarantee>
+- Cost accepted: <real tradeoff introduced>
+- Deferred capability: <future flexibility intentionally not implemented>
 
 ## Verification
 

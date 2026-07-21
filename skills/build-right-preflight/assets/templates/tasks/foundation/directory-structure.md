@@ -5,6 +5,7 @@ Type: architecture
 Owner: AI
 
 Assumption basis: repo-evidence-backed
+Requirement basis: docs/mvp-scope.md; define ownership and generated-file boundaries required by the current system
 Reversibility: easy
 Learning objective: make the project layout understandable enough for bounded AI execution
 Source under test: repo-local path
@@ -40,6 +41,14 @@ where future tasks should place code, docs, tests, fixtures, and evidence.
 
 Record current directory inventory and any existing ownership or workspace
 configuration before editing docs.
+
+## Solution-Fit Rationale
+
+- Requirement served: <current product or operational requirement>
+- Constraints honored: <hard constraints>
+- Guarantees preserved: <ownership clarity, dependency direction, or other guarantee>
+- Cost accepted: <real tradeoff introduced>
+- Deferred capability: <future flexibility intentionally not implemented>
 
 ## Verification
 

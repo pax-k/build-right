@@ -25,6 +25,9 @@ Non-goals:
 Return:
 
 - feasibility findings
+- requirement and constraint basis
+- guarantees the proposed shape must preserve
+- speculative complexity or unjustified boundaries
 - conflicts or blockers
 - recommended planning destination
 - suggested task split

@@ -19,6 +19,18 @@ Last updated: YYYY-MM-DD
 
 <clear value moment>
 
+## Requirements And Constraints
+
+| Requirement or Constraint | Kind | Evidence Status | Design Consequence |
+| --- | --- | --- | --- |
+| <requirement> | user outcome | founder-claimed | <what it requires> |
+| <constraint> | hard | repo-evidence-backed | <what it rules out> |
+| <preference> | soft | founder-claimed | <what it favors> |
+
+## Guarantees To Preserve
+
+- <data integrity, portability, latency, simplicity, security, or other guarantee>
+
 ## Included
 
 | Capability | User Outcome | Risk Reduced | Evidence |

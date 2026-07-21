@@ -5,6 +5,7 @@ Type: validation
 Owner: AI
 
 Assumption basis: founder-claimed | ai-inferred | prototype-assumption | repo-evidence-backed | public-evidence-backed | customer-evidence-backed
+Requirement basis: <authority path, decision ID, evidence reference, or explicit assumption>
 Reversibility: easy | moderate | hard
 Learning objective: <what this task should prove or reveal>
 Source under test: <repo-local path | installed path | GitHub source | release tag | n/a>

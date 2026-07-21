@@ -85,6 +85,7 @@ Then move to the next task.
    Done means: <observable completion criteria>
    Non-goals: <explicit exclusions>
    Assumption basis: <founder-claimed | ai-inferred | prototype-assumption | repo-evidence-backed | public-evidence-backed | customer-evidence-backed>
+   Requirement basis: <authority path, decision ID, evidence reference, or explicit assumption>
    Reversibility: <easy | moderate | hard>
    Learning hook: <how this task will produce evidence>
    Source under test: <repo-local path | installed path | GitHub source | release tag | n/a>
@@ -97,7 +98,8 @@ Then move to the next task.
    exists, then reconcile any missing fields before editing.
 8. Inspect current workspace state before editing.
 9. Capture baseline evidence.
-10. Implement the smallest change that satisfies the task.
+10. Implement the smallest change that satisfies the task and its requirement
+    basis while preserving required guarantees.
 11. Verify in layers.
 12. Run subagent review when a required review trigger applies and subagent tools
    are available. If unavailable or forbidden, record the skipped review and
@@ -116,10 +118,10 @@ Then move to the next task.
 
 ## Not-Ready Rule
 
-If authority docs, MVP scope, execution rules, or task files are missing, do not
-pretend execution is ready. Route the user to `/build-right-preflight` or
-create the smallest Sprint 0 blocker needed to establish the missing execution
-surface.
+If authority docs, MVP scope, execution rules, requirement basis, or task files
+are missing, do not pretend execution is ready. Route the user to
+`/build-right-preflight` or create the smallest Sprint 0 blocker needed to
+establish the missing execution surface.
 
 Prototype tasks may run from `prototype-assumption` only when reversibility,
 learning hook, and validation required before product truth are explicit.

@@ -19,6 +19,6 @@ Do not record:
 - every file edit
 - evidence that belongs in a task evidence log
 
-| Date | Decision | Owner | Evidence | Consequence |
-| --- | --- | --- | --- | --- |
-| YYYY-MM-DD | <decision> | founder | <path/link> | <impact> |
+| Date | Decision | Requirement Basis | Tradeoff / Guarantee Impact | Owner | Evidence |
+| --- | --- | --- | --- | --- | --- |
+| YYYY-MM-DD | <decision> | <requirement or constraint> | <cost accepted or guarantee preserved> | founder | <path/link> |

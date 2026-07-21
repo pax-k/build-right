@@ -1,6 +1,6 @@
 ---
 name: build-right-engineering-principles
-description: Apply Build Right engineering principles as a planning, implementation, and review standard. Use when Codex is designing architecture boundaries, splitting modules or features, creating public contracts, changing provider adapters, reviewing implementation quality, planning tests, handling side effects, errors, observability, security, or deciding whether markdown guidance needs enforceable checks.
+description: Apply Build Right engineering principles as a planning, implementation, and review standard. Use when Codex is choosing technologies, service boundaries, storage models, architecture boundaries, splitting modules or features, creating public contracts, changing provider adapters, reviewing implementation quality or over-engineering risk, planning tests, handling side effects, errors, observability, security, or deciding whether markdown guidance needs enforceable checks.
 ---
 
 # Build Right Engineering Principles
@@ -13,9 +13,10 @@ or engineering-quality tradeoffs matter.
 ## Required Reading
 
 - Read `references/principles.md` before making or reviewing changes that touch
-  architecture boundaries, public contracts, provider adapters, generated code,
-  package ownership, side effects, errors, observability, security, testing
-  strategy, or enforceable policy.
+  technology or storage choices, architecture or service boundaries, public
+  contracts, provider adapters, generated code, package ownership, side effects,
+  errors, observability, security, testing strategy, over-engineering risk, or
+  enforceable policy.
 - Do not load the reference for routine product capture, backlog grooming, or
   narrow content-only updates unless those topics raise engineering-risk
   questions.
@@ -23,8 +24,9 @@ or engineering-quality tradeoffs matter.
 ## Operating Mode
 
 1. Identify the changed or proposed engineering surface:
-   architecture, module responsibility, dependency direction, contract, adapter,
-   state shape, side effect, failure path, test, evidence, or policy.
+   requirement basis, architecture, module responsibility, dependency direction,
+   contract, adapter, state shape, side effect, failure path, test, evidence, or
+   policy.
 2. Apply the review checklist from `references/principles.md`.
 3. Separate guidance from enforceable authority. Markdown principles are
    guidance until backed by code, checks, tests, schemas, policy, or evidence.

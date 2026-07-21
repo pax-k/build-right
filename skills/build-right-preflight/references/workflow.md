@@ -84,7 +84,11 @@ Gather messy founder context:
 - known competitors
 - pricing instincts
 - desired capabilities
+- user and system requirements
 - non-goals
+- hard constraints that rule solutions out
+- soft constraints that rank viable solutions
+- guarantees the solution must preserve
 - constraints around time, money, team, and market timing
 
 Useful outputs:
@@ -157,6 +161,9 @@ For founder-backed product work, extract:
 - one clear value moment
 - smallest product that can be sold, demoed, or manually delivered
 - explicit exclusions
+- requirements with their evidence status
+- hard constraints separated from soft constraints
+- guarantees that the chosen shape must preserve
 - main risk each MVP capability reduces
 - what can be manual before automated
 
@@ -195,8 +202,9 @@ Optional foundation task templates are available under
 Use these only when project inventory shows the foundation area is relevant.
 They should surface as Sprint 0 tasks, not mandatory docs for every project.
 
-Prepare the first executable task with assumption basis, reversibility, learning
-objective, source under test, baseline evidence, and verification.
+Prepare the first executable task with assumption basis, requirement basis,
+reversibility, learning objective, source under test, baseline evidence, and
+verification.
 
 ## 9. Readiness Gate
 
@@ -213,6 +221,10 @@ Then answer:
 - What source mode is active?
 - Are product truth and MVP scope documented?
 - Are assumptions separated from evidence?
+- Are important requirements and constraints explicit?
+- Are hard constraints separated from preferences?
+- Are required guarantees recorded?
+- Can the MVP shape be traced to those requirements and constraints?
 - Are prototype assumptions clearly labeled?
 - Are major conflicts resolved?
 - Is manual delivery understood?

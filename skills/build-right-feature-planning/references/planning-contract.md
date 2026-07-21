@@ -44,6 +44,7 @@ Reuse the execution task contract:
 - type
 - owner
 - assumption basis
+- requirement basis
 - reversibility
 - learning objective
 - source under test
@@ -59,6 +60,12 @@ Reuse the execution task contract:
 
 Use `assets/templates/tasks/feature-task.md` for new feature tasks. Keep tasks
 small enough that execution can finish one without re-opening product scope.
+
+Requirement basis must point to an authority path, decision ID, evidence
+reference, or explicit assumption. It is a hard readiness field for executable
+tasks. For solution-shaping work, also record the semantic `Solution-Fit
+Rationale` required by `workflow.md`; helper presence checks do not establish
+that the rationale is sound.
 
 ## Evidence Rules
 

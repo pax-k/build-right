@@ -33,16 +33,26 @@ Last updated: YYYY-MM-DD
 
 - <capability>
 
+## Requirements
+
+- <required user outcome or system behavior>
+
 ## Explicit Non-Goals
 
 - <non-goal>
 
 ## Constraints
 
-- Time:
-- Money:
-- Team:
-- Market timing:
+| Constraint | Kind | Evidence Status | Design Consequence |
+| --- | --- | --- | --- |
+| Time | hard \| soft | founder-claimed |  |
+| Money | hard \| soft | founder-claimed |  |
+| Team | hard \| soft | founder-claimed |  |
+| Market timing | hard \| soft | founder-claimed |  |
+
+## Guarantees To Preserve
+
+- <guarantee>
 
 ## Claims
 

@@ -36,6 +36,7 @@ const requiredFields = [
   "Type:",
   "Owner:",
   "Assumption basis:",
+  "Requirement basis:",
   "Reversibility:",
   "Learning objective:",
   "Source under test:",
@@ -227,7 +228,12 @@ function parseTable(sectionText: string): Record<string, string>[] {
     return [];
   }
 
-  const headers = splitTableLine(lines[0]);
+  const headerLine = lines[0];
+  if (headerLine === undefined) {
+    return [];
+  }
+
+  const headers = splitTableLine(headerLine);
   if (!headers.includes("Conflict") || !headers.includes("Status")) {
     return [];
   }

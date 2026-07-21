@@ -74,6 +74,7 @@ const requiredFields = [
   "Type:",
   "Owner:",
   "Assumption basis:",
+  "Requirement basis:",
   "Reversibility:",
   "Learning objective:",
   "Source under test:",
