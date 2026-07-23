@@ -37,18 +37,32 @@ Then move to the next task.
 - Use bundled helper scripts only through the full Bun command form shown
   below. Do not rely on PATH aliases or invoke short names such as
   `continue-check` as shell commands.
+- Invoke every managed helper used as evidence as its own direct Bun shell
+  command. Do not chain it with `&&`, `;`, pipes, redirects, or trailing
+  commands; the native evidence gate binds success to that isolated invocation.
 - Use the state resolver before selecting a task or advancing through a queue.
   Report and reconcile its decision before continuing.
+- The managed execution entrypoint performs setup orchestration before calling
+  the separate read-only `scripts/continue-check.ts` resolver and provider
+  adapter when task bindings exist. Never ask the user to invoke provider
+  setup, validation, progress, synchronization, archive, or any provider
+  command.
 - Use the execution helper for deterministic task, contract, and gate signals.
   Treat script output as input to judgment, not authority.
 
 ## Operating Mode
 
-1. Run the read-only state resolver when available:
+1. Run the Build Right state resolver:
 
    ```sh
-   bun <skill-path>/scripts/continue-check.ts --cwd <project> --format markdown --strict
+   bun <skill-path>/scripts/managed-continue-check.ts --cwd <project> --format markdown --strict
    ```
+
+   For a bound task this command automatically runs the explicit setup boundary,
+   then calls the read-only resolver path to check the pinned runtime, strictly
+   validate the change, resolve the exact work item, and detect cross-system
+   drift. Unbound legacy tasks retain the prior resolver path without setup or a
+   provider call. Stop fail-closed on every structured planning gate.
 
 2. Report the resolver findings before selecting work:
 
@@ -104,17 +118,44 @@ Then move to the next task.
 12. Run subagent review when a required review trigger applies and subagent tools
    are available. If unavailable or forbidden, record the skipped review and
    substitute verification before closing.
-13. Record evidence before marking the task complete.
-14. Update only the relevant tracker/docs.
-15. Run the full Bun state resolver command and the execution helper in
+13. Record implementation and verification evidence before marking the task
+    complete.
+14. For a managed planning binding, construct a fresh repository-bound
+    `work-item-ready-for-closeout` proof and invoke the bundled
+    `scripts/complete-planning-work-item.ts` internally. It is the only allowed
+    path to check the work item, complete the Build Right task, and promote one
+    successor. Do not expose this provider bookkeeping to the user.
+15. For an unbound task, update only the relevant tracker/docs.
+16. When the completed binding was the last work item, invoke the read-only
+    archive-readiness mode internally. If and only if it returns a fresh
+    `archive-ready` proof, invoke the separate allowlisted finalizer:
+
+    ```sh
+    bun <skill-path>/scripts/execution-check.ts --cwd <project> --mode archive-readiness --change <change> --format json
+    bun <skill-path>/scripts/finalize-openspec-change.ts --cwd <project> --change <change> --readiness <fresh-readiness.json>
+    ```
+
+    The finalizer reruns readiness under lock, archives only in isolated
+    scratch space, validates the exact allowlisted diff, and atomically
+    publishes the complete validated planning tree. Record the returned
+    commands/results in Build Right evidence. Never expose provider validation,
+    synchronization, or archive work to the user.
+17. After successful finalization, reconcile the Build Right authority surface:
+    replace active-change references in every bound task with the returned
+    archive path; clear the completed active task and execution-ready gate from
+    `docs/blueprint-status.md`; point its managed-planning evidence at the
+    archive; make its next action match the resolver; and mark a sprint complete
+    when every row is terminal. Never leave an execution handoff to a completed
+    task or an absent active change.
+18. Run the full Bun managed execution command and the execution helper in
     `stop-gates` mode before selecting another task.
-16. Report the resolver findings again before deciding whether another task is
+19. Report the resolver findings again before deciding whether another task is
     safe to select.
-17. Stop at any founder, external-state, failed-verification, stale-task, source
+20. Stop at any founder, external-state, failed-verification, stale-task, source
     mismatch, open-conflict, non-AI-owner, or release-claim gate. Do not
     advance to the next task until the gate is resolved or explicitly converted
     into a ready AI-owned task.
-18. Commit or hand off according to project workflow.
+20. Commit or hand off according to project workflow.
 
 ## Not-Ready Rule
 

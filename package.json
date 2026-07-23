@@ -1,10 +1,12 @@
 {
   "name": "build-right",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "module": "index.ts",
   "type": "module",
   "private": true,
   "scripts": {
+    "sync:openspec-runtime": "bun scripts/sync-openspec-runtime.ts",
+    "check:openspec-runtime": "bun scripts/sync-openspec-runtime.ts --check",
     "evals:codex": "bunx promptfoo eval -c evals/build-right-codex/promptfooconfig.yaml --no-cache",
     "evals:codex:view": "bunx promptfoo view",
     "todo-trial": "bun scripts/todo-trial.ts",

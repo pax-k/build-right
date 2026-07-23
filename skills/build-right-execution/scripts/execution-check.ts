@@ -1,12 +1,14 @@
 import { join, relative, resolve } from "node:path";
+import { inspectArchiveReadiness, type ArchiveReadinessResult } from "./lib/archive-readiness";
 
-type Mode = "next-task" | "task-contract" | "stop-gates" | "all";
+type Mode = "next-task" | "task-contract" | "stop-gates" | "archive-readiness" | "all";
 type OutputFormat = "markdown" | "json";
 
 type Args = {
   cwd: string;
   mode: Mode;
   task?: string;
+  change?: string;
   format: OutputFormat;
   help: boolean;
 };
@@ -28,7 +30,7 @@ type CheckResult = {
   recommendation: string;
 };
 
-const validModes = new Set<Mode>(["next-task", "task-contract", "stop-gates", "all"]);
+const validModes = new Set<Mode>(["next-task", "task-contract", "stop-gates", "archive-readiness", "all"]);
 const validFormats = new Set<OutputFormat>(["markdown", "json"]);
 
 const requiredFields = [
@@ -69,7 +71,7 @@ function parseArgs(argv: string[]): Args {
       continue;
     }
 
-    if (arg === "--cwd" || arg === "--mode" || arg === "--task" || arg === "--format") {
+    if (arg === "--cwd" || arg === "--mode" || arg === "--task" || arg === "--change" || arg === "--format") {
       const value = argv[index + 1];
       if (!value) {
         throw new Error(`${arg} requires a value`);
@@ -85,6 +87,8 @@ function parseArgs(argv: string[]): Args {
         args.mode = value as Mode;
       } else if (arg === "--task") {
         args.task = value;
+      } else if (arg === "--change") {
+        args.change = value;
       } else {
         if (!validFormats.has(value as OutputFormat)) {
           throw new Error(`invalid --format: ${value}`);
@@ -102,7 +106,7 @@ function parseArgs(argv: string[]): Args {
 }
 
 function usage(): string {
-  return `Usage: bun execution-check.ts [--cwd <path>] [--mode next-task|task-contract|stop-gates|all] [--task <path>] [--format markdown|json]
+  return `Usage: bun execution-check.ts [--cwd <path>] [--mode next-task|task-contract|stop-gates|archive-readiness|all] [--task <path>] [--change <name>] [--format markdown|json]
 
 Read-only helper for Build Right execution. Reports next-task candidates,
 missing task contract fields, stop/ask gate signals, and a proceed/stop
@@ -377,11 +381,39 @@ function renderMarkdown(result: CheckResult): string {
   return `${lines.join("\n")}\n`;
 }
 
+function renderArchiveReadiness(result: ArchiveReadinessResult): string {
+  const lines = [
+    "# Build Right Archive Readiness",
+    "",
+    `Decision: ${result.decision}`,
+    `Change: ${result.change}`,
+    `Checked at: ${result.checkedAt}`,
+    "",
+    "## Checks",
+    ...Object.entries(result.checks).map(([name, value]) => `- ${name}: ${value}`),
+    "",
+    "## Blocking Gates",
+    ...(result.blockingGates.length > 0
+      ? result.blockingGates.map((gate) => `- ${gate.type} | ${gate.source} | ${gate.reason}`)
+      : ["- none"]),
+  ];
+  return `${lines.join("\n")}\n`;
+}
+
 try {
   const args = parseArgs(Bun.argv.slice(2));
   if (args.help) {
     console.log(usage());
     process.exit(0);
+  }
+
+  if (args.mode === "archive-readiness") {
+    if (!args.change) throw new Error("--change is required for archive-readiness");
+    const readiness = await inspectArchiveReadiness({ cwd: args.cwd, change: args.change });
+    console.log(args.format === "json"
+      ? JSON.stringify(readiness, null, 2)
+      : renderArchiveReadiness(readiness));
+    process.exit(readiness.decision === "archive-ready" ? 0 : 1);
   }
 
   const result = await runCheck(args);

@@ -128,6 +128,32 @@ A task is complete only when:
 
 Do not use vague completion statements. Say what was proved.
 
+For a managed planning task, completion additionally requires:
+
+- the three-field planning binding is valid and unique
+- the exact work item is still unchecked before closeout
+- fresh strict provider validation passes
+- a repository-bound completion proof is no more than five minutes old
+- the proof records passing implementation and verification checks, exact
+  commands, and evidence references already present in the task
+- the recoverable closeout transaction succeeds and re-inspection observes the
+  checked work item, completed task, completed sprint row, and at most one
+  promoted successor
+
+Never check the provider item before evidence is recorded, and never treat a
+manually checked item as permission to complete Build Right state.
+
+For a finalized managed change, additionally record:
+
+- the fresh archive-readiness result and all check fields
+- the validated archive command evidence
+- strict post-archive main-spec validation evidence
+- canonical archive path and active-change absence
+- exact active-change preservation and allowlisted scratch-diff result
+- pre-publication Build Right/OpenSpec state-race check and atomic publication
+- whether synchronization updated main specs
+- the post-finalization managed resolver result
+
 ## Skipped Verification
 
 Skipped verification is allowed only when it is impossible or inappropriate in

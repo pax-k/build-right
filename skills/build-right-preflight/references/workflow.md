@@ -35,6 +35,17 @@ Report its decision, confidence, project type, next action, missing artifacts,
 readiness warnings, and founder input gaps. Use its output as deterministic
 input, not as final judgment.
 
+After inventory, run Build Right's managed planning setup:
+
+```sh
+bun <skill-path>/scripts/ensure-openspec.ts --cwd <project> --format markdown
+```
+
+This must remain automatic and idempotent. Never ask the user to install,
+initialize, configure, or invoke the underlying planning provider. Stop
+fail-closed if the pinned runtime or repository-local planning root cannot be
+validated safely.
+
 Classify the project:
 
 - `blank/new`: little or no product truth, evidence, operating docs, or tasks
@@ -205,6 +216,11 @@ They should surface as Sprint 0 tasks, not mandatory docs for every project.
 Prepare the first executable task with assumption basis, requirement basis,
 reversibility, learning objective, source under test, baseline evidence, and
 verification.
+
+For an existing project with a completed validation baseline and an explicit
+blueprint handoff to `build-right-feature-planning`, do not manufacture a
+speculative non-managed execution task. Preserve the feature-planning handoff;
+that lifecycle owns managed change creation and thin task binding.
 
 ## 9. Readiness Gate
 

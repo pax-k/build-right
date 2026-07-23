@@ -35,6 +35,12 @@ Only then AI executes.
 - Use bundled `scripts/preflight-check.ts` for deterministic inventory,
   readiness signals, and one preflight decision. Treat script output as input
   to judgment, not authority.
+- Use bundled `scripts/ensure-openspec.ts` after repository inventory. This is
+  Build Right's idempotent managed planning setup; do not ask the user to
+  install, initialize, configure, or invoke the planning provider.
+- Invoke every managed helper used as evidence as its own direct Bun shell
+  command. Do not chain it with `&&`, `;`, pipes, redirects, or trailing
+  commands; the native evidence gate binds success to that isolated invocation.
 
 ## Operating Mode
 
@@ -47,6 +53,14 @@ Only then AI executes.
    ```sh
    bun <skill-path>/scripts/preflight-check.ts --cwd <project> --mode all --format markdown
    ```
+
+   Then run managed planning setup before artifact creation or readiness:
+
+   ```sh
+   bun <skill-path>/scripts/ensure-openspec.ts --cwd <project> --format markdown
+   ```
+
+   Stop fail-closed on provider/runtime, compatibility, or setup failure.
 
 5. Report the helper findings before writing:
 
@@ -106,6 +120,9 @@ Only then AI executes.
 14. Mark unsupported claims as assumptions. Do not invent product truth.
 15. Prepare the first executable task, but do not complete it unless the user
    explicitly asks to continue into execution.
+   For an existing project whose completed baseline and blueprint explicitly
+   route next to `build-right-feature-planning`, preserve that handoff instead
+   of inventing a duplicate non-managed execution task.
 16. Run the preflight helper again after artifact creation when available, then
     reconcile its warnings against the readiness gate.
 17. Report the helper decision again before claiming readiness.

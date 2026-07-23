@@ -8,11 +8,12 @@ advancing to another task.
 Before selecting work or continuing through a prepared queue, run:
 
 ```sh
-bun <skill-path>/scripts/continue-check.ts --cwd <project> --format markdown --strict
+bun <skill-path>/scripts/managed-continue-check.ts --cwd <project> --format markdown --strict
 ```
 
-Use this full Bun command form. Do not rely on a shell alias or global binary
-for the resolver.
+Use this full Bun command form. It runs setup in the lifecycle orchestration
+boundary before calling the separate read-only resolver. Do not rely on a shell
+alias or global binary.
 
 Report the resolver decision, confidence, next action, next task, blocking
 gates, and external follow-ups before acting.
@@ -29,6 +30,43 @@ Reconcile the resolver decision before continuing:
 
 The resolver is advisory but mandatory to reconcile. Do not ignore it and read
 Markdown manually when deciding to continue.
+
+## Managed Planning Reconciliation Gate
+
+Task fields `Planning provider`, `Change ref`, and `Work item ref` are internal
+and must be absent together or appear exactly once together. For bound ready,
+active, or complete tasks the resolver automatically ensures the managed root,
+uses the exact pinned runtime, strictly validates the change, and resolves the
+exact work item.
+
+Fail closed with these structured gates:
+
+- `planning-provider-unavailable`: runtime, offline, timeout, or setup failure
+- `planning-provider-invalid`: malformed binding or provider output
+- `planning-drift`: missing/duplicate item or contradictory completion state
+- `spec-validation-failed`: strict change validation failure
+- `spec-sync-pending`: archive synchronization is not freshly proven
+
+Valid state is `ready|active + unchecked`, or `complete + checked + valid Build
+Right evidence`. The provider checkbox is never completion evidence. Do not
+mutate provider or tracker state in the resolver.
+
+## Archive Readiness Gate
+
+Finalization requires a fresh read-only `archive-ready` result. It fails closed
+unless strict change validation, all work items, all bound Build Right evidence,
+project verification, conflicts, and release gates pass. `specSyncState:
+sync-ready` means the validated delta is pending the synchronous normal archive
+operation; `contradictory` is a `spec-sync-pending` blocker.
+
+The readiness helper never mutates. The separate finalizer accepts only a
+repository-bound proof, reruns archive readiness under a no-follow advisory
+lock, and never uses `--no-validate` or `--skip-specs`. Archive executes only
+against an isolated scratch copy. Exact active-change preservation, allowlisted
+OpenSpec diffs, strict scratch validation, unchanged Build Right authority
+hashes, and atomic target publication are mandatory postconditions. An
+unrecoverable exchange rollback is a `recovery-required` stop state with the
+displaced tree retained at a reported recovery path.
 
 ## Readiness Gate
 

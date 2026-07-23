@@ -67,6 +67,24 @@ tasks. For solution-shaping work, also record the semantic `Solution-Fit
 Rationale` required by `workflow.md`; helper presence checks do not establish
 that the rationale is sound.
 
+Managed planning tasks add these three generated fields together:
+
+```text
+Planning provider: openspec
+Change ref: <validated internal change ref>
+Work item ref: <validated provider work item ref>
+```
+
+Users do not author these fields. The task title and goal may summarize the
+work item, but `openspec/changes/<change>/tasks.md` remains the canonical
+checklist. Bindings are idempotent, provider ordered, and only the first
+unblocked binding may be `ready`.
+
+Provider checklist descriptions must be concise and safe to project into Build
+Right task titles: 160 characters or fewer after the numeric checkbox
+identifier, with no control characters. Runtime validation remains authoritative
+and rejects invalid work items rather than truncating them.
+
 ## Evidence Rules
 
 Record planning evidence where future agents will find it:

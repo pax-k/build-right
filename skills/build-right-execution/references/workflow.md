@@ -18,11 +18,18 @@ Use this workflow for one bounded task with evidence.
 
 Start with one task, not a broad project area.
 
-Run the read-only state resolver before choosing work:
+Run the Build Right state resolver:
 
 ```sh
-bun <skill-path>/scripts/continue-check.ts --cwd <project> --format markdown --strict
+bun <skill-path>/scripts/managed-continue-check.ts --cwd <project> --format markdown --strict
 ```
+
+When bindings exist, this lifecycle composition entrypoint invokes the explicit
+setup boundary first, then the separate read-only `continue-check.ts` path for
+pinned-runtime inspection, strict validation, exact work-item resolution, and
+drift detection. Legacy unbound tasks make no setup or provider call. Stop
+fail-closed on a structured planning gate. The user never runs or discusses
+provider commands.
 
 Report the resolver decision, confidence, next action, next task, blocking
 gates, and external follow-ups before acting on the result.
@@ -198,7 +205,69 @@ skipped review and substitute verification or stop at the gate.
 Record evidence inside the task tracker or evidence file before marking work
 done. Follow `evidence-contract.md`.
 
-After evidence exists, update only artifacts that changed:
+After evidence exists, update only artifacts that changed.
+
+For an internally managed planning binding, first create a fresh structured
+completion proof. It must bind the canonical repository, task path, sprint
+path, change, work item, successful implementation and verification checks,
+commands, and evidence references. Then invoke internally:
+
+```sh
+bun <skill-path>/scripts/complete-planning-work-item.ts --cwd <project> --proof <fresh-proof.json>
+```
+
+This helper takes an advisory lock, recovers any prior write-ahead journal,
+revalidates provider and Build Right state, checks exactly one provider work
+item, completes exactly one Build Right task, promotes at most one bound
+successor in both issue and sprint files, and re-inspects both systems. A failed
+or stale proof, missing evidence, failed validation, race, drift, or unsafe path
+causes no new mutation. Do not mark the checkbox by hand.
+
+If that closeout completes the last work item, run the read-only Build Right
+archive decision:
+
+```sh
+bun <skill-path>/scripts/execution-check.ts --cwd <project> --mode archive-readiness --change <change> --format json
+```
+
+`archive-ready` requires fresh strict change validation, all bound tasks and
+work items complete, exact Build Right evidence, passing project verification,
+closed conflicts, satisfied release gates, and a `synced` or validated
+`sync-ready` spec surface. Only a fresh ready proof may be passed to:
+
+```sh
+bun <skill-path>/scripts/finalize-openspec-change.ts --cwd <project> --change <change> --readiness <fresh-readiness.json>
+```
+
+The finalizer acquires a repository advisory lock and reruns the full read-only
+archive-readiness decision before mutation. It runs only normal validated
+archive behavior against an isolated scratch copy, never bypass flags. Before
+an atomic whole-tree publication, it verifies the active change is preserved
+exactly in the canonical archive, only the archive and main specs changed,
+strict main-spec validation passes, and Build Right docs/tasks plus the target
+OpenSpec tree have not raced. A failed check leaves the target OpenSpec tree
+unchanged; a platform rollback failure returns `recovery-required` and retains
+the displaced tree at the reported recovery path. Record both commands and
+their structured results in Build Right evidence.
+
+After successful finalization, reconcile all Build Right authority surfaces
+before claiming closeout:
+
+- rewrite bound task requirement and required-reading references from the
+  removed active change to the returned archive path,
+- clear a completed active task and execution-ready phase/gate from
+  `docs/blueprint-status.md`,
+- point managed-planning evidence at the archive and make `Next Action` agree
+  with the fresh resolver decision,
+- mark a sprint complete when all of its rows are terminal, or record an
+  explicit truthful handoff if other work remains.
+
+The final state must not route the user back to execution of a completed task or
+reference an absent active change. Then rerun managed
+resolution. These are internal lifecycle actions; the user supplies no
+provider command or prompt.
+
+For legacy unbound tasks, update:
 
 - issue status
 - sprint checklist
@@ -214,7 +283,7 @@ task is complete.
 Before selecting another task, run the state resolver and stop/ask gate again.
 
 ```sh
-bun <skill-path>/scripts/continue-check.ts --cwd <project> --format markdown --strict
+bun <skill-path>/scripts/managed-continue-check.ts --cwd <project> --format markdown --strict
 ```
 
 ```sh

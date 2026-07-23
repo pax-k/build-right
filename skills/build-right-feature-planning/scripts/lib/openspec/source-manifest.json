@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "algorithm": "sha256",
+  "hash": "54e6f231d5f9bf9864f0cd8b078d39af2071933196351dd468c0a849420beb80",
+  "files": [
+    "adapter.ts",
+    "atomic-install.ts",
+    "contracts.ts",
+    "ensure-openspec.ts",
+    "execution-progress.ts",
+    "feature-planning.ts",
+    "managed-runtime.ts",
+    "orchestrator.ts",
+    "process-runner.ts",
+    "provider-contracts.ts",
+    "safe-setup.ts",
+    "zero-mention.ts"
+  ]
+}
